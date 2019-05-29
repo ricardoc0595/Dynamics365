@@ -1,0 +1,11 @@
+C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\bin\Debug\FollowupPlugin.dll
+C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\bin\Debug\FollowupPlugin.pdb
+C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\bin\Debug\Microsoft.Crm.Sdk.Proxy.dll
+C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\bin\Debug\Microsoft.Xrm.Sdk.dll
+C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\bin\Debug\Microsoft.Crm.Sdk.Proxy.xml
+C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\bin\Debug\Microsoft.Xrm.Sdk.xml
+C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\obj\Debug\FollowupPlugin.csprojAssemblyReference.cache
+C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\obj\Debug\FollowupPlugin.csproj.CoreCompileInputs.cache
+C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\obj\Debug\FollowupPlugin.csproj.CopyComplete
+C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\obj\Debug\FollowupPlugin.dll
+C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\obj\Debug\FollowupPlugin.pdb
