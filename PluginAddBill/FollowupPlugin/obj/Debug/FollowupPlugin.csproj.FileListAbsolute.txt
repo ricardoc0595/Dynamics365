@@ -9,3 +9,16 @@ C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgs
 C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\obj\Debug\FollowupPlugin.csproj.CopyComplete
 C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\obj\Debug\FollowupPlugin.dll
 C:\Users\rcarr\Documents\Loymarkk\Dynamics 365\PowerApps-Samples-master\cds\orgsvc\C#\FollowupPlugin\FollowupPlugin\obj\Debug\FollowupPlugin.pdb
+C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\FollowupPlugin.dll
+C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\FollowupPlugin.pdb
+C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\Microsoft.Crm.Sdk.Proxy.dll
+C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\Microsoft.Xrm.Sdk.dll
+C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\Microsoft.Crm.Sdk.Proxy.xml
+C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\Microsoft.Xrm.Sdk.xml
+C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\obj\Debug\FollowupPlugin.csprojAssemblyReference.cache
+C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\obj\Debug\FollowupPlugin.csproj.CoreCompileInputs.cache
+C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\obj\Debug\FollowupPlugin.csproj.CopyComplete
+C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\obj\Debug\FollowupPlugin.dll
+C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\obj\Debug\FollowupPlugin.pdb

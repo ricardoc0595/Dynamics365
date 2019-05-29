@@ -74,18 +74,19 @@ namespace PowerApps.Samples
 
         }
 
-        private void requestAboxService()
+        private bool requestAboxService(Bill pBill)
         {
-            Bill bill = new Bill();
-            string json = JsonConvert.SerializeObject(bill);
+            bool lvResponse = false;
+            string json = JsonConvert.SerializeObject(pBill);
 
             try
             {
-                string ServiceName = "";
-                string url = "";
+                string token = "";
+                string url = "http://104.43.138.232:9006/create";
                 string requestData = json;
                 var webrequest = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
                 webrequest.Method = "POST";
+                webrequest.Headers["Authorization"] = "Bearer " + token;
                 webrequest.ContentType = "application/json; charset=utf-8";
                 using (Stream webstream = webrequest.GetRequestStream())
                 using (StreamWriter requestWriter = new StreamWriter(webstream))
@@ -109,26 +110,27 @@ namespace PowerApps.Samples
                             if (abServiceResponse.response.code == "MEMEX-0002")
                             {
                                 //TODO:Create logic if successfull
-
+                                lvResponse = true;
                             }
                             else
                             {
-                               
 
+                                lvResponse = false;
                             }
 
 
                         }
                         else
                         {
-                           
+                            lvResponse = false;
                         }
                     }
+                    return lvResponse;
 
                 }
                 catch (System.Net.WebException wex)
                 {
-
+                    lvResponse = false;
                     string error = "";
                     string statusCode = "";
                     if (wex.Response != null)
@@ -146,6 +148,8 @@ namespace PowerApps.Samples
 
                     }
 
+                    return lvResponse;
+
                    
                 }
 
@@ -153,8 +157,8 @@ namespace PowerApps.Samples
             }
             catch (Exception ex)
             {
-
-               
+                lvResponse = false;
+                return lvResponse;
             }
         }
 
@@ -167,79 +171,115 @@ namespace PowerApps.Samples
         /// tracing service, plug-in execution context, organization service, and more.</param>
         public void Execute(IServiceProvider serviceProvider)
         {
+            #region Inicializacion servicios y contexto
+
             //Extract the tracing service for use in debugging sandboxed plug-ins.
             ITracingService tracingService =
                 (ITracingService)serviceProvider.GetService(typeof(ITracingService));
-
 
 
             // Obtain the execution context from the service provider.
             IPluginExecutionContext context = (IPluginExecutionContext)
                 serviceProvider.GetService(typeof(IPluginExecutionContext));
 
+
+            IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
+            IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
+
+            #endregion
+
+
+
             // The InputParameters collection contains all the data passed in the message request.
             if (context.InputParameters.Contains("Target") &&
                 context.InputParameters["Target"] is Entity)
             {
                 // Obtain the target entity from the input parameters.
-                Entity entity = (Entity)context.InputParameters["Target"];
+                Entity eContact = (Entity)context.InputParameters["Target"];
 
-                // Verify that the target entity represents an account.
+                
+                // Verify that the target entity represents a contact.
                 // If not, this plug-in was not registered correctly.
-                if (entity.LogicalName != "account")
+                //new_aboxinvoice
+                if (eContact.LogicalName != "contact")
                     return;
 
                 try
                 {
 
 
-                    // Create a task activity to follow up with the account customer in 7 days. 
-                    //Entity followup = new Entity("task");
+                    #region Contacto
+                    
+                    Bill lvBill = new Bill();
 
-                    //followup["subject"] = "Send e-mail to the new customer.";
-                    //followup["description"] =
-                    //    "Follow up with the customer. Check if there are any new issues that need resolution.";
-                    //followup["scheduledstart"] = DateTime.Now.AddDays(7);
-                    //followup["scheduledend"] = DateTime.Now.AddDays(7);
-                    //followup["category"] = context.PrimaryEntityName;
+                    lvBill.patientId=Convert.ToInt32(eContact.Attributes["new_webid"]);
+                    lvBill.billId = "Bill-365-1";
+                    lvBill.billDate = "";
+                    lvBill.billImageUrl = "";
+                    lvBill.products = null;
+                    #endregion
 
 
 
+                    #region AbInvoice
 
-                    IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
-                    IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
-                    // Refer to the account in the task activity.
-                    if (context.OutputParameters.Contains("id"))
+                    // Get the Relationship name for which this plugin fired
+
+                    string relationshipName = ((Relationship)context.InputParameters["Relationship"]).SchemaName;
+
+                    Relationship rel = (Relationship)context.InputParameters["Relationship"];
+
+                   
+                    Entity abInvoiceEntity = null;
+
+                    // Check the "Relationship Name" with your intended one
+                    //new_contact_aboxinvoice
+                    if (relationshipName != "new_contact_aboxinvoice")
+
                     {
 
-                        Guid regardingobjectid = new Guid(context.OutputParameters["id"].ToString());
-                        string regardingobjectidType = "account";
-
-                        //followup["regardingobjectid"] =
-                        //new EntityReference(regardingobjectidType, regardingobjectid);
-                        Entity entity2 = RetrieveEntityById(service, "account", regardingobjectid);
-
-                        String strAccountName = string.Empty;
-
-                        if (entity.Attributes.Contains("name"))
-
-                        {
-
-                            strAccountName = entity2.Attributes["name"].ToString();
-
-                        }
-
+                        return;
 
                     }
 
+                    #endregion
+
+
+                    bool requestDoneSuccessfully = this.requestAboxService(lvBill);
+
+                    if (!requestDoneSuccessfully)
+                    {
+                        return;
+                    }
+
+                    // Refer to the account in the task activity.
+                    //if (context.OutputParameters.Contains("id"))
+                    //{
+
+                    //    Guid regardingobjectid = new Guid(context.OutputParameters["id"].ToString());
+                    //    string regardingobjectidType = "account";
+
+                    //    //followup["regardingobjectid"] =
+                    //    //new EntityReference(regardingobjectidType, regardingobjectid);
+                    //    Entity entity2 = RetrieveEntityById(service, "account", regardingobjectid);
+
+                    //    String strAccountName = string.Empty;
+
+                    //    if (eContact.Attributes.Contains("name"))
+
+                    //    {
+
+                    //        strAccountName = entity2.Attributes["name"].ToString();
+
+                    //    }
+
+
+                    //}
+
                     // Obtain the organization service reference.
-
-
-
-
-
+                    
                     // Create the task in Microsoft Dynamics CRM.
-                    tracingService.Trace("FollowupPlugin: Successfully created the task activity.");
+                    //tracingService.Trace("FollowupPlugin: Successfully created the task activity.");
 
                     //service.Create(followup);
                 }
