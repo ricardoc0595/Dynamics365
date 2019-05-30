@@ -1,9 +1,12 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
-using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Net;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.ServiceModel;
+using System.Text;
 
 namespace PowerApps.Samples
 {
@@ -40,20 +43,29 @@ namespace PowerApps.Samples
             public string message { get; set; }
             public Details details { get; set; }
         }
-
+        [DataContract]
         public class AboxServiceResponse
         {
+            [DataMember]
             public Header header { get; set; }
+            [DataMember]
             public Response response { get; set; }
         }
-        
+
+        [DataContract]
         public class Bill
         {
+            [DataMember]
             public int patientId { get; set; }
+            [DataMember]
             public string pharmacyId { get; set; }
+            [DataMember]
             public string billId { get; set; }
+            [DataMember]
             public string billDate { get; set; }
+            [DataMember]
             public string billImageUrl { get; set; }
+            [DataMember]
             public Product[] products { get; set; }
         }
 
@@ -77,84 +89,88 @@ namespace PowerApps.Samples
         private bool requestAboxService(Bill pBill)
         {
             bool lvResponse = false;
-            string json = JsonConvert.SerializeObject(pBill);
+            string json = "";
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                DataContractJsonSerializer serializer = new DataContractJsonSerializer(pBill.GetType());
+                serializer.WriteObject(memoryStream, pBill);
+                json = System.Text.Encoding.Default.GetString(memoryStream.ToArray());
+            }
+
 
             try
             {
-                string token = "";
-                string url = "http://104.43.138.232:9006/create";
+                string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUwMDAwMDAwMSIsImlhdCI6MTU1OTI0NzYyNCwiZXhwIjoxNTU5MzM0MDI0fQ.EE0DI8fvewgDKtlB89eZzQLtx0vW56_uar3l7ERCej";
                 string requestData = json;
-                var webrequest = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
-                webrequest.Method = "POST";
-                webrequest.Headers["Authorization"] = "Bearer " + token;
-                webrequest.ContentType = "application/json; charset=utf-8";
-                using (Stream webstream = webrequest.GetRequestStream())
-                using (StreamWriter requestWriter = new StreamWriter(webstream))
+
+                string URI = "http://104.43.138.232:9006/create";
+                //string myParameters = "param1=value1&param2=value2&param3=value3";
+
+                string postResult = "";
+                using (WebClient wc = new WebClient())
                 {
-
-                    requestWriter.Write(requestData);
-
+                    wc.Headers[HttpRequestHeader.ContentType] = "application/json; charset=utf-8";
+                    wc.Headers[HttpRequestHeader.Authorization] = "Bearer "+token;
+                   postResult = wc.UploadString(URI, requestData);
                 }
-                try
+                
+                AboxServiceResponse aboxServiceResponse = null;
+                MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(postResult));
+                DataContractJsonSerializer ser = new DataContractJsonSerializer(aboxServiceResponse.GetType());
+                aboxServiceResponse = ser.ReadObject(ms) as AboxServiceResponse;
+                ms.Close();
+
+                if (aboxServiceResponse.header.code == 0)
                 {
-                    using (var response = webrequest.GetResponse())
-                    using (var reader = new StreamReader(response.GetResponseStream()))
+                    if (aboxServiceResponse.response.code == "MEMEX-0002")
                     {
-                        var jsonrequest = reader.ReadToEnd();
-
-                        AboxServiceResponse abServiceResponse = JsonConvert.DeserializeObject<AboxServiceResponse>
-                            (jsonrequest);
-
-                        if (abServiceResponse.header.code == 0)
-                        {
-                            if (abServiceResponse.response.code == "MEMEX-0002")
-                            {
-                                //TODO:Create logic if successfull
-                                lvResponse = true;
-                            }
-                            else
-                            {
-
-                                lvResponse = false;
-                            }
-
-
-                        }
-                        else
-                        {
-                            lvResponse = false;
-                        }
+                        //TODO:Create logic if successfull
+                        lvResponse = true;
                     }
-                    return lvResponse;
+                    else
+                    {
+
+                        lvResponse = false;
+                    }
+
 
                 }
-                catch (System.Net.WebException wex)
+                else
                 {
                     lvResponse = false;
-                    string error = "";
-                    string statusCode = "";
-                    if (wex.Response != null)
+                }
+
+                return lvResponse;
+                
+            }
+
+
+            catch (System.Net.WebException wex)
+            {
+                lvResponse = false;
+                string error = "";
+                string statusCode = "";
+                if (wex.Response != null)
+                {
+                    using (var errorResponse = (System.Net.HttpWebResponse)wex.Response)
                     {
-                        using (var errorResponse = (System.Net.HttpWebResponse)wex.Response)
+
+                        using (var reader = new StreamReader(errorResponse.GetResponseStream()))
                         {
+                            error = reader.ReadToEnd();
 
-                            using (var reader = new StreamReader(errorResponse.GetResponseStream()))
-                            {
-                                error = reader.ReadToEnd();
-
-                                //TODO: use JSON.net to parse this string and look at the error message
-                            }
+                            //TODO: use JSON.net to parse this string and look at the error message
                         }
-
                     }
 
-                    return lvResponse;
-
-                   
                 }
+
+                return lvResponse;
 
 
             }
+
+
             catch (Exception ex)
             {
                 lvResponse = false;
@@ -195,62 +211,93 @@ namespace PowerApps.Samples
                 context.InputParameters["Target"] is Entity)
             {
                 // Obtain the target entity from the input parameters.
-                Entity eContact = (Entity)context.InputParameters["Target"];
+                Entity eAbInvoice = (Entity)context.InputParameters["Target"];
 
-                
+
                 // Verify that the target entity represents a contact.
                 // If not, this plug-in was not registered correctly.
                 //new_aboxinvoice
-                if (eContact.LogicalName != "contact")
+                if (eAbInvoice.LogicalName != "new_aboxinvoice")
                     return;
 
                 try
                 {
 
-
-                    #region Contacto
-                    
-                    Bill lvBill = new Bill();
-
-                    lvBill.patientId=Convert.ToInt32(eContact.Attributes["new_webid"]);
-                    lvBill.billId = "Bill-365-1";
-                    lvBill.billDate = "";
-                    lvBill.billImageUrl = "";
-                    lvBill.products = null;
-                    #endregion
-
-
-
                     #region AbInvoice
 
+                    //Entity parentEntity = service.Retrieve("contact", eAbInvoice.Id, new ColumnSet(true));
                     // Get the Relationship name for which this plugin fired
 
-                    string relationshipName = ((Relationship)context.InputParameters["Relationship"]).SchemaName;
+                    //string relationshipName = ((Relationship)context.InputParameters["Relationship"]).SchemaName;
+                    //new_abfacturaid
+                    //Relationship rel = (Relationship)context.InputParameters["Relationship"];
 
-                    Relationship rel = (Relationship)context.InputParameters["Relationship"];
 
-                   
-                    Entity abInvoiceEntity = null;
 
                     // Check the "Relationship Name" with your intended one
                     //new_contact_aboxinvoice
-                    if (relationshipName != "new_contact_aboxinvoice")
+                    //if (relationshipName != "new_contact_aboxinvoice")
 
-                    {
+                    //{
 
-                        return;
+                    //    return;
 
-                    }
+                    //}
 
                     #endregion
 
 
-                    bool requestDoneSuccessfully = this.requestAboxService(lvBill);
+                    #region Contacto
+                    EntityReference eReference = null;
 
-                    if (!requestDoneSuccessfully)
+                    if (eAbInvoice.Attributes.Contains("new_abfacturaid"))
+                    {
+                        eReference = (EntityReference)eAbInvoice.Attributes["new_abfacturaid"];
+                    }
+
+                    Entity parentContact = null;
+                    if (eReference != null)
+                    {
+
+                        parentContact = service.Retrieve("contact", eReference.Id, new ColumnSet(true));
+                    }
+
+                    if (parentContact != null)
+                    {
+
+                        Bill lvBill = new Bill();
+
+                        //lvBill.patientId=Convert.ToInt32(eAbInvoice.Attributes["new_webid"]);
+                        //new_abinvoicenumber
+
+                        lvBill.billId = eAbInvoice.Attributes["new_abinvoicenumber"].ToString();
+                        lvBill.patientId = Convert.ToInt32(parentContact.Attributes["new_webid"].ToString());
+                        lvBill.billDate = "2019-03-15";
+                        //entityimage
+
+                        EntityImageCollection imageCollection = eAbInvoice.GetAttributeValue<EntityImageCollection>("entityimage");
+
+                        lvBill.billImageUrl = "";
+                        lvBill.products = null;
+
+                        bool requestDoneSuccessfully = this.requestAboxService(lvBill);
+
+                        if (!requestDoneSuccessfully)
+                        {
+                            return;
+                        }
+
+                    }
+                    else
                     {
                         return;
                     }
+
+
+                    #endregion
+
+
+
 
                     // Refer to the account in the task activity.
                     //if (context.OutputParameters.Contains("id"))
@@ -277,7 +324,7 @@ namespace PowerApps.Samples
                     //}
 
                     // Obtain the organization service reference.
-                    
+
                     // Create the task in Microsoft Dynamics CRM.
                     //tracingService.Trace("FollowupPlugin: Successfully created the task activity.");
 

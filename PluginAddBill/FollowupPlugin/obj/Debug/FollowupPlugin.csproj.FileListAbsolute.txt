@@ -13,10 +13,8 @@ C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddB
 C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\FollowupPlugin.pdb
 C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\Microsoft.Crm.Sdk.Proxy.dll
 C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\Microsoft.Xrm.Sdk.dll
-C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\Newtonsoft.Json.dll
 C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\Microsoft.Crm.Sdk.Proxy.xml
 C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\Microsoft.Xrm.Sdk.xml
-C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\bin\Debug\Newtonsoft.Json.xml
 C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\obj\Debug\FollowupPlugin.csprojAssemblyReference.cache
 C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\obj\Debug\FollowupPlugin.csproj.CoreCompileInputs.cache
 C:\Users\Ricardo C\Documents\Proyectos VS\Dynamics365\SandboxFormAbox\PluginAddBill\FollowupPlugin\obj\Debug\FollowupPlugin.csproj.CopyComplete
