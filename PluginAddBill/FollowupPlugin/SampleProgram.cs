@@ -103,17 +103,17 @@ namespace PowerApps.Samples
                 string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUwMDAwMDAwMSIsImlhdCI6MTU1OTI0NzYyNCwiZXhwIjoxNTU5MzM0MDI0fQ.EE0DI8fvewgDKtlB89eZzQLtx0vW56_uar3l7ERCej";
                 string requestData = json;
 
-                string URI = "http://104.43.138.232:9006/create";
+                string URI = "https://apidev.aboxplan.com/purchases/create";
                 //string myParameters = "param1=value1&param2=value2&param3=value3";
 
                 string postResult = "";
                 using (WebClient wc = new WebClient())
                 {
                     wc.Headers[HttpRequestHeader.ContentType] = "application/json; charset=utf-8";
-                    wc.Headers[HttpRequestHeader.Authorization] = "Bearer "+token;
-                   postResult = wc.UploadString(URI, requestData);
+                    wc.Headers[HttpRequestHeader.Authorization] = "Bearer " + token;
+                    postResult = wc.UploadString(URI, requestData);
                 }
-                
+
                 AboxServiceResponse aboxServiceResponse = null;
                 MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(postResult));
                 DataContractJsonSerializer ser = new DataContractJsonSerializer(aboxServiceResponse.GetType());
@@ -141,7 +141,7 @@ namespace PowerApps.Samples
                 }
 
                 return lvResponse;
-                
+
             }
 
 
@@ -296,6 +296,24 @@ namespace PowerApps.Samples
 
                     #endregion
 
+
+
+                    #region Farmacia
+
+                    /*Web id Field: new_webid
+                     * Country Field: new_Country
+                     * CR - 1
+                     * PA - 2
+                     * GT - 3
+                     * HN - 4
+                     * DO - 5
+                     *                      * -----------
+                     *Relationship name: new_new_pharmacies_new_aboxinvoice
+                     * Relationship lookup:new_invoice_lookupId*/
+
+
+
+                    #endregion
 
 
 
