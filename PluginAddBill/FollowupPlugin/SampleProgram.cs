@@ -247,6 +247,8 @@ namespace PowerApps.Samples
                     #endregion
 
 
+                    Bill lvBill = new Bill();
+
                     #region Contacto
                     EntityReference eReference = null;
 
@@ -265,27 +267,17 @@ namespace PowerApps.Samples
                     if (parentContact != null)
                     {
 
-                        Bill lvBill = new Bill();
+                      
 
                         //lvBill.patientId=Convert.ToInt32(eAbInvoice.Attributes["new_webid"]);
                         //new_abinvoicenumber
 
-                        lvBill.billId = eAbInvoice.Attributes["new_abinvoicenumber"].ToString();
                         lvBill.patientId = Convert.ToInt32(parentContact.Attributes["new_webid"].ToString());
-                        lvBill.billDate = "2019-03-15";
-                        //entityimage
+                      
 
-                        EntityImageCollection imageCollection = eAbInvoice.GetAttributeValue<EntityImageCollection>("entityimage");
+                    
 
-                        lvBill.billImageUrl = "";
-                        lvBill.products = null;
-
-                        bool requestDoneSuccessfully = this.requestAboxService(lvBill);
-
-                        if (!requestDoneSuccessfully)
-                        {
-                            return;
-                        }
+                      
 
                     }
                     else
@@ -296,11 +288,11 @@ namespace PowerApps.Samples
 
                     #endregion
 
-
-
+                    
                     #region Farmacia
 
-                    /*Web id Field: new_webid
+                    /*Entity name: new_pharmacies
+                     * Web id Field: new_webid
                      * Country Field: new_Country
                      * CR - 1
                      * PA - 2
@@ -311,10 +303,67 @@ namespace PowerApps.Samples
                      *Relationship name: new_new_pharmacies_new_aboxinvoice
                      * Relationship lookup:new_invoice_lookupId*/
 
+                    EntityReference invoicePharmacyReference = null;
+
+                    if (eAbInvoice.Attributes.Contains("new_invoice_lookupId"))
+                    {
+                        invoicePharmacyReference = (EntityReference)eAbInvoice.Attributes["new_invoice_lookupId"];
+                    }
+
+                    Entity parentPharmacy = null;
+
+                    if (invoicePharmacyReference!=null)
+                    {
+                        parentPharmacy=service.Retrieve("new_pharmacies", invoicePharmacyReference.Id, new ColumnSet(true));
+                    }
+
+                    lvBill.pharmacyId = parentPharmacy.Attributes["new_webid"].ToString();
+
 
 
                     #endregion
 
+                    
+                    #region Imagen
+
+
+                    //entityimage
+
+                    EntityImageCollection imageCollection = eAbInvoice.GetAttributeValue<EntityImageCollection>("entityimage");
+
+                    #endregion
+
+
+                    #region Productos
+
+                    lvBill.products = null;
+
+                    /*entidad: new_abdrug
+                     * Nombre relacion: new_aboxinvoice_new_abdrug
+                     * nombre web Id: new_WebID
+                     * nombre Pais: new_Country
+                     * 
+                     */
+
+                    #endregion
+
+
+                    #region Llamado Servicio
+
+                    lvBill.billId = eAbInvoice.Attributes["new_abinvoicenumber"].ToString();
+                    lvBill.billDate = "2019-03-15";
+                    lvBill.billImageUrl = "";
+                    lvBill.products = null;
+
+
+                    bool requestDoneSuccessfully = this.requestAboxService(lvBill);
+
+                    if (!requestDoneSuccessfully)
+                    {
+                        return;
+                    }
+
+                    #endregion
 
 
                     // Refer to the account in the task activity.
