@@ -305,9 +305,9 @@ namespace PowerApps.Samples
 
                     EntityReference invoicePharmacyReference = null;
 
-                    if (eAbInvoice.Attributes.Contains("new_invoice_lookupId"))
+                    if (eAbInvoice.Attributes.Contains("new_invoice_lookupid"))
                     {
-                        invoicePharmacyReference = (EntityReference)eAbInvoice.Attributes["new_invoice_lookupId"];
+                        invoicePharmacyReference = (EntityReference)eAbInvoice.Attributes["new_invoice_lookupid"];
                     }
 
                     Entity parentPharmacy = null;
@@ -317,7 +317,12 @@ namespace PowerApps.Samples
                         parentPharmacy=service.Retrieve("new_pharmacies", invoicePharmacyReference.Id, new ColumnSet(true));
                     }
 
+                    if (parentPharmacy!=null)
+                    {
                     lvBill.pharmacyId = parentPharmacy.Attributes["new_webid"].ToString();
+
+                    }
+
 
 
 
@@ -344,6 +349,48 @@ namespace PowerApps.Samples
                      * nombre Pais: new_Country
                      * 
                      */
+                    EntityReference productInvoiceReference = null;
+                    EntityCollection invoiceProducts = null;
+                    if (eAbInvoice.Attributes.Contains("new_aboxinvoice_new_abdrug"))
+                    {
+                        productInvoiceReference = (EntityReference)eAbInvoice.Attributes["new_aboxinvoice_new_abdrug"];
+
+                    }
+
+                  
+                    if (true)
+                    {
+                        ConditionExpression condition = new ConditionExpression();
+                        condition.AttributeName = "new_new_aboxinvoice_new_abdrug";
+                        condition.Operator = ConditionOperator.Equal;
+                        condition.Values.Add(eAbInvoice.Id.ToString());
+                        FilterExpression filter = new FilterExpression();
+                        filter.Conditions.Add(condition);
+
+                        QueryExpression qe = new QueryExpression("new_abdrug");
+                        
+                        qe.ColumnSet.AddColumns("new_name","new_webid");
+                        qe.Criteria.AddFilter(filter);
+
+                        invoiceProducts = service.RetrieveMultiple(qe);
+
+                        lvBill.products = new Product[invoiceProducts.Entities.Count];
+                        int count = invoiceProducts.Entities.Count;
+                        for (int i = 0; i < count; i++)
+                        {
+                            lvBill.products[i].id = invoiceProducts.Entities[i].Attributes["new_WebID"].ToString();
+                            lvBill.products[i].quantity = 1;
+                        }
+
+
+                       
+
+                    }
+
+                  
+                    
+
+
 
                     #endregion
 
