@@ -251,10 +251,11 @@ namespace PowerApps.Samples
 
                     #region Contacto
                     EntityReference eReference = null;
+                    var re = eAbInvoice.RelatedEntities;
 
-                    if (eAbInvoice.Attributes.Contains("new_abfacturaid"))
+                    if (eAbInvoice.Attributes.Contains("new_patientowner"))
                     {
-                        eReference = (EntityReference)eAbInvoice.Attributes["new_abfacturaid"];
+                        eReference = (EntityReference)eAbInvoice.Attributes["new_patientowner"];
                     }
 
                     Entity parentContact = null;
@@ -272,7 +273,7 @@ namespace PowerApps.Samples
                         //lvBill.patientId=Convert.ToInt32(eAbInvoice.Attributes["new_webid"]);
                         //new_abinvoicenumber
 
-                        lvBill.patientId = Convert.ToInt32(parentContact.Attributes["new_webid"].ToString());
+                        //lvBill.patientId = Convert.ToInt32(parentContact.Attributes["new_webid"].ToString());
                       
 
                     
@@ -347,30 +348,52 @@ namespace PowerApps.Samples
                      * Nombre relacion: new_aboxinvoice_new_abdrug
                      * nombre web Id: new_WebID
                      * nombre Pais: new_Country
-                     * 
+                     * nombre Field lookup: new_InvoiceDrugRel
                      */
                     EntityReference productInvoiceReference = null;
                     EntityCollection invoiceProducts = null;
-                    if (eAbInvoice.Attributes.Contains("new_aboxinvoice_new_abdrug"))
-                    {
-                        productInvoiceReference = (EntityReference)eAbInvoice.Attributes["new_aboxinvoice_new_abdrug"];
 
-                    }
+                    //new_patientowner
 
-                  
                     if (true)
                     {
-                        ConditionExpression condition = new ConditionExpression();
-                        condition.AttributeName = "new_new_aboxinvoice_new_abdrug";
-                        condition.Operator = ConditionOperator.Equal;
-                        condition.Values.Add(eAbInvoice.Id.ToString());
-                        FilterExpression filter = new FilterExpression();
-                        filter.Conditions.Add(condition);
+                        QueryExpression qe = new QueryExpression("new_abdrug") {
+                            ColumnSet=new ColumnSet(true),
+                            LinkEntities = {
+                               new LinkEntity()
+                               {
+                                   LinkFromEntityName="new_abdrug",
+                                   LinkToEntityName="new_aboxinvoice",
+                                   Columns=new ColumnSet(false),
+                                   LinkCriteria=new FilterExpression()
+                                   {
+                                       FilterOperator=LogicalOperator.And,
+                                       Conditions ={
+                                           new ConditionExpression("new_aboxinvoiceid",ConditionOperator.Equal,eAbInvoice.Id)
+                                       }
+                                   }
+                                  
+                               }
+                            }
 
-                        QueryExpression qe = new QueryExpression("new_abdrug");
-                        
-                        qe.ColumnSet.AddColumns("new_name","new_webid");
-                        qe.Criteria.AddFilter(filter);
+                        };
+                       
+
+                        ///////////
+                        ///////////
+                        ///
+                        //ConditionExpression condition = new ConditionExpression();
+                        //condition.AttributeName = "new_invoicedrugrel";
+                        //condition.Operator = ConditionOperator.Equal;
+                        //condition.Values.Add(eAbInvoice.Id.ToString());
+                        //FilterExpression filter = new FilterExpression();
+                        //filter.Conditions.Add(condition);
+
+                        //QueryExpression qe = new QueryExpression("new_abdrug");
+                        //qe.ColumnSet.AddColumns("new_name","new_webid");
+                        //qe.ColumnSet.AddColumns("new_invoicedrugrel");
+
+                        //qe.Criteria.AddFilter(filter);
 
                         invoiceProducts = service.RetrieveMultiple(qe);
 
