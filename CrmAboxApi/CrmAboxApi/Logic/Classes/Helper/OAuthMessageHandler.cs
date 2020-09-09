@@ -7,7 +7,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace CrmAboxApi.Classes.Helper
+namespace Logic.CrmAboxApi.Classes.Helper
 {
     /// <summary>
     ///Custom HTTP message handler that uses OAuth authentication through ADAL.
@@ -17,6 +17,7 @@ namespace CrmAboxApi.Classes.Helper
 
         private AuthenticationHeaderValue authHeader;
         private AuthenticationParameters ap;
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         public OAuthMessageHandler(string serviceUrl, string clientId, string redirectUrl, string username, string password,
                 HttpMessageHandler innerHandler)
@@ -51,6 +52,7 @@ namespace CrmAboxApi.Classes.Helper
             }
 
             authHeader = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
+            Logger.Debug($"AuthorizationToken: {authResult.AccessToken}");
         }
 
         private async Task DiscoveryAuthority2(string serviceUrl)

@@ -1,11 +1,12 @@
-﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
+﻿using Logic.CrmAboxApi.Classes.Helper;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
-namespace CrmAboxApi.Classes.Helper
+namespace CrmAboxApi.Logic.Classes.Helper
 {
     public class ConnectionHelper
     {
