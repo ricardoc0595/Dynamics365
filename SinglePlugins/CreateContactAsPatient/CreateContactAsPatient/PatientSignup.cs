@@ -10,6 +10,7 @@ using AboxCrmPlugins;
 using Microsoft.Xrm.Sdk;
 using AboxCrmPlugins.Classes;
 using AboxCrmPlugins.Methods;
+using AboxCrmPlugins.Classes.Entities;
 
 namespace CreateContactAsPatient
 {
@@ -36,22 +37,25 @@ namespace CreateContactAsPatient
                     {
 
                         var request = new PatientSignupRequest.Request();
-                        var contactFields = new ContactEntity.Fields();
+                        ContactEntity contactEntity = new ContactEntity();
+                        
+                        
+
                         request.country = "CR";
                         request.userType = "01";
-
+                        
                         #region Personal Info
                         if (request.personalinfo!=null)
                         {
-                            request.personalinfo.idtype = "0" + contact.Attributes[contactFields.IdTypeFieldName].ToString();
-                            request.personalinfo.id = contact.Attributes[contactFields.IdFieldName].ToString();
-                            request.personalinfo.name = contact.Attributes[contactFields.FirstnameFieldName].ToString();
-                            request.personalinfo.lastname = contact.Attributes[contactFields.LastnameFieldName].ToString();
-                            request.personalinfo.secondlastname = contact.Attributes[contactFields.SecondLastnameFieldName].ToString();
-                            request.personalinfo.password = contact.Attributes[contactFields.PasswordFieldName].ToString();
-                            request.personalinfo.gender = contact.Attributes[contactFields.GenderFieldName].ToString();
+                            request.personalinfo.idtype = "0" + contact.Attributes[contactEntity.Fields.Id].ToString();
+                            request.personalinfo.id = contact.Attributes[contactEntity.Fields.Id].ToString();
+                            request.personalinfo.name = contact.Attributes[contactEntity.Fields.Firstname].ToString();
+                            request.personalinfo.lastname = contact.Attributes[contactEntity.Fields.Lastname].ToString();
+                            request.personalinfo.secondlastname = contact.Attributes[contactEntity.Fields.SecondLastname].ToString();
+                            request.personalinfo.password = contact.Attributes[contactEntity.Fields.Password].ToString();
+                            request.personalinfo.gender = contact.Attributes[contactEntity.Fields.Gender].ToString();
                             DateTime birthdate = new DateTime();
-                            birthdate = contact.GetAttributeValue<DateTime>(contactFields.BirthdateFieldName);
+                            birthdate = contact.GetAttributeValue<DateTime>(contactEntity.Fields.Birthdate);
                             if (birthdate != null)
                             {
                                 request.personalinfo.dateofbirth = birthdate.ToString("yyyy-MM-dd");
@@ -65,8 +69,8 @@ namespace CreateContactAsPatient
 
                         if (request.contactinfo != null)
                         {
-                            request.contactinfo.phone = contact.Attributes[contactFields.PhoneFieldName].ToString();
-                            request.contactinfo.email = contact.Attributes[contactFields.EmailFieldName].ToString() ;
+                            request.contactinfo.phone = contact.Attributes[contactEntity.Fields.Phone].ToString();
+                            request.contactinfo.email = contact.Attributes[contactEntity.Fields.Email].ToString() ;
                             request.contactinfo.province = "";
                             request.contactinfo.canton = "";
                             request.contactinfo.district = "";
@@ -139,7 +143,7 @@ namespace CreateContactAsPatient
                             }
                             else
                             {
-                                //TODO: El valor que devuelve el PatientID del servicio debe actualizar el patientID del Contacto
+                                contact.Attributes.Add("new_idaboxpatient", serviceResponseProperties.response.details.idPaciente);
                             }
                         }
                         else

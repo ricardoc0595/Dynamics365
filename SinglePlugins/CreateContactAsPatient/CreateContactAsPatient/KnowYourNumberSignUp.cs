@@ -41,17 +41,25 @@ namespace CreateContactAsPatient
                         request.country = "CR";
                         request.userType = "01";
                         request.personalinfo = new QuickSignupRequest.Request.Personalinfo();
-                        request.personalinfo.idtype = "0" + contact.Attributes["new_idtype"].ToString();
+
+                        
+                       
+                        request.personalinfo.idtype = "0" + ((OptionSetValue)contact["new_idtype"]).Value;
+
                         request.personalinfo.id = contact.Attributes["new_id"].ToString();
                         request.personalinfo.name = contact.Attributes["firstname"].ToString();
                         request.personalinfo.lastname = contact.Attributes["lastname"].ToString();
                         request.personalinfo.secondlastname = contact.Attributes["new_secondlastname"].ToString();
                         request.personalinfo.password = contact.Attributes["new_password"].ToString();
-                        request.contactinfo = new QuickSignupRequest.Request.Contactinfo();
-                        request.contactinfo.phone = contact.Attributes["telephone2"].ToString();
-                        request.contactinfo.mobilephone = contact.Attributes["mobilephone"].ToString();
-                        request.contactinfo.email = contact.Attributes["emailaddress1"].ToString();
+                        request.contactinfo = new QuickSignupRequest.Request.Contactinfo
+                        {
+                            phone = contact.Attributes["telephone2"].ToString(),
+                            mobilephone = contact.Attributes["mobilephone"].ToString(),
+                            email = contact.Attributes["emailaddress1"].ToString()
+                        };
 
+                        var k=((EntityReference)contact["new_idtype"]);
+                        
                         DateTime birthdate = new DateTime();
                         birthdate= contact.GetAttributeValue<DateTime>("birthdate");
                         if (birthdate!=null)
@@ -89,11 +97,16 @@ namespace CreateContactAsPatient
                                 serviceResponseProperties = (QuickSignupRequest.ServiceResponse)deserializer.ReadObject(ms);
                             }
 
-                            if (serviceResponseProperties.response.code != "MEMEX-0002")
+                            if (serviceResponseProperties.response.code == "MEMEX-0002")
                             {
 
-                                throw new InvalidPluginExecutionException("Ocurrió un error al guardar la información en Abox Plan:\n" + serviceResponseProperties.response.message);
+                                contact.Attributes.Add("new_idaboxpatient",serviceResponseProperties.response.details.idPaciente);
+                               
 
+                            }
+                            else
+                            {
+                                throw new InvalidPluginExecutionException("Ocurrió un error al guardar la información en Abox Plan:\n" + serviceResponseProperties.response.message);
                             }
                         }
                         else
