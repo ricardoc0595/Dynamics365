@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\Entities\DoctorEntity.cs" />
     <Compile Include="Classes\Entities\ContactEntity.cs" />
     <Compile Include="Classes\Entities\EntityBase.cs" />
     <Compile Include="Classes\Entities\ProductEntity.cs" />

@@ -25,45 +25,125 @@ namespace CrmAboxApi.Controllers
         // GET api/contacts/5
         public IHttpActionResult Get(int id)
         {
-            return Ok();
-            
-        }
+            Doctor doctorProcess = new Doctor();
+            ServiceResponse response = null;
+            var responseAllDoctors = doctorProcess.RetrieveAll();
 
-        // POST api/contacts
-        public IHttpActionResult Post([FromBody]PatientSignup json)
-        {
-
-            Contact contactProcedures = new Contact();
-            ////c.connect();
-            //c.whoAmIFunction();
-            //return null;
-
-            //"{'patientid':null,'country':'CR','userType':'01','personalinfo':{'idtype':'02','id':'testWebAPI02','name':'Ricardo','lastname':'Carrillo','secondlastname':'Cubillo','gender':'Femenino','dateofbirth':'1938 - 09 - 13','password':'Password.01'},'contactinfo':{'province':'5','canton':'511','district':'51101','phone':'22222222','mobilephone':'11111111','address':'','email':'testWebAPI02@aboxplan.com','password':'Password.01'},'patientincharge':{'idtype':'Extranjero','id':'testWebAPI02','name':'Ricardo','lastname':'Carrillo','secondlastname':'Cubillo','gender':'Femenino','dateofbirth':'1938 - 09 - 13'},'medication':{'products':[{'productid':'00S167539140140-AP','frequency':'1 al día','other':''},{'productid':'100T119002G02150-AP','frequency':'1 al día','other':''}],'medics':[{'medicid':'3880'}]},'interests':[{'interestid':'05','relations':[{'relation':{'relationid':'Para mí','other':''}}]}],'otherInterest':''}"
-
-            
-            //c.whoAmIFunction();
-            ServiceResponse response = contactProcedures.Create(json);
-
-            if (response.IsSuccessful)
+            if (responseAllDoctors.IsSuccessful)
             {
-                return Ok(response);
+                try
+                {
+                    RetrieveDoctorFromWebAPI doctorsResponse = (RetrieveDoctorFromWebAPI)responseAllDoctors.Data;
+
+                    //doctorProcess.Delete(doctorsResponse.value[0].new_doctorid);
+
+                   
+
+                    foreach (var doc in doctorsResponse.value)
+                    {
+                        doctorProcess.Delete(doc.new_doctorid);
+                    }
+
+                    return Content(HttpStatusCode.OK, new ServiceResponse
+                    {
+                        Data = null,
+                        Message = "Doctores eliminados",
+                        IsSuccessful = true,
+
+                    });
+
+                }
+                catch (Exception ex)
+                {
+                    return Content(HttpStatusCode.InternalServerError, new ServiceResponse
+                    {
+                        Data = null,
+                        Message = ex.ToString(),
+                        IsSuccessful = false,
+                        
+                    }) ;
+                  
+                }
+
+
             }
             else
             {
-                return Content(HttpStatusCode.InternalServerError,response);
-            }
-            
+                return Content(HttpStatusCode.InternalServerError, new ServiceResponse
+                {
+                    Data = null,
+                    Message = "Error",
+                    IsSuccessful = false,
 
+                });
+            }
+
+        }
+
+        // POST api/contacts
+        [HttpPost]
+        [ActionName("patient")]
+        public IHttpActionResult Post([FromBody]PatientSignup signupRequest)
+        {
+
+            Contact contactProcedures = new Contact();
+            ServiceResponse response = null;
+            try
+            {
+
+                if (signupRequest != null)
+                {
+                    response = contactProcedures.Create(signupRequest);
+                    if (response.IsSuccessful)
+                    {
+                        return Ok(response);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.InternalServerError, response);
+                    }
+
+                }
+                else
+                {
+
+                    return Content(HttpStatusCode.BadRequest, new ServiceResponse
+                    {
+                        Code = "",
+                        IsSuccessful = false,
+                        Data = null,
+                        Message = "La solicitud JSON enviada es incorrecta"
+                    }) ;
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                return Content(HttpStatusCode.InternalServerError, new ServiceResponse
+                {
+                    IsSuccessful = false,
+                    Data = null,
+                    Message = ex.ToString(),
+                    Code = ""
+
+                }) ;
+
+            }
+           
         }
 
         // PUT api/contacts/5
         public void Put(int id, [FromBody]string value)
         {
+
         }
 
         // DELETE api/contacts/5
-        public void Delete(int id)
+        public void Delete( int id)
         {
+           
+
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CrmAboxApi.Logic.Classes.Helper;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,5 +19,6 @@ namespace Logic.CrmAboxApi.Classes.Helper
         public bool IsSuccessful { get; set; }
         public string Code { get; set; }
         public Object Data { get; set; }
+        public CrmWebAPIError InternalError { get; set; }
     }
 }

@@ -41,6 +41,8 @@ namespace AboxCrmPlugins.Classes.Entities
         public string RegisterDay { get; }
         public string CountryCode { get; }
         public string IdAboxPatient { get; }
+        public string ContactxDoctorRelationShip { get;  }
+        public string ContactxProductRelationShip { get; set; }
 
         public ContactFields()
         {
@@ -60,6 +62,8 @@ namespace AboxCrmPlugins.Classes.Entities
             this.RegisterDay = "new_registerday";
             this.IdAboxPatient = "new_idaboxpatient";
             this.Country = "new_country";
+            this.ContactxDoctorRelationShip = "new_contact_new_doctor";
+            this.ContactxProductRelationShip = "new_contact_product_rel";
         }
 
 

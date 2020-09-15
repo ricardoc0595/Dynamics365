@@ -215,10 +215,14 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\ContactsController.cs" />
+    <Compile Include="Logic\Classes\Doctor.cs" />
     <Compile Include="Logic\Classes\Contact.cs" />
     <Compile Include="Logic\Classes\Deserializing\PatientSignup.cs" />
+    <Compile Include="Logic\Classes\Deserializing\TutorSignup.cs" />
     <Compile Include="Logic\Classes\Helper\ConnectionHelper.cs" />
     <Compile Include="Logic\Classes\Helper\Constants.cs" />
+    <Compile Include="Logic\Classes\Helper\CrmWebAPIError.cs" />
+    <Compile Include="Logic\Classes\Deserializing\RetrieveDoctorFromWebAPI.cs" />
     <Compile Include="Logic\Classes\Helper\OAuthMessageHandler.cs" />
     <Compile Include="Logic\Classes\Helper\ServiceResponse.cs" />
     <Compile Include="Controllers\HomeController.cs" />

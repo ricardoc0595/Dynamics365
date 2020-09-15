@@ -49,7 +49,7 @@ namespace AboxCrmPlugins.Classes.Entities
             this.ProductSubProduct = "new_productsubproduct";
             this.SuggestedPrice = "new_productsuggestedprice";
             this.TomasEquivalencia = "new_producttomas_unityequivalence";
-            this.ProductIdKey = "productidkey"; // Entity key referring the Product ID saved in database
+            this.ProductIdKey = "productidkey"; // Entity key referring the Product ID saved in Abox database
             this.ProductNumber = "productnumber"; // Field which contains the Product ID in Abox plan database
             this.CreatedFromWebAPI = "new_createdfromwebapi";
         }

@@ -34,14 +34,24 @@ namespace CrmAboxApi.Logic.Classes
                 string connectionString = ConfigurationManager.AppSettings["ConnectionString"].ToString();
                 PatientSignup signupProperties = signupRequest;
                 ContactEntity contactEntity = new ContactEntity();
-
+                ProductEntity productEntity = new ProductEntity();
+                DoctorEntity doctorEntity = new DoctorEntity();
                 JArray productsArray = new JArray();
-                foreach (var product in signupProperties.medication.products)
+                JArray medicsArray = new JArray();
+                if (signupRequest!=null)
                 {
-                    productsArray.Add(new JValue($"/products(productnumber='{product.productid}')"));
-                }
+                    foreach (var product in signupProperties.medication.products)
+                    {
+                        productsArray.Add(new JValue($"/{productEntity.EntityName}({productEntity.Fields.ProductNumber}='{product.productid}')"));
+                    }
 
-                var contact1 = new JObject
+
+                    foreach (var medic in signupProperties.medication.medics)
+                    {
+                        medicsArray.Add(new JValue($"/{doctorEntity.EntityName}({doctorEntity.Fields.DoctorIdKey}='{medic.medicid}')"));
+                    }
+
+                    var contact1 = new JObject
                         {
                             { $"{contactEntity.Fields.Firstname}", signupProperties.personalinfo.name },
                             { $"{contactEntity.Fields.Lastname}", signupProperties.personalinfo.lastname },
@@ -59,7 +69,8 @@ namespace CrmAboxApi.Logic.Classes
                             { $"new_UserType@odata.bind", $"/new_usertypes({sharedMethods.GetUserTypeEntityId(signupProperties.userType)})"}, // User type
                             { $"{contactEntity.Fields.Gender}", sharedMethods.GetGenderValue(signupProperties.personalinfo.gender) },
 
-                            { "new_contact_product@odata.bind", productsArray},
+                            { $"{contactEntity.Fields.ContactxProductRelationShip}@odata.bind", productsArray},
+                            { $"{contactEntity.Fields.ContactxDoctorRelationShip}@odata.bind", medicsArray},
                             //TODO: enviar desde el json, el ID que retorno el servicio de Abox con el Id de paciente
                             /*{ $"{contactEntity.Fields.IdAboxPatient}", signupProperties.personalinfo.idtype }*/
                             { $"{contactEntity.Fields.RegisterDay}", DateTime.Now.ToString("yyyy-MM-dd") } // fecha de registro
@@ -68,52 +79,61 @@ namespace CrmAboxApi.Logic.Classes
                         };
 
 
-                try
-                {
-                    using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
+                    try
                     {
-
-
-                        client.DefaultRequestHeaders.Add("Accept", "application/json");
-                        client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
-                        client.DefaultRequestHeaders.Add("OData-Version", "4.0");
-                        //client.DefaultRequestHeaders.Add("If-None-Match", "null"); 
-                        //client.DefaultRequestHeaders.Add("Content-Type", "application/json");
-                        HttpContent c = new StringContent(contact1.ToString(Formatting.None), Encoding.UTF8, "application/json");
-                        var response = client.PostAsync("contacts", c).Result;
-                        if (response.IsSuccessStatusCode)
+                        using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
                         {
-                            //Get the response content and parse it.  
-                            //JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                            //Guid userId = (Guid)body["UserId"];
+
+
+                            client.DefaultRequestHeaders.Add("Accept", "application/json");
+                            client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
+                            client.DefaultRequestHeaders.Add("OData-Version", "4.0");
+                            //client.DefaultRequestHeaders.Add("If-None-Match", "null"); 
+                            //client.DefaultRequestHeaders.Add("Content-Type", "application/json");
+                            HttpContent c = new StringContent(contact1.ToString(Formatting.None), Encoding.UTF8, "application/json");
+                            var response = client.PostAsync("contacts", c).Result;
+                            if (response.IsSuccessStatusCode)
+                            {
+                                
 
 
 
-                            responseObject.Code = "";
-                            responseObject.Message = "Contacto creado correctamente en el CRM";
-                            responseObject.IsSuccessful = true;
-                            responseObject.Data = null;
+                                responseObject.Code = "";
+                                responseObject.Message = "Contacto creado correctamente en el CRM";
+                                responseObject.IsSuccessful = true;
+                                responseObject.Data = null;
+
+                            }
+                            else
+                            {
+                                //Get the response content and parse it.
+                                JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                                //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
+                                JObject userId = JObject.Parse(body.ToString());
+                                CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
+
+                                Logger.Error("",response.RequestMessage);
+                                responseObject.Code = "Error al crear el contacto en el CRM";
+                                responseObject.Message = response.ReasonPhrase;
+                                responseObject.IsSuccessful = false;
+                                responseObject.Data = null;
+                                responseObject.InternalError = err;
+                            }
 
                         }
-                        else
-                        {
-                            responseObject.Code = "Error al crear el contacto en el CRM";
-                            responseObject.Message = response.ReasonPhrase;
-                            responseObject.IsSuccessful = false;
-                            responseObject.Data = null;
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex);
+                        responseObject.Code = "";
+                        responseObject.Message = ex.ToString();
+                        responseObject.IsSuccessful = false;
+                        responseObject.Data = null;
 
                     }
                 }
-                catch (Exception ex)
-                {
-                    Logger.Error(ex);
-                    responseObject.Code = "";
-                    responseObject.Message = ex.ToString();
-                    responseObject.IsSuccessful = false;
-                    responseObject.Data = null;
-
-                }
+               
+               
 
 
             }
@@ -129,6 +149,8 @@ namespace CrmAboxApi.Logic.Classes
 
             return responseObject;
         }
+
+
 
 
     }
