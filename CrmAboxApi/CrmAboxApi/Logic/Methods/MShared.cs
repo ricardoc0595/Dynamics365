@@ -63,6 +63,54 @@ namespace CrmAboxApi.Logic.Methods
 
         }
 
+        public int GetCountryValueForOptionSet(string countryCode)
+        {
+            int countryValue=-1;
+            switch (countryCode.ToLower())
+            {
+                case "cr":
+                    countryValue= 1;
+                    break;
+                case "hn":
+                    countryValue = 2;
+                    break; 
+                case "gt":
+                    countryValue = 3;
+                    break;
+                case "ni":
+                    countryValue = 4;
+                    break;
+                case "pa":
+                    countryValue = 5;
+                    break;
+                case "do":
+                    countryValue = 6;
+                    break;
+                default:
+                    countryValue = -1;
+                    break;
+                    
+            }
+
+            return countryValue;
+
+        }
+
+        public string GetIdTypeId(string type)
+        {
+            string idType = "";
+            if (type == "01" || type.ToLower() == "nacional")
+            {
+                idType = Constants.NationalIdValue.ToString();
+            }
+            else if (type == "02" || type.ToLower() == "extranjero")
+            {
+                idType = Constants.ForeignerIdValue.ToString();
+            }
+
+            return idType;
+
+        }
 
         public int GetGenderValue(string genderValueFromJson)
         {

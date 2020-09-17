@@ -39,13 +39,17 @@ namespace AboxCrmPlugins.Classes.Entities
         public string Birthdate { get; }
         public string ProductxContactId { get; }
         public string RegisterDay { get; }
-        public string CountryCode { get; }
+       
         public string IdAboxPatient { get; }
-        public string ContactxDoctorRelationShip { get;  }
-        public string ContactxProductRelationShip { get; set; }
+        public string ContactxDoctorRelationship { get;  }
+        public string ContactxProductRelationship { get; }
+        public string EntityId { get; }
+        public string ContactxContactRelationship { get; set; }
+        public string OtherInterest { get;  }
 
         public ContactFields()
         {
+            this.EntityId = "contactid";
             this.IdType = "new_idtype";
             this.Id = "new_id";
             this.UserType = "new_usertype";
@@ -62,8 +66,10 @@ namespace AboxCrmPlugins.Classes.Entities
             this.RegisterDay = "new_registerday";
             this.IdAboxPatient = "new_idaboxpatient";
             this.Country = "new_country";
-            this.ContactxDoctorRelationShip = "new_contact_new_doctor";
-            this.ContactxProductRelationShip = "new_contact_product_rel";
+            this.ContactxDoctorRelationship = "new_contact_new_doctor";
+            this.ContactxProductRelationship = "new_product_contact";
+            this.ContactxContactRelationship = "new_contact_contact";
+            this.OtherInterest = "new_otrointeres";
         }
 
 

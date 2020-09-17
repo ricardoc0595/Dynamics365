@@ -27,9 +27,9 @@ namespace CrmAboxApi.Logic.Classes
             doctorEntity = new DoctorEntity();
         }
 
-        public ServiceResponse Delete(string idDoctor)
+        public OperationResult Delete(string idDoctor)
         {
-            ServiceResponse responseObject = new ServiceResponse();
+            OperationResult responseObject = new OperationResult();
 
             try
             {
@@ -101,9 +101,9 @@ namespace CrmAboxApi.Logic.Classes
         }
 
 
-        public ServiceResponse RetrieveAll()
+        public OperationResult RetrieveAll()
         {
-            ServiceResponse responseObject = new ServiceResponse();
+            OperationResult responseObject = new OperationResult();
 
             try
             {

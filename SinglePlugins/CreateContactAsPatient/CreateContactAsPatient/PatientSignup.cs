@@ -38,12 +38,17 @@ namespace CreateContactAsPatient
 
                         var request = new PatientSignupRequest.Request();
                         ContactEntity contactEntity = new ContactEntity();
-                        
-                        
+
+                        var s = contact.RelatedEntities;
+                        string ss = "";
+                        return;
 
                         request.country = "CR";
                         request.userType = "01";
                         
+
+
+
                         #region Personal Info
                         if (request.personalinfo!=null)
                         {
@@ -69,6 +74,7 @@ namespace CreateContactAsPatient
 
                         if (request.contactinfo != null)
                         {
+                           
                             request.contactinfo.phone = contact.Attributes[contactEntity.Fields.Phone].ToString();
                             request.contactinfo.email = contact.Attributes[contactEntity.Fields.Email].ToString() ;
                             request.contactinfo.province = "";
@@ -86,7 +92,11 @@ namespace CreateContactAsPatient
                         {
 
                             #region Products
-
+                            
+                            //contact.RelatedEntities;
+                            ////contact.
+                            //service.Retrieve("product", , new ColumnSet(true));
+                            //contact.Attributes[contactEntity.Fields.ContactxProductRelationShip]= new EntityReference("product",);
 
 
                             #endregion

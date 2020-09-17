@@ -26,7 +26,7 @@ namespace CrmAboxApi.Controllers
         public IHttpActionResult Get(int id)
         {
             Doctor doctorProcess = new Doctor();
-            ServiceResponse response = null;
+            OperationResult response = null;
             var responseAllDoctors = doctorProcess.RetrieveAll();
 
             if (responseAllDoctors.IsSuccessful)
@@ -44,7 +44,7 @@ namespace CrmAboxApi.Controllers
                         doctorProcess.Delete(doc.new_doctorid);
                     }
 
-                    return Content(HttpStatusCode.OK, new ServiceResponse
+                    return Content(HttpStatusCode.OK, new OperationResult
                     {
                         Data = null,
                         Message = "Doctores eliminados",
@@ -55,7 +55,7 @@ namespace CrmAboxApi.Controllers
                 }
                 catch (Exception ex)
                 {
-                    return Content(HttpStatusCode.InternalServerError, new ServiceResponse
+                    return Content(HttpStatusCode.InternalServerError, new OperationResult
                     {
                         Data = null,
                         Message = ex.ToString(),
@@ -69,7 +69,7 @@ namespace CrmAboxApi.Controllers
             }
             else
             {
-                return Content(HttpStatusCode.InternalServerError, new ServiceResponse
+                return Content(HttpStatusCode.InternalServerError, new OperationResult
                 {
                     Data = null,
                     Message = "Error",
@@ -81,19 +81,35 @@ namespace CrmAboxApi.Controllers
         }
 
         // POST api/contacts
-        [HttpPost]
-        [ActionName("patient")]
+        //[HttpPost]
+        //[ActionName("patient")]
         public IHttpActionResult Post([FromBody]PatientSignup signupRequest)
         {
 
             Contact contactProcedures = new Contact();
-            ServiceResponse response = null;
+            OperationResult response = null;
             try
             {
 
                 if (signupRequest != null)
                 {
-                    response = contactProcedures.Create(signupRequest);
+                    if (!String.IsNullOrEmpty(signupRequest.userType))
+                    {
+                        switch (signupRequest.userType.ToLower())
+                        {
+                            case "01":
+                                response = contactProcedures.CreateAsPatient(signupRequest,null);
+                                break;
+                            case "02":
+                                response = contactProcedures.CreateAsCaretaker(signupRequest);
+                                break;
+                            case "03":
+                                response = contactProcedures.CreateAsTutor(signupRequest);
+                                break;
+                        }
+                    }
+
+                    
                     if (response.IsSuccessful)
                     {
                         return Ok(response);
@@ -107,7 +123,7 @@ namespace CrmAboxApi.Controllers
                 else
                 {
 
-                    return Content(HttpStatusCode.BadRequest, new ServiceResponse
+                    return Content(HttpStatusCode.BadRequest, new OperationResult
                     {
                         Code = "",
                         IsSuccessful = false,
@@ -120,7 +136,7 @@ namespace CrmAboxApi.Controllers
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                return Content(HttpStatusCode.InternalServerError, new ServiceResponse
+                return Content(HttpStatusCode.InternalServerError, new OperationResult
                 {
                     IsSuccessful = false,
                     Data = null,

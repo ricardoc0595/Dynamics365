@@ -7,7 +7,7 @@ namespace CrmAboxApi.Logic.Classes.Deserializing
 {
     public class PatientSignup
     {
-        public object patientid { get; set; }
+        public int? patientid { get; set; }
         public string country { get; set; }
         public string userType { get; set; }
         public Personalinfo personalinfo { get; set; }

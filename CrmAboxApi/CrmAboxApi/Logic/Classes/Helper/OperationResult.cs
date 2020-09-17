@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Logic.CrmAboxApi.Classes.Helper
 {
-    public class ServiceResponse
+    public class OperationResult
     {
-        public ServiceResponse()
+        public OperationResult()
         {
             Data = new Object();
             Message = "";
