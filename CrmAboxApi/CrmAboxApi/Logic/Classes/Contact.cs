@@ -163,6 +163,187 @@ namespace CrmAboxApi.Logic.Classes
 
         }
 
+
+        private JObject GetUpdateContactJsonStructure(UpdateAccountRequest updateProperties)
+        {
+            OperationResult result = new OperationResult();
+            JObject jObject = new JObject();
+
+            try
+            {
+                if (updateProperties != null)
+                {
+
+                    jObject.Add($"{contactEntity.Fields.RegisterDay}", DateTime.Now.ToString("yyyy-MM-dd"));
+
+                    
+
+                    if (!(String.IsNullOrEmpty(updateProperties.Nombre)))
+                            jObject.Add(contactEntity.Fields.Firstname, updateProperties.Nombre);
+
+                        if (!(String.IsNullOrEmpty(updateProperties.Apellido1)))
+                            jObject.Add(contactEntity.Fields.Lastname, updateProperties.Apellido1);
+
+                        if (!(String.IsNullOrEmpty(updateProperties.Apellido2)))
+                            jObject.Add(contactEntity.Fields.SecondLastname, updateProperties.Apellido2);
+
+                       
+
+                        if (!(String.IsNullOrEmpty(updateProperties.FechaNacimiento)))
+                            jObject.Add(contactEntity.Fields.Birthdate, updateProperties.FechaNacimiento);
+
+                      
+
+                        if (!(String.IsNullOrEmpty(updateProperties.Genero)))
+                            jObject.Add(contactEntity.Fields.Gender, sharedMethods.GetGenderValue(updateProperties.Genero));
+
+
+                        if (!(String.IsNullOrEmpty(updateProperties.Telefono)))
+                            jObject.Add(contactEntity.Fields.Phone, updateProperties.Telefono);
+
+                        if (!(String.IsNullOrEmpty(updateProperties.Telefono2)))
+                            jObject.Add(contactEntity.Fields.SecondaryPhone, updateProperties.Telefono2);
+
+                    if (updateProperties.medication != null)
+                    {
+                        JArray productsArray = new JArray();
+                        JArray medicsArray = new JArray();
+                        ProductEntity productEntity = new ProductEntity();
+                        DoctorEntity doctorEntity = new DoctorEntity();
+
+
+                        int productsLength = updateProperties.medication.products.Length;
+                        for (int i = 0; i < productsLength; i++)
+                        {
+                            productsArray.Add(new JValue($"/{productEntity.EntityName}({productEntity.Fields.ProductNumber}='{updateProperties.medication.products[i].productid}')"));
+                        }
+
+
+
+                        int medicsLength = updateProperties.medication.medics.Length;
+                        for (int i = 0; i < medicsLength; i++)
+                        {
+                            medicsArray.Add(new JValue($"/{doctorEntity.EntityName}({doctorEntity.Fields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
+                        }
+
+
+                        if (productsArray != null && productsArray.Count>0)
+                        {
+                            jObject.Add($"{contactEntity.Fields.ContactxProductRelationship}@odata.bind", productsArray);
+                        }
+
+                        if (medicsArray != null && medicsArray.Count>0)
+                        {
+                            jObject.Add($"{contactEntity.Fields.ContactxDoctorRelationship}@odata.bind", medicsArray);
+                        }
+                    }
+
+
+                }
+
+                return jObject;
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.ToString());
+                jObject = null;
+                return jObject;
+            }
+
+
+        }
+
+
+        private JObject GetUpdatePatientJsonStructure(UpdatePatientRequest updateProperties)
+        {
+            OperationResult result = new OperationResult();
+            JObject jObject = new JObject();
+
+            try
+            {
+
+                if (updateProperties != null)
+                {
+
+                  
+                    if (updateProperties.personalinfo != null)
+                    {
+                        if (!(String.IsNullOrEmpty(updateProperties.personalinfo.name)))
+                            jObject.Add(contactEntity.Fields.Firstname, updateProperties.personalinfo.name);
+
+                        if (!(String.IsNullOrEmpty(updateProperties.personalinfo.lastname)))
+                            jObject.Add(contactEntity.Fields.Lastname, updateProperties.personalinfo.lastname);
+
+                        if (!(String.IsNullOrEmpty(updateProperties.personalinfo.secondlastname)))
+                            jObject.Add(contactEntity.Fields.SecondLastname, updateProperties.personalinfo.secondlastname);
+
+
+                        if (!(String.IsNullOrEmpty(updateProperties.personalinfo.dateofbirth)))
+                            jObject.Add(contactEntity.Fields.Birthdate, updateProperties.personalinfo.dateofbirth);
+
+                     
+
+
+                        if (!(String.IsNullOrEmpty(updateProperties.personalinfo.gender)))
+                            jObject.Add(contactEntity.Fields.Gender, sharedMethods.GetGenderValue(updateProperties.personalinfo.gender));
+
+                       
+
+                    }
+
+
+                    if (updateProperties.medication != null)
+                    {
+                        JArray productsArray = new JArray();
+                        JArray medicsArray = new JArray();
+                        ProductEntity productEntity = new ProductEntity();
+                        DoctorEntity doctorEntity = new DoctorEntity();
+
+
+                        int productsLength = updateProperties.medication.products.Length;
+                        for (int i = 0; i < productsLength; i++)
+                        {
+                            productsArray.Add(new JValue($"/{productEntity.EntityName}({productEntity.Fields.ProductNumber}='{updateProperties.medication.products[i].productid}')"));
+                        }
+
+
+
+                        int medicsLength = updateProperties.medication.medics.Length;
+                        for (int i = 0; i < medicsLength; i++)
+                        {
+                            medicsArray.Add(new JValue($"/{doctorEntity.EntityName}({doctorEntity.Fields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
+                        }
+
+
+                        if (productsArray != null)
+                        {
+                            jObject.Add($"{contactEntity.Fields.ContactxProductRelationship}@odata.bind", productsArray);
+                        }
+
+                        if (medicsArray != null)
+                        {
+                            jObject.Add($"{contactEntity.Fields.ContactxDoctorRelationship}@odata.bind", medicsArray);
+                        }
+                    }
+
+
+                }
+
+                return jObject;
+
+               
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.ToString());
+                jObject = null;
+                return jObject;
+            }
+
+
+        }
+
         public OperationResult CreateAsPatient(PatientSignup signupRequest, string idRelatedPatient)
         {
             OperationResult responseObject = new OperationResult();
@@ -240,6 +421,87 @@ namespace CrmAboxApi.Logic.Classes
 
                                 Logger.Error("", response.RequestMessage);
                                 operationResult.Code = "Error al crear el contacto en el CRM";
+                                operationResult.Message = response.ReasonPhrase;
+                                operationResult.IsSuccessful = false;
+                                operationResult.Data = null;
+                                operationResult.InternalError = err;
+                            }
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex.ToString());
+                        operationResult.Code = "";
+                        operationResult.Message = ex.ToString();
+                        operationResult.IsSuccessful = false;
+                        operationResult.Data = null;
+
+                    }
+                }
+
+
+
+                return operationResult;
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.ToString());
+                operationResult.Code = "";
+                operationResult.Message = ex.ToString();
+                operationResult.IsSuccessful = false;
+                operationResult.Data = null;
+                return operationResult;
+            }
+
+        }
+
+
+
+        private OperationResult ContactUpdateRequest(JObject jsonObject,string idToUpdate)
+        {
+            OperationResult operationResult = new OperationResult();
+            try
+            {
+
+                if (jsonObject != null)
+                {
+                    try
+                    {
+                        using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
+                        {
+
+
+                            //client.DefaultRequestHeaders.Add("Content-Type", "application/json");
+                            client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
+                            client.DefaultRequestHeaders.Add("OData-Version", "4.0");
+                            //client.DefaultRequestHeaders.Add("Prefer", "return=representation");
+
+                            HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
+                            var response = client.PatchAsync($"contacts({contactEntity.Fields.IdAboxPatient}={idToUpdate})", c).Result;
+                            if (response.IsSuccessStatusCode)
+                            {
+
+                                //Get the response content and parse it.
+                                //JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                                //string userId = (string)body[contactEntity.Fields.EntityId];
+                                operationResult.Code = "";
+                                operationResult.Message = "Contacto actualizado correctamente en el CRM";
+                                operationResult.IsSuccessful = true;
+                                operationResult.Data = null;
+
+                            }
+                            else
+                            {
+                                //Get the response content and parse it.
+                                JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                                //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
+                                JObject userId = JObject.Parse(body.ToString());
+                                CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
+
+                                Logger.Error("", response.RequestMessage);
+                                operationResult.Code = "Error al actualizar el contacto en el CRM";
                                 operationResult.Message = response.ReasonPhrase;
                                 operationResult.IsSuccessful = false;
                                 operationResult.Data = null;
@@ -417,13 +679,12 @@ namespace CrmAboxApi.Logic.Classes
 
             try
             {
-                string connectionString = ConfigurationManager.AppSettings["ConnectionString"].ToString();
+               
                 PatientSignup signupPropertiesFromRequest = signupRequest;
-                ContactEntity contactEntity = new ContactEntity();
-                ProductEntity productEntity = new ProductEntity();
-                DoctorEntity doctorEntity = new DoctorEntity();
-                JArray productsArray = new JArray();
-                JArray medicsArray = new JArray();
+               
+               
+               
+              
                 if (signupRequest != null)
                 {
 
@@ -545,21 +806,85 @@ namespace CrmAboxApi.Logic.Classes
             return responseObject;
         }
 
+        
 
-        public OperationResult UpdateAccount()
+        public OperationResult UpdateAccount(UpdateAccountRequest updateAccountRequest)
         {
+            OperationResult result = null ;
             try
             {
 
-            throw new NotImplementedException("");
-            }
-            catch (Exception)
-            {
+                if (updateAccountRequest!=null)
+                {
 
-                throw;
+                    var contactStructure = this.GetUpdateContactJsonStructure(updateAccountRequest);
+
+                    result = this.ContactUpdateRequest(contactStructure,updateAccountRequest.patientId);
+
+                  
+
+
+                }
+                else
+                {
+                    result.IsSuccessful = false;
+                    result.Message = "Datos de consulta incorrectos";
+                    result.InternalError = null;
+                    result.Code = "";
+                    
+                }
+
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.ToString()) ;
+                result.IsSuccessful = false;
+                result.Message = ex.ToString() ;
+                result.InternalError = null;
+                result.Code = "";
+                return result;
+
             }
         }
 
+         public OperationResult UpdatePatient(UpdatePatientRequest updatePatientRequest)
+        {
+            OperationResult result = null ;
+            try
+            {
 
+                if (updatePatientRequest!=null)
+                {
+
+                    var contactStructure = this.GetUpdatePatientJsonStructure(updatePatientRequest);
+
+                    result = this.ContactUpdateRequest(contactStructure,updatePatientRequest.patientid);
+
+                }
+                else
+                {
+                    result.IsSuccessful = false;
+                    result.Message = "Datos de consulta incorrectos";
+                    result.InternalError = null;
+                    result.Code = "";
+                    
+                }
+
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.ToString()) ;
+                result.IsSuccessful = false;
+                result.Message = ex.ToString() ;
+                result.InternalError = null;
+                result.Code = "";
+                return result;
+
+            }
+        }
     }
 }

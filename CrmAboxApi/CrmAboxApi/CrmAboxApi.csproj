@@ -215,6 +215,7 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\ContactsController.cs" />
+    <Compile Include="Logic\Classes\Deserializing\UpdatePatientRequest.cs" />
     <Compile Include="Logic\Classes\Doctor.cs" />
     <Compile Include="Logic\Classes\Contact.cs" />
     <Compile Include="Logic\Classes\Deserializing\PatientSignup.cs" />
@@ -229,6 +230,8 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Logic\Classes\Deserializing\UpdateAccountRequest.cs" />
+    <Compile Include="Logic\Methods\HttpClientExtensions.cs" />
     <Compile Include="Logic\Methods\MDynamicsWebApiFunctions.cs" />
     <Compile Include="Logic\Methods\MShared.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

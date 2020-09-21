@@ -46,5 +46,32 @@ namespace CrmAboxApi.Logic.Methods
             return "";
         }
 
+
+        public string GetTestToken()
+        {
+            string t = "";
+            string connectionString = ConfigurationManager.AppSettings["ConnectionString"].ToString();
+
+            try
+            {
+                using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
+                {
+                    // Use the WhoAmI function
+                    var response = client.GetAsync("WhoAmI").Result;
+
+                    t = ((string[])response.RequestMessage.Headers.GetValues("Authorization"))[0];
+
+                }
+                return t;
+            }
+            catch (Exception ex)
+            {
+                return "error excepcion";
+                throw ex;
+            }
+            return "";
+        }
+
+
     }
 }

@@ -80,10 +80,21 @@ namespace CrmAboxApi.Controllers
 
         }
 
-        // POST api/contacts
-        //[HttpPost]
-        //[ActionName("patient")]
-        public IHttpActionResult Post([FromBody]PatientSignup signupRequest)
+        //POST api/contacts
+
+        [HttpGet]
+        public IHttpActionResult GetToken()
+        {
+            string token = "";
+            CrmAboxApi.Logic.Methods.MDynamicsWebApiFunctions webAPiFunctions = new Logic.Methods.MDynamicsWebApiFunctions();
+
+            token=webAPiFunctions.GetTestToken();
+            return Ok(token);
+           
+
+        }
+
+        public IHttpActionResult Post([FromBody] PatientSignup signupRequest)
         {
 
             Contact contactProcedures = new Contact();
@@ -98,7 +109,7 @@ namespace CrmAboxApi.Controllers
                         switch (signupRequest.userType.ToLower())
                         {
                             case "01":
-                                response = contactProcedures.CreateAsPatient(signupRequest,null);
+                                response = contactProcedures.CreateAsPatient(signupRequest, null);
                                 break;
                             case "02":
                                 response = contactProcedures.CreateAsCaretaker(signupRequest);
@@ -109,7 +120,7 @@ namespace CrmAboxApi.Controllers
                         }
                     }
 
-                    
+
                     if (response.IsSuccessful)
                     {
                         return Ok(response);
@@ -129,7 +140,7 @@ namespace CrmAboxApi.Controllers
                         IsSuccessful = false,
                         Data = null,
                         Message = "La solicitud JSON enviada es incorrecta"
-                    }) ;
+                    });
 
                 }
             }
@@ -143,16 +154,110 @@ namespace CrmAboxApi.Controllers
                     Message = ex.ToString(),
                     Code = ""
 
-                }) ;
+                });
 
             }
-           
+
         }
 
-        // PUT api/contacts/5
-        public void Put(int id, [FromBody]string value)
+       [HttpPut]
+        public IHttpActionResult AccountUpdate([FromBody] UpdateAccountRequest updateRequest)
         {
+            Contact contactProcedures = new Contact();
+            OperationResult response = null;
+            try
+            {
 
+                if (updateRequest != null)
+                {
+                    OperationResult updateResult = contactProcedures.UpdateAccount(updateRequest);
+
+                    if (updateResult.IsSuccessful)
+                    {
+                        return Ok(updateResult);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.InternalServerError, updateResult);
+                    }
+
+                }
+                else
+                {
+
+                    return Content(HttpStatusCode.BadRequest, new OperationResult
+                    {
+                        Code = "",
+                        IsSuccessful = false,
+                        Data = null,
+                        Message = "La solicitud JSON enviada es incorrecta"
+                    });
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                return Content(HttpStatusCode.InternalServerError, new OperationResult
+                {
+                    IsSuccessful = false,
+                    Data = null,
+                    Message = ex.ToString(),
+                    Code = ""
+
+                });
+
+            }
+        }
+
+        [HttpPut]
+        public IHttpActionResult UpdatePatient([FromBody]UpdatePatientRequest updateRequest)
+        {
+            Contact contactProcedures = new Contact();
+            OperationResult response = null;
+            try
+            {
+
+                if (updateRequest != null)
+                {
+                    OperationResult updateResult = contactProcedures.UpdatePatient(updateRequest);
+
+                    if (updateResult.IsSuccessful)
+                    {
+                        return Ok(updateResult);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.InternalServerError, updateResult);
+                    }
+
+                }
+                else
+                {
+
+                    return Content(HttpStatusCode.BadRequest, new OperationResult
+                    {
+                        Code = "",
+                        IsSuccessful = false,
+                        Data = null,
+                        Message = "La solicitud JSON enviada es incorrecta"
+                    });
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                return Content(HttpStatusCode.InternalServerError, new OperationResult
+                {
+                    IsSuccessful = false,
+                    Data = null,
+                    Message = ex.ToString(),
+                    Code = ""
+
+                });
+
+            }
         }
 
         // DELETE api/contacts/5
