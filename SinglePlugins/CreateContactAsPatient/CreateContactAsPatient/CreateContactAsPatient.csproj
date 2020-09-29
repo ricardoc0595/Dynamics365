@@ -68,11 +68,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DoseCreate.cs" />
     <Compile Include="Classes\PatientSignupRequest.cs" />
+    <Compile Include="Classes\UpdatePatientRequest.cs" />
+    <Compile Include="Methods\RequestHelpers.cs" />
     <Compile Include="PatientSignup.cs" />
     <Compile Include="KnowYourNumberSignUp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Classes\QuickSignupRequest.cs" />
+    <Compile Include="UpdatePatient.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ILMerge.props" />
@@ -83,6 +87,10 @@
     <ProjectReference Include="..\..\..\AboxCrmPlugins\AboxCrmPlugins\AboxCrmPlugins.csproj">
       <Project>{2b126465-2107-4b66-92a8-fcd00c747dc4}</Project>
       <Name>AboxCrmPlugins</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\AboxDynamicsBase\AboxDynamicsBase.csproj">
+      <Project>{75798f56-e37f-4375-a0ac-673d42068cfd}</Project>
+      <Name>AboxDynamicsBase</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

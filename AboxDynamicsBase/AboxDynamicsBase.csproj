@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2B126465-2107-4B66-92A8-FCD00C747DC4}</ProjectGuid>
+    <ProjectGuid>{75798F56-E37F-4375-A0AC-673D42068CFD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AboxCrmPlugins</RootNamespace>
-    <AssemblyName>AboxCrmPlugins</AssemblyName>
+    <RootNamespace>AboxDynamicsBase</RootNamespace>
+    <AssemblyName>AboxDynamicsBase</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -34,25 +34,11 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>AboxCrmPlugins.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>AboxDynamicsBase.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Crm.Sdk.Proxy, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.CrmSdk.CoreAssemblies.9.0.2.26\lib\net462\Microsoft.Crm.Sdk.Proxy.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xrm.Sdk, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.CrmSdk.CoreAssemblies.9.0.2.26\lib\net462\Microsoft.Xrm.Sdk.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.DirectoryServices" />
-    <Reference Include="System.DirectoryServices.AccountManagement" />
-    <Reference Include="System.IdentityModel" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.ServiceModel.Web" />
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -61,24 +47,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\Entities\DoctorEntity.cs" />
+    <Compile Include="Classes\AboxServices.cs" />
+    <Compile Include="Classes\Constants.cs" />
+    <Compile Include="Classes\Entities\CantonEntity.cs" />
     <Compile Include="Classes\Entities\ContactEntity.cs" />
+    <Compile Include="Classes\Entities\CountryEntity.cs" />
+    <Compile Include="Classes\Entities\DistrictEntity.cs" />
+    <Compile Include="Classes\Entities\DoctorEntity.cs" />
+    <Compile Include="Classes\Entities\DoseEntity.cs" />
     <Compile Include="Classes\Entities\EntityBase.cs" />
     <Compile Include="Classes\Entities\ProductEntity.cs" />
-    <Compile Include="Classes\WebRequestData.cs" />
-    <Compile Include="Classes\WebRequestResponse.cs" />
-    <Compile Include="Methods\MShared.cs" />
+    <Compile Include="Classes\Entities\ProvinceEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="AboxCrmPlugins.snk" />
-    <None Include="packages.config" />
+    <Folder Include="Methods\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AboxDynamicsBase\AboxDynamicsBase.csproj">
-      <Project>{75798f56-e37f-4375-a0ac-673d42068cfd}</Project>
-      <Name>AboxDynamicsBase</Name>
-    </ProjectReference>
+    <None Include="AboxDynamicsBase.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
