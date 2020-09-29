@@ -10,8 +10,9 @@ using Logic.CrmAboxApi.Classes.Helper;
 using System.Text;
 using Newtonsoft.Json;
 using CrmAboxApi.Logic.Classes.Deserializing;
-using AboxCrmPlugins.Classes.Entities;
+
 using CrmAboxApi.Logic.Methods;
+using AboxDynamicsBase.Classes.Entities;
 
 
 namespace CrmAboxApi.Logic.Classes
@@ -44,7 +45,7 @@ namespace CrmAboxApi.Logic.Classes
                         //client.DefaultRequestHeaders.Add("If-None-Match", "null"); 
                         //client.DefaultRequestHeaders.Add("Content-Type", "application/json");
                         //HttpContent c = new StringContent(contact1.ToString(Formatting.None), Encoding.UTF8, "application/json");
-                        var response = client.DeleteAsync($"{doctorEntity.EntityName}({idDoctor})").Result;
+                        var response = client.DeleteAsync($"{doctorEntity.EntityPluralName}({idDoctor})").Result;
                         //if (response.IsSuccessStatusCode)
                         //{
 
@@ -126,7 +127,7 @@ namespace CrmAboxApi.Logic.Classes
                         //client.DefaultRequestHeaders.Add("If-None-Match", "null"); 
                         //client.DefaultRequestHeaders.Add("Content-Type", "application/json");
                         //HttpContent c = new StringContent(contact1.ToString(Formatting.None), Encoding.UTF8, "application/json");
-                        var response = client.GetAsync($"{doctorEntity.EntityName}").Result;
+                        var response = client.GetAsync($"{doctorEntity.EntityPluralName}").Result;
                         if (response.IsSuccessStatusCode)
                         {
 

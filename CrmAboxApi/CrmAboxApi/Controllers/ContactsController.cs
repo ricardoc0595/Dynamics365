@@ -97,7 +97,7 @@ namespace CrmAboxApi.Controllers
         public IHttpActionResult Post([FromBody] PatientSignup signupRequest)
         {
 
-            Contact contactProcedures = new Contact();
+            EContact contactProcedures = new EContact();
             OperationResult response = null;
             try
             {
@@ -163,7 +163,7 @@ namespace CrmAboxApi.Controllers
        [HttpPut]
         public IHttpActionResult AccountUpdate([FromBody] UpdateAccountRequest updateRequest)
         {
-            Contact contactProcedures = new Contact();
+            EContact contactProcedures = new EContact();
             OperationResult response = null;
             try
             {
@@ -213,7 +213,7 @@ namespace CrmAboxApi.Controllers
         [HttpPut]
         public IHttpActionResult UpdatePatient([FromBody]UpdatePatientRequest updateRequest)
         {
-            Contact contactProcedures = new Contact();
+            EContact contactProcedures = new EContact();
             OperationResult response = null;
             try
             {

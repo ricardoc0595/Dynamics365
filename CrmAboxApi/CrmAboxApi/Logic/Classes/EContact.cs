@@ -9,23 +9,34 @@ using Logic.CrmAboxApi.Classes.Helper;
 using System.Text;
 using Newtonsoft.Json;
 using CrmAboxApi.Logic.Classes.Deserializing;
-using AboxCrmPlugins.Classes.Entities;
+//using AboxCrmPlugins.Classes.Entities;
 using CrmAboxApi.Logic.Methods;
+using AboxDynamicsBase.Classes.Entities;
 
 
 namespace CrmAboxApi.Logic.Classes
 {
-    public class Contact
+    public class EContact : ContactEntity
     {
         MShared sharedMethods = null;
-        ContactEntity contactEntity = null;
+        
+        CountryEntity countryEntity = null;
+        ProvinceEntity provinceEntity = null;
+        CantonEntity cantonEntity = null;
+        DistrictEntity districtEntity = null;
+        EDose doseEntity = null;
         string connectionString = null;
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-        public Contact()
+        public EContact()
         {
             sharedMethods = new MShared();
-            contactEntity = new ContactEntity();
+            
+            countryEntity = new CountryEntity();
+            provinceEntity = new ProvinceEntity();
+            cantonEntity = new CantonEntity();
+            districtEntity = new DistrictEntity();
             connectionString = ConfigurationManager.AppSettings["ConnectionString"].ToString();
+            doseEntity = new EDose();
         }
 
         private JObject GetCreateContactJsonStructure(PatientSignup signupProperties)
@@ -38,61 +49,78 @@ namespace CrmAboxApi.Logic.Classes
                 if (signupProperties != null)
                 {
 
-                    jObject.Add($"{contactEntity.Fields.RegisterDay}", DateTime.Now.ToString("yyyy-MM-dd"));
-                    if (!String.IsNullOrEmpty(signupProperties.country))
+                    jObject.Add($"{this.Fields.RegisterDay}", DateTime.Now.ToString("yyyy-MM-dd"));
+
+
+                    if (!(String.IsNullOrEmpty(signupProperties.country)))
                     {
-                        int value = sharedMethods.GetCountryValueForOptionSet(signupProperties.country);
-                        if (value > -1)
-                            jObject.Add($"{contactEntity.Fields.Country}", value);
+                        jObject.Add($"{this.Schemas.Country}@odata.bind", $"/{countryEntity.EntityPluralName}({countryEntity.Fields.IdCountry}='{signupProperties.country}')");
                     }
+
+                    if (!(String.IsNullOrEmpty(signupProperties.contactinfo.province)))
+                    {
+                        jObject.Add($"{this.Schemas.Province}@odata.bind", $"/{provinceEntity.EntityPluralName}({provinceEntity.Fields.IdProvince}='{signupProperties.contactinfo.province}')");
+                    }
+
+                    if (!(String.IsNullOrEmpty(signupProperties.contactinfo.canton)))
+                    {
+                        jObject.Add($"{this.Schemas.Canton}@odata.bind", $"/{cantonEntity.EntityPluralName}({cantonEntity.Fields.IdCanton}='{signupProperties.contactinfo.canton}')");
+                    }
+
+                    if (!(String.IsNullOrEmpty(signupProperties.contactinfo.district)))
+                    {
+                        jObject.Add($"{this.Schemas.District}@odata.bind", $"/{districtEntity.EntityPluralName}({districtEntity.Fields.IdDistrict}='{signupProperties.contactinfo.district}')");
+                    }
+
 
                     if (signupProperties.patientid != null)
-                        jObject.Add(contactEntity.Fields.IdAboxPatient, signupProperties.patientid.ToString());
+                        jObject.Add(this.Fields.IdAboxPatient, signupProperties.patientid.ToString());
 
-                    if (signupProperties.otherInterest != null)
+                    if (!String.IsNullOrEmpty(signupProperties.otherInterest))
                     {
-                        int value;
-                        bool parsed = Int32.TryParse(signupProperties.otherInterest.ToString(),out value);
+                        
+                        bool parsed = Int32.TryParse(signupProperties.otherInterest.ToString(), out int aux);
                         if (parsed)
                         {
-                            jObject.Add(contactEntity.Fields.OtherInterest, value);
+                            int value = Int32.Parse(signupProperties.otherInterest.ToString());
+                            jObject.Add(this.Fields.OtherInterest, value);
                         }
                     }
-                        
+
 
 
                     if (signupProperties.personalinfo != null)
                     {
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.name)))
-                            jObject.Add(contactEntity.Fields.Firstname, signupProperties.personalinfo.name);
+                            jObject.Add(this.Fields.Firstname, signupProperties.personalinfo.name);
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.lastname)))
-                            jObject.Add(contactEntity.Fields.Lastname, signupProperties.personalinfo.lastname);
+                            jObject.Add(this.Fields.Lastname, signupProperties.personalinfo.lastname);
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.secondlastname)))
-                            jObject.Add(contactEntity.Fields.SecondLastname, signupProperties.personalinfo.secondlastname);
+                            jObject.Add(this.Fields.SecondLastname, signupProperties.personalinfo.secondlastname);
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.password)))
-                            jObject.Add(contactEntity.Fields.Password, signupProperties.personalinfo.password);
+                            jObject.Add(this.Fields.Password, signupProperties.personalinfo.password);
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.dateofbirth)))
-                            jObject.Add(contactEntity.Fields.Birthdate, signupProperties.personalinfo.dateofbirth);
+                            jObject.Add(this.Fields.Birthdate, signupProperties.personalinfo.dateofbirth);
 
                         //TODO: Max length esta en 14 actualmente, validar extension
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.id)))
-                            jObject.Add(contactEntity.Fields.Id, signupProperties.personalinfo.id);
+                            jObject.Add(this.Fields.Id, signupProperties.personalinfo.id);
 
                         string idType = sharedMethods.GetIdTypeId(signupProperties.personalinfo.idtype);
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.idtype)))
-                            jObject.Add(contactEntity.Fields.IdType, idType);
+                            jObject.Add(this.Fields.IdType, idType);
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.gender)))
-                            jObject.Add(contactEntity.Fields.Gender, sharedMethods.GetGenderValue(signupProperties.personalinfo.gender));
+                            jObject.Add(this.Fields.Gender, sharedMethods.GetGenderValue(signupProperties.personalinfo.gender));
 
                         if (!(String.IsNullOrEmpty(signupProperties.userType)))
                         {
-                            jObject.Add($"new_UserType@odata.bind", $"/new_usertypes({sharedMethods.GetUserTypeEntityId(signupProperties.userType)})");
+                            jObject.Add($"{this.Schemas.UserType}@odata.bind", $"/new_usertypes({sharedMethods.GetUserTypeEntityId(signupProperties.userType)})");
                         }
 
 
@@ -102,19 +130,20 @@ namespace CrmAboxApi.Logic.Classes
                     {
 
                         if (!(String.IsNullOrEmpty(signupProperties.contactinfo.email)))
-                            jObject.Add(contactEntity.Fields.Email, signupProperties.contactinfo.email);
+                            jObject.Add(this.Fields.Email, signupProperties.contactinfo.email);
 
                         if (!(String.IsNullOrEmpty(signupProperties.contactinfo.phone)))
-                            jObject.Add(contactEntity.Fields.Phone, signupProperties.contactinfo.phone);
+                            jObject.Add(this.Fields.Phone, signupProperties.contactinfo.phone);
 
                         if (!(String.IsNullOrEmpty(signupProperties.contactinfo.mobilephone)))
-                            jObject.Add(contactEntity.Fields.SecondaryPhone, signupProperties.contactinfo.mobilephone);
+                            jObject.Add(this.Fields.SecondaryPhone, signupProperties.contactinfo.mobilephone);
 
 
                     }
 
                     if (signupProperties.medication != null)
                     {
+                        JArray dosesArray = new JArray();
                         JArray productsArray = new JArray();
                         JArray medicsArray = new JArray();
                         ProductEntity productEntity = new ProductEntity();
@@ -124,28 +153,48 @@ namespace CrmAboxApi.Logic.Classes
                         int productsLength = signupProperties.medication.products.Length;
                         for (int i = 0; i < productsLength; i++)
                         {
-                            productsArray.Add(new JValue($"/{productEntity.EntityName}({productEntity.Fields.ProductNumber}='{signupProperties.medication.products[i].productid}')"));
+                            productsArray.Add(new JValue($"/{productEntity.EntityPluralName}({productEntity.Fields.ProductNumber}='{signupProperties.medication.products[i].productid}')"));
                         }
+
+
 
 
 
                         int medicsLength = signupProperties.medication.medics.Length;
                         for (int i = 0; i < medicsLength; i++)
                         {
-                            medicsArray.Add(new JValue($"/{doctorEntity.EntityName}({doctorEntity.Fields.DoctorIdKey}='{signupProperties.medication.medics[i].medicid}')"));
+                            medicsArray.Add(new JValue($"/{doctorEntity.EntityPluralName}({doctorEntity.Fields.DoctorIdKey}='{signupProperties.medication.medics[i].medicid}')"));
                         }
 
 
                         if (productsArray != null)
                         {
-                            jObject.Add($"{contactEntity.Fields.ContactxProductRelationship}@odata.bind", productsArray);
+                            jObject.Add($"{this.Fields.ContactxProductRelationship}@odata.bind", productsArray);
                         }
 
                         if (medicsArray != null)
                         {
-                            jObject.Add($"{contactEntity.Fields.ContactxDoctorRelationship}@odata.bind", medicsArray);
+                            jObject.Add($"{this.Fields.ContactxDoctorRelationship}@odata.bind", medicsArray);
                         }
+
                     }
+
+                    if (signupProperties.interests != null)
+                    {
+                        string values = "";
+                        int length = signupProperties.interests.Length;
+                        for (int i = 0; i < length; i++)
+                        {
+                            if (values != "")
+                                values += "," + signupProperties.interests[i].interestid;
+                            else
+                                values += signupProperties.interests[i].interestid;
+                        }
+                        jObject.Add($"{this.Fields.Interests}", values);
+
+                    }
+
+
 
 
                 }
@@ -174,35 +223,35 @@ namespace CrmAboxApi.Logic.Classes
                 if (updateProperties != null)
                 {
 
-                    jObject.Add($"{contactEntity.Fields.RegisterDay}", DateTime.Now.ToString("yyyy-MM-dd"));
+                    jObject.Add($"{this.Fields.RegisterDay}", DateTime.Now.ToString("yyyy-MM-dd"));
 
-                    
+
 
                     if (!(String.IsNullOrEmpty(updateProperties.Nombre)))
-                            jObject.Add(contactEntity.Fields.Firstname, updateProperties.Nombre);
+                        jObject.Add(this.Fields.Firstname, updateProperties.Nombre);
 
-                        if (!(String.IsNullOrEmpty(updateProperties.Apellido1)))
-                            jObject.Add(contactEntity.Fields.Lastname, updateProperties.Apellido1);
+                    if (!(String.IsNullOrEmpty(updateProperties.Apellido1)))
+                        jObject.Add(this.Fields.Lastname, updateProperties.Apellido1);
 
-                        if (!(String.IsNullOrEmpty(updateProperties.Apellido2)))
-                            jObject.Add(contactEntity.Fields.SecondLastname, updateProperties.Apellido2);
-
-                       
-
-                        if (!(String.IsNullOrEmpty(updateProperties.FechaNacimiento)))
-                            jObject.Add(contactEntity.Fields.Birthdate, updateProperties.FechaNacimiento);
-
-                      
-
-                        if (!(String.IsNullOrEmpty(updateProperties.Genero)))
-                            jObject.Add(contactEntity.Fields.Gender, sharedMethods.GetGenderValue(updateProperties.Genero));
+                    if (!(String.IsNullOrEmpty(updateProperties.Apellido2)))
+                        jObject.Add(this.Fields.SecondLastname, updateProperties.Apellido2);
 
 
-                        if (!(String.IsNullOrEmpty(updateProperties.Telefono)))
-                            jObject.Add(contactEntity.Fields.Phone, updateProperties.Telefono);
 
-                        if (!(String.IsNullOrEmpty(updateProperties.Telefono2)))
-                            jObject.Add(contactEntity.Fields.SecondaryPhone, updateProperties.Telefono2);
+                    if (!(String.IsNullOrEmpty(updateProperties.FechaNacimiento)))
+                        jObject.Add(this.Fields.Birthdate, updateProperties.FechaNacimiento);
+
+
+
+                    if (!(String.IsNullOrEmpty(updateProperties.Genero)))
+                        jObject.Add(this.Fields.Gender, sharedMethods.GetGenderValue(updateProperties.Genero));
+
+
+                    if (!(String.IsNullOrEmpty(updateProperties.Telefono)))
+                        jObject.Add(this.Fields.Phone, updateProperties.Telefono);
+
+                    if (!(String.IsNullOrEmpty(updateProperties.Telefono2)))
+                        jObject.Add(this.Fields.SecondaryPhone, updateProperties.Telefono2);
 
                     if (updateProperties.medication != null)
                     {
@@ -215,7 +264,7 @@ namespace CrmAboxApi.Logic.Classes
                         int productsLength = updateProperties.medication.products.Length;
                         for (int i = 0; i < productsLength; i++)
                         {
-                            productsArray.Add(new JValue($"/{productEntity.EntityName}({productEntity.Fields.ProductNumber}='{updateProperties.medication.products[i].productid}')"));
+                            productsArray.Add(new JValue($"/{productEntity.EntityPluralName}({productEntity.Fields.ProductNumber}='{updateProperties.medication.products[i].productid}')"));
                         }
 
 
@@ -223,18 +272,18 @@ namespace CrmAboxApi.Logic.Classes
                         int medicsLength = updateProperties.medication.medics.Length;
                         for (int i = 0; i < medicsLength; i++)
                         {
-                            medicsArray.Add(new JValue($"/{doctorEntity.EntityName}({doctorEntity.Fields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
+                            medicsArray.Add(new JValue($"/{doctorEntity.EntityPluralName}({doctorEntity.Fields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
                         }
 
 
-                        if (productsArray != null && productsArray.Count>0)
+                        if (productsArray != null && productsArray.Count > 0)
                         {
-                            jObject.Add($"{contactEntity.Fields.ContactxProductRelationship}@odata.bind", productsArray);
+                            jObject.Add($"{this.Fields.ContactxProductRelationship}@odata.bind", productsArray);
                         }
 
-                        if (medicsArray != null && medicsArray.Count>0)
+                        if (medicsArray != null && medicsArray.Count > 0)
                         {
-                            jObject.Add($"{contactEntity.Fields.ContactxDoctorRelationship}@odata.bind", medicsArray);
+                            jObject.Add($"{this.Fields.ContactxDoctorRelationship}@odata.bind", medicsArray);
                         }
                     }
 
@@ -266,29 +315,29 @@ namespace CrmAboxApi.Logic.Classes
                 if (updateProperties != null)
                 {
 
-                  
+
                     if (updateProperties.personalinfo != null)
                     {
                         if (!(String.IsNullOrEmpty(updateProperties.personalinfo.name)))
-                            jObject.Add(contactEntity.Fields.Firstname, updateProperties.personalinfo.name);
+                            jObject.Add(this.Fields.Firstname, updateProperties.personalinfo.name);
 
                         if (!(String.IsNullOrEmpty(updateProperties.personalinfo.lastname)))
-                            jObject.Add(contactEntity.Fields.Lastname, updateProperties.personalinfo.lastname);
+                            jObject.Add(this.Fields.Lastname, updateProperties.personalinfo.lastname);
 
                         if (!(String.IsNullOrEmpty(updateProperties.personalinfo.secondlastname)))
-                            jObject.Add(contactEntity.Fields.SecondLastname, updateProperties.personalinfo.secondlastname);
+                            jObject.Add(this.Fields.SecondLastname, updateProperties.personalinfo.secondlastname);
 
 
                         if (!(String.IsNullOrEmpty(updateProperties.personalinfo.dateofbirth)))
-                            jObject.Add(contactEntity.Fields.Birthdate, updateProperties.personalinfo.dateofbirth);
+                            jObject.Add(this.Fields.Birthdate, updateProperties.personalinfo.dateofbirth);
 
-                     
+
 
 
                         if (!(String.IsNullOrEmpty(updateProperties.personalinfo.gender)))
-                            jObject.Add(contactEntity.Fields.Gender, sharedMethods.GetGenderValue(updateProperties.personalinfo.gender));
+                            jObject.Add(this.Fields.Gender, sharedMethods.GetGenderValue(updateProperties.personalinfo.gender));
 
-                       
+
 
                     }
 
@@ -304,7 +353,7 @@ namespace CrmAboxApi.Logic.Classes
                         int productsLength = updateProperties.medication.products.Length;
                         for (int i = 0; i < productsLength; i++)
                         {
-                            productsArray.Add(new JValue($"/{productEntity.EntityName}({productEntity.Fields.ProductNumber}='{updateProperties.medication.products[i].productid}')"));
+                            productsArray.Add(new JValue($"/{productEntity.EntityPluralName}({productEntity.Fields.ProductNumber}='{updateProperties.medication.products[i].productid}')"));
                         }
 
 
@@ -312,18 +361,18 @@ namespace CrmAboxApi.Logic.Classes
                         int medicsLength = updateProperties.medication.medics.Length;
                         for (int i = 0; i < medicsLength; i++)
                         {
-                            medicsArray.Add(new JValue($"/{doctorEntity.EntityName}({doctorEntity.Fields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
+                            medicsArray.Add(new JValue($"/{doctorEntity.EntityPluralName}({doctorEntity.Fields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
                         }
 
 
                         if (productsArray != null)
                         {
-                            jObject.Add($"{contactEntity.Fields.ContactxProductRelationship}@odata.bind", productsArray);
+                            jObject.Add($"{this.Fields.ContactxProductRelationship}@odata.bind", productsArray);
                         }
 
                         if (medicsArray != null)
                         {
-                            jObject.Add($"{contactEntity.Fields.ContactxDoctorRelationship}@odata.bind", medicsArray);
+                            jObject.Add($"{this.Fields.ContactxDoctorRelationship}@odata.bind", medicsArray);
                         }
                     }
 
@@ -332,7 +381,7 @@ namespace CrmAboxApi.Logic.Classes
 
                 return jObject;
 
-               
+
             }
             catch (Exception ex)
             {
@@ -351,17 +400,116 @@ namespace CrmAboxApi.Logic.Classes
             try
             {
                 PatientSignup signupProperties = signupRequest;
-                var newContact = this.GetCreateContactJsonStructure(signupProperties);
 
-                if (!String.IsNullOrEmpty(idRelatedPatient))
+                if (signupProperties != null)
                 {
-                    JArray patientsInChargeArray = new JArray();
-                    patientsInChargeArray.Add(new JValue($"/{contactEntity.EntityName}({idRelatedPatient})"));
-                    newContact.Add($"{contactEntity.Fields.ContactxContactRelationship}@odata.bind", patientsInChargeArray);
-                }
+                    DoseRecord[] dosesArray = null;
+                    string[] dosesCreated = null;
 
-                responseObject = this.ContactCreateRequest(newContact);
-                return responseObject;
+                    #region -> Dose Retrieve
+
+                    if (signupProperties.medication != null)
+                    {
+                        int dosesLength = signupProperties.medication.products.Length;
+                        dosesArray = new DoseRecord[dosesLength];
+                        dosesCreated = new string[dosesLength];
+
+                        for (int i = 0; i < dosesLength; i++)
+                        {
+
+                            string frequency = "";
+                            if (!String.IsNullOrEmpty(signupProperties.medication.products[i].other))
+                                frequency = signupProperties.medication.products[i].other;
+                            else
+                                frequency = signupProperties.medication.products[i].frequency;
+
+                            dosesArray[i] = new DoseRecord { Dose = frequency, IdProduct = signupProperties.medication.products[i].productid };
+                        }
+
+
+                        if (dosesArray != null)
+                        {
+                            if (dosesArray.Length > 0)
+                            {
+
+                                try
+                                {
+                                    int length = dosesArray.Length;
+
+                                    for (int i = 0; i < length; i++)
+                                    {
+                                        OperationResult result = doseEntity.Create(new DoseRecord
+                                        {
+                                            Dose = dosesArray[i].Dose,
+                                            IdProduct = dosesArray[i].IdProduct
+                                        });
+
+                                        if (result.IsSuccessful)
+                                        {
+                                            dosesCreated[i] = (string)result.Data;
+
+                                        }
+
+                                    }
+
+                                    if (dosesCreated.Length != dosesArray.Length)
+                                    {
+                                        throw (new Exception("Ha ocurrido un error creando las dosis del paciente " + signupProperties.personalinfo.id + " en el CRM"));
+                                    }
+
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.Error(ex.ToString());
+                                    throw ex;
+                                }
+
+                            }
+
+                        }
+                    }
+
+                    #endregion
+
+                    JObject newContact = this.GetCreateContactJsonStructure(signupProperties);
+
+
+                    #region -> Patient Related
+
+                    if (!String.IsNullOrEmpty(idRelatedPatient))
+                    {
+                        JArray patientsInChargeArray = new JArray();
+                        patientsInChargeArray.Add(new JValue($"/{this.EntityPluralName}({idRelatedPatient})"));
+                        newContact.Add($"{this.Fields.ContactxContactRelationship}@odata.bind", patientsInChargeArray);
+                    }
+
+                    #endregion
+
+                    #region -> Doses Related
+
+                    if (dosesArray != null && dosesCreated != null)
+                    {
+                        if (dosesCreated.Length == dosesArray.Length)
+                        {
+                            JArray dosesToSave = new JArray();
+                            int length = dosesCreated.Length;
+                            for (int i = 0; i < length; i++)
+                            {
+                                dosesToSave.Add(new JValue($"/{doseEntity.EntityPluralName}({dosesCreated[i]})"));
+
+                            }
+
+                            newContact.Add($"{this.Fields.ContactxDoseRelationship}@odata.bind", dosesToSave);
+
+                        }
+                    }
+
+                    #endregion
+
+                    responseObject = this.ContactCreateRequest(newContact);
+
+                }
 
             }
             catch (Exception ex)
@@ -375,6 +523,7 @@ namespace CrmAboxApi.Logic.Classes
 
 
             return responseObject;
+
         }
 
 
@@ -398,13 +547,13 @@ namespace CrmAboxApi.Logic.Classes
                             client.DefaultRequestHeaders.Add("Prefer", "return=representation");
 
                             HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
-                            var response = client.PostAsync($"contacts?$select={contactEntity.Fields.EntityId}", c).Result;
+                            var response = client.PostAsync($"contacts?$select={this.Fields.EntityId}", c).Result;
                             if (response.IsSuccessStatusCode)
                             {
 
                                 //Get the response content and parse it.
                                 JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                                string userId = (string)body[contactEntity.Fields.EntityId];
+                                string userId = (string)body[this.Fields.EntityId];
                                 operationResult.Code = "";
                                 operationResult.Message = "Contacto creado correctamente en el CRM";
                                 operationResult.IsSuccessful = true;
@@ -459,7 +608,7 @@ namespace CrmAboxApi.Logic.Classes
 
 
 
-        private OperationResult ContactUpdateRequest(JObject jsonObject,string idToUpdate)
+        private OperationResult ContactUpdateRequest(JObject jsonObject, string idToUpdate)
         {
             OperationResult operationResult = new OperationResult();
             try
@@ -479,13 +628,13 @@ namespace CrmAboxApi.Logic.Classes
                             //client.DefaultRequestHeaders.Add("Prefer", "return=representation");
 
                             HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
-                            var response = client.PatchAsync($"contacts({contactEntity.Fields.IdAboxPatient}={idToUpdate})", c).Result;
+                            var response = client.PatchAsync($"contacts({this.Fields.IdAboxPatient}={idToUpdate})", c).Result;
                             if (response.IsSuccessStatusCode)
                             {
 
                                 //Get the response content and parse it.
                                 //JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                                //string userId = (string)body[contactEntity.Fields.EntityId];
+                                //string userId = (string)body[this.Fields.EntityId];
                                 operationResult.Code = "";
                                 operationResult.Message = "Contacto actualizado correctamente en el CRM";
                                 operationResult.IsSuccessful = true;
@@ -679,12 +828,11 @@ namespace CrmAboxApi.Logic.Classes
 
             try
             {
-               
+
                 PatientSignup signupPropertiesFromRequest = signupRequest;
-               
-               
-               
-              
+
+
+
                 if (signupRequest != null)
                 {
 
@@ -806,22 +954,22 @@ namespace CrmAboxApi.Logic.Classes
             return responseObject;
         }
 
-        
+
 
         public OperationResult UpdateAccount(UpdateAccountRequest updateAccountRequest)
         {
-            OperationResult result = null ;
+            OperationResult result = null;
             try
             {
 
-                if (updateAccountRequest!=null)
+                if (updateAccountRequest != null)
                 {
 
                     var contactStructure = this.GetUpdateContactJsonStructure(updateAccountRequest);
 
-                    result = this.ContactUpdateRequest(contactStructure,updateAccountRequest.patientId);
+                    result = this.ContactUpdateRequest(contactStructure, updateAccountRequest.patientId);
 
-                  
+
 
 
                 }
@@ -831,7 +979,7 @@ namespace CrmAboxApi.Logic.Classes
                     result.Message = "Datos de consulta incorrectos";
                     result.InternalError = null;
                     result.Code = "";
-                    
+
                 }
 
                 return result;
@@ -839,9 +987,9 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString()) ;
+                Logger.Error(ex.ToString());
                 result.IsSuccessful = false;
-                result.Message = ex.ToString() ;
+                result.Message = ex.ToString();
                 result.InternalError = null;
                 result.Code = "";
                 return result;
@@ -849,18 +997,18 @@ namespace CrmAboxApi.Logic.Classes
             }
         }
 
-         public OperationResult UpdatePatient(UpdatePatientRequest updatePatientRequest)
+        public OperationResult UpdatePatient(UpdatePatientRequest updatePatientRequest)
         {
-            OperationResult result = null ;
+            OperationResult result = null;
             try
             {
 
-                if (updatePatientRequest!=null)
+                if (updatePatientRequest != null)
                 {
 
                     var contactStructure = this.GetUpdatePatientJsonStructure(updatePatientRequest);
 
-                    result = this.ContactUpdateRequest(contactStructure,updatePatientRequest.patientid);
+                    result = this.ContactUpdateRequest(contactStructure, updatePatientRequest.patientid);
 
                 }
                 else
@@ -869,7 +1017,7 @@ namespace CrmAboxApi.Logic.Classes
                     result.Message = "Datos de consulta incorrectos";
                     result.InternalError = null;
                     result.Code = "";
-                    
+
                 }
 
                 return result;
@@ -877,9 +1025,9 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString()) ;
+                Logger.Error(ex.ToString());
                 result.IsSuccessful = false;
-                result.Message = ex.ToString() ;
+                result.Message = ex.ToString();
                 result.InternalError = null;
                 result.Code = "";
                 return result;
