@@ -217,8 +217,10 @@
     <Compile Include="Controllers\ContactsController.cs" />
     <Compile Include="Logic\Classes\Deserializing\UpdatePatientRequest.cs" />
     <Compile Include="Logic\Classes\Doctor.cs" />
-    <Compile Include="Logic\Classes\Contact.cs" />
+    <Compile Include="Logic\Classes\DoseRecord.cs" />
+    <Compile Include="Logic\Classes\EContact.cs" />
     <Compile Include="Logic\Classes\Deserializing\PatientSignup.cs" />
+    <Compile Include="Logic\Classes\EDose.cs" />
     <Compile Include="Logic\Classes\Helper\ConnectionHelper.cs" />
     <Compile Include="Logic\Classes\Helper\Constants.cs" />
     <Compile Include="Logic\Classes\Helper\CrmWebAPIError.cs" />
@@ -330,9 +332,9 @@
     <Content Include="Scripts\jquery-3.4.1.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AboxCrmPlugins\AboxCrmPlugins\AboxCrmPlugins.csproj">
-      <Project>{2b126465-2107-4b66-92a8-fcd00c747dc4}</Project>
-      <Name>AboxCrmPlugins</Name>
+    <ProjectReference Include="..\..\AboxDynamicsBase\AboxDynamicsBase.csproj">
+      <Project>{75798f56-e37f-4375-a0ac-673d42068cfd}</Project>
+      <Name>AboxDynamicsBase</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
