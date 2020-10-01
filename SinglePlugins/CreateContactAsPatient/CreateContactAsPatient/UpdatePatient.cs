@@ -39,11 +39,12 @@ namespace CreateContactAsPatient
 
                 Entity contactUpdated = null;
                 UpdatePatientRequest.Request updatePatientRequest = null;
+                ContactMethods contactMethods = null;
 
                 if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is Entity)
                 {
                     contactEntity = new ContactEntity();
-                     contactUpdated = (Entity)context.InputParameters["Target"];
+                    contactUpdated = (Entity)context.InputParameters["Target"];
                     if (contactUpdated.LogicalName != contactEntity.EntitySingularName)
                     {
                         return;
@@ -53,10 +54,30 @@ namespace CreateContactAsPatient
 
                         if (contactUpdated != null)
                         {
-
+                            helperMethods = new RequestHelpers();
                             #region -> Set request data based on Contact
 
-                            updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactUpdated,service);
+
+                            //contactMethods = new ContactMethods();
+
+                            string[] columnsToGet = new string[] { contactEntity.Fields.IdAboxPatient, contactEntity.Fields.Country, contactEntity.Fields.UserType, contactEntity.Fields.IdType, contactEntity.Fields.Id, contactEntity.Fields.Firstname, contactEntity.Fields.SecondLastname, contactEntity.Fields.Lastname, contactEntity.Fields.Gender, contactEntity.Fields.Birthdate };
+                            var columnSet = new ColumnSet(columnsToGet);
+                            Entity contactData = service.Retrieve(contactEntity.EntitySingularName, contactUpdated.Id, columnSet);
+                           
+
+                           
+                            /*Recorrer los atributos que cambiaron y sobreescribirselos a la entidad contacto actual para
+                             tener la información completa que se enviará al servicio*/
+                            foreach (string keyName in contactUpdated.Attributes.Keys)
+                            {
+                                if (contactData.Attributes.ContainsKey(keyName))
+                                {
+                                    contactData.Attributes[keyName] = contactUpdated.Attributes[keyName];
+                                }
+                            }
+
+
+                            updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service);
 
                             #endregion
 
@@ -74,7 +95,7 @@ namespace CreateContactAsPatient
                             WebRequestData wrData = new WebRequestData();
                             wrData.InputData = jsonObject;
                             wrData.ContentType = "application/json";
-                            wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAxMDY5NTYwLCJleHAiOjE2MDExNTU5NjB9.Odlhy9XsWTcHe2aEY5j_0J6jFla3p63tAtM0mJm9eGo";
+                            wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg0NDQ0NDQ0NCIsImlhdCI6MTYwMTQxMTA1NSwiZXhwIjoxNjAxNDk3NDU1fQ.ic-eaWjdPkRv5IQHJUISP4v7G5u66pdX3s5Z2Oo_C_o";
 
                             wrData.Url = AboxServices.UpdatePatientService;
 
@@ -104,6 +125,7 @@ namespace CreateContactAsPatient
                             }
                             else
                             {
+                                //TODO: Manejar error, esta llegando null cuando hay un error de protocolo
                                 throw new InvalidPluginExecutionException("Ocurrió un error al consultar los servicios de Abox Plan" + serviceResponseProperties.response.message);
                             }
 

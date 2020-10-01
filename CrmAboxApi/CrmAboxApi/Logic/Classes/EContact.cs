@@ -143,18 +143,18 @@ namespace CrmAboxApi.Logic.Classes
 
                     if (signupProperties.medication != null)
                     {
-                        JArray dosesArray = new JArray();
-                        JArray productsArray = new JArray();
+                        //JArray dosesArray = new JArray();
+                        //JArray productsArray = new JArray();
                         JArray medicsArray = new JArray();
-                        ProductEntity productEntity = new ProductEntity();
+                       
                         DoctorEntity doctorEntity = new DoctorEntity();
 
 
-                        int productsLength = signupProperties.medication.products.Length;
-                        for (int i = 0; i < productsLength; i++)
-                        {
-                            productsArray.Add(new JValue($"/{productEntity.EntityPluralName}({productEntity.Fields.ProductNumber}='{signupProperties.medication.products[i].productid}')"));
-                        }
+                        //int productsLength = signupProperties.medication.products.Length;
+                        //for (int i = 0; i < productsLength; i++)
+                        //{
+                        //    productsArray.Add(new JValue($"/{productEntity.EntityPluralName}({productEntity.Fields.ProductNumber}='{signupProperties.medication.products[i].productid}')"));
+                        //}
 
 
 
@@ -167,10 +167,10 @@ namespace CrmAboxApi.Logic.Classes
                         }
 
 
-                        if (productsArray != null)
-                        {
-                            jObject.Add($"{this.Fields.ContactxProductRelationship}@odata.bind", productsArray);
-                        }
+                        //if (productsArray != null)
+                        //{
+                        //    jObject.Add($"{this.Fields.ContactxProductRelationship}@odata.bind", productsArray);
+                        //}
 
                         if (medicsArray != null)
                         {
@@ -406,6 +406,12 @@ namespace CrmAboxApi.Logic.Classes
                     DoseRecord[] dosesArray = null;
                     string[] dosesCreated = null;
 
+
+                    /*Este request se deja por fuera del metodo que crea toda la estructura de
+                     * Contacto porque es un proceso individual de crear una entidad de Dosis,
+                     * la cual puede eventualmente fallar o no crearse correctamente, ademas se necesita
+                     * ligar el resultado de esta operacion al request que crea el contacto en el crm                     
+                     */
                     #region -> Dose Retrieve
 
                     if (signupProperties.medication != null)

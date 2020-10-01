@@ -18,14 +18,22 @@ namespace CreateContactAsPatient.Methods
         private ContactEntity contactEntity = null;
         private DoseEntity doseEntity = null;
         private ProductEntity productEntity = null;
+        private DoctorEntity doctorEntity = null;
         public RequestHelpers()
         {
             doseEntity = new DoseEntity();
             sharedMethods = new MShared();
             contactEntity = new ContactEntity();
             productEntity = new ProductEntity();
+            doctorEntity = new DoctorEntity();
         }
 
+        /// <summary>
+        /// Recibe una entidad Contacto y prepara un Objeto serializable para actualizar en los servicios de Abox Plan
+        /// </summary>
+        /// <param name="contact"></param>
+        /// <param name="service"></param>
+        /// <returns></returns>
         public UpdatePatientRequest.Request GetPatientUpdateStructure(Entity contact, IOrganizationService service)
         {
             UpdatePatientRequest.Request requestStructure = new UpdatePatientRequest.Request();
@@ -119,14 +127,9 @@ namespace CreateContactAsPatient.Methods
                     #endregion
 
 
-                    #region -> Contact's Current Products
-
-
-
+                    #region -> Productos actuales del Contacto 1:N
 
                     //Obtener los productos y dosis que ya tiene actualmente asignados el contacto
-
-
 
 
                     string[] doseColumnsToGet = new string[] { doseEntity.Fields.Dose, doseEntity.Fields.DosexProduct };
@@ -146,7 +149,7 @@ namespace CreateContactAsPatient.Methods
                             {
                                 int length = contactDosesList.Entities.Count;
                                 requestStructure.medication = new UpdatePatientRequest.Request.Medication();
-                                //Prepare the array to support the new doseCreated. 
+                                
                                 requestStructure.medication.products = new UpdatePatientRequest.Request.Product[length];
                                 for (int i = 0; i < length; i++)
                                 {
@@ -190,7 +193,7 @@ namespace CreateContactAsPatient.Methods
                     }
 
 
-                    
+
 
 
 
@@ -198,6 +201,79 @@ namespace CreateContactAsPatient.Methods
 
                     #endregion
 
+
+                    #region -> Médicos actuales del contacto N:N
+
+
+
+                    string entity1 = doctorEntity.EntitySingularName;
+
+                    string entity2 = contactEntity.EntitySingularName;
+
+                    string relationshipEntityName = contactEntity.Fields.ContactxDoctorRelationship;
+
+                    QueryExpression querym = new QueryExpression(entity1);
+
+                    querym.ColumnSet = new ColumnSet(true);
+
+                    LinkEntity linkEntity1 = new LinkEntity(entity1, relationshipEntityName, doctorEntity.Fields.EntityId, doctorEntity.Fields.EntityId,Microsoft.Xrm.Sdk.Query.JoinOperator.Inner);
+
+                    LinkEntity linkEntity2 = new LinkEntity(relationshipEntityName, entity2, contactEntity.Fields.EntityId, contactEntity.Fields.EntityId, JoinOperator.Inner);
+
+                    //linkEntity2.EntityAlias = "alias";
+
+                    linkEntity1.LinkEntities.Add(linkEntity2);
+
+                    querym.LinkEntities.Add(linkEntity1);
+
+                    // Add condition to match 
+
+                    linkEntity2.LinkCriteria = new FilterExpression();
+
+                    linkEntity2.LinkCriteria.AddCondition(new ConditionExpression(contactEntity.Fields.EntityId, ConditionOperator.Equal, contact.Id));
+
+                    EntityCollection doctorsOfContact = service.RetrieveMultiple(querym);
+
+                    if (doctorsOfContact != null)
+                    {
+                        if (doctorsOfContact.Entities != null)
+                        {
+                            if (doctorsOfContact.Entities.Count > 0)
+                            {
+                                int length = doctorsOfContact.Entities.Count;
+                                requestStructure.medication = new UpdatePatientRequest.Request.Medication();
+
+                                requestStructure.medication.medics = new UpdatePatientRequest.Request.Medic[length];
+                                for (int i = 0; i < length; i++)
+                                {
+
+                                    var medic = doctorsOfContact[i];
+
+
+                                    if (medic.Attributes.Contains(doctorEntity.Fields.DoctorIdKey))
+                                    {
+                                        string id = medic.GetAttributeValue<string>(doctorEntity.Fields.DoctorIdKey);
+
+
+                                        requestStructure.medication.medics[i] = new UpdatePatientRequest.Request.Medic
+                                        {
+                                            medicid = id,
+
+                                        };
+                                    }
+
+
+
+                                }
+                            }
+                        }
+
+
+
+                    }
+
+
+                    #endregion
 
                 }
             }
