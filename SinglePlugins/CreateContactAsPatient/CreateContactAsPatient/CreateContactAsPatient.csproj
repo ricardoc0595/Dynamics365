@@ -68,6 +68,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DoctorManagement.cs" />
     <Compile Include="DoseCUD.cs" />
     <Compile Include="Classes\PatientSignupRequest.cs" />
     <Compile Include="Classes\UpdatePatientRequest.cs" />

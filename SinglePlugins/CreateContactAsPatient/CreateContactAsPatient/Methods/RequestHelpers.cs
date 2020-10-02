@@ -127,6 +127,8 @@ namespace CreateContactAsPatient.Methods
                     #endregion
 
 
+
+
                     #region -> Productos actuales del Contacto 1:N
 
                     //Obtener los productos y dosis que ya tiene actualmente asignados el contacto
@@ -204,7 +206,7 @@ namespace CreateContactAsPatient.Methods
 
                     #region -> Médicos actuales del contacto N:N
 
-
+                    //En Dynamics, la relación N:N está definida desde Doctores a Contactos
 
                     string entity1 = doctorEntity.EntitySingularName;
 
@@ -241,7 +243,11 @@ namespace CreateContactAsPatient.Methods
                             if (doctorsOfContact.Entities.Count > 0)
                             {
                                 int length = doctorsOfContact.Entities.Count;
-                                requestStructure.medication = new UpdatePatientRequest.Request.Medication();
+
+                                if (requestStructure.medication == null)
+                                {
+                                    requestStructure.medication = new UpdatePatientRequest.Request.Medication();
+                                }
 
                                 requestStructure.medication.medics = new UpdatePatientRequest.Request.Medic[length];
                                 for (int i = 0; i < length; i++)

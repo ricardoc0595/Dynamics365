@@ -95,7 +95,7 @@ namespace CreateContactAsPatient
                             WebRequestData wrData = new WebRequestData();
                             wrData.InputData = jsonObject;
                             wrData.ContentType = "application/json";
-                            wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg0NDQ0NDQ0NCIsImlhdCI6MTYwMTQxMTA1NSwiZXhwIjoxNjAxNDk3NDU1fQ.ic-eaWjdPkRv5IQHJUISP4v7G5u66pdX3s5Z2Oo_C_o";
+                            wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAxNTY3MDI1LCJleHAiOjE2MDE2NTM0MjV9.DUu4CxsNaB7FIz3AiMx5sMQ83BRyGPkHDa-gn7ZFq1k";
 
                             wrData.Url = AboxServices.UpdatePatientService;
 
@@ -126,7 +126,7 @@ namespace CreateContactAsPatient
                             else
                             {
                                 //TODO: Manejar error, esta llegando null cuando hay un error de protocolo
-                                throw new InvalidPluginExecutionException("Ocurrió un error al consultar los servicios de Abox Plan" + serviceResponseProperties.response.message);
+                                throw new InvalidPluginExecutionException("Ocurrió un error al consultar los servicios de Abox Plan" + serviceResponse.ErrorMessage);
                             }
 
                         }

@@ -160,27 +160,41 @@ namespace CreateContactAsPatient
                                                 updatePatientRequest.medication = new UpdatePatientRequest.Request.Medication();
                                             }
 
-                                            //guardar la cantidad de productos que tiene el paciente
-                                            var tempProducts = updatePatientRequest.medication.products;
-
-                                            //inicializar un nuevo array con una posición adicional que guardará el nuevo dosis-producto
-                                            updatePatientRequest.medication.products = new UpdatePatientRequest.Request.Product[tempProducts.Length + 1];
-
-                                            for (int i = 0; i < tempProducts.Length; i++)
+                                            if (updatePatientRequest.medication.products != null)
                                             {
-                                                updatePatientRequest.medication.products[i] = new UpdatePatientRequest.Request.Product
+                                                //guardar la cantidad de productos que tiene el paciente
+                                                var tempProducts = updatePatientRequest.medication.products;
+
+                                                //inicializar un nuevo array con una posición adicional que guardará el nuevo dosis-producto
+                                                updatePatientRequest.medication.products = new UpdatePatientRequest.Request.Product[tempProducts.Length + 1];
+
+                                                for (int i = 0; i < tempProducts.Length; i++)
                                                 {
-                                                    frequency = tempProducts[i].frequency,
-                                                    productid = tempProducts[i].productid
+                                                    updatePatientRequest.medication.products[i] = new UpdatePatientRequest.Request.Product
+                                                    {
+                                                        frequency = tempProducts[i].frequency,
+                                                        productid = tempProducts[i].productid
+                                                    };
+                                                }
+
+                                                //agregar el nuevo dosis-producto al array
+                                                updatePatientRequest.medication.products[updatePatientRequest.medication.products.Length - 1] = new UpdatePatientRequest.Request.Product
+                                                {
+                                                    frequency = frequency,
+                                                    productid = product.GetAttributeValue<string>(productEntity.Fields.ProductNumber)
+                                                };
+                                            }
+                                            else
+                                            {
+                                                updatePatientRequest.medication.products = new UpdatePatientRequest.Request.Product[1];
+                                                updatePatientRequest.medication.products[updatePatientRequest.medication.products.Length - 1] = new UpdatePatientRequest.Request.Product
+                                                {
+                                                    frequency = frequency,
+                                                    productid = product.GetAttributeValue<string>(productEntity.Fields.ProductNumber)
                                                 };
                                             }
 
-                                            //agregar el nuevo dosis-producto al array
-                                            updatePatientRequest.medication.products[updatePatientRequest.medication.products.Length - 1] = new UpdatePatientRequest.Request.Product
-                                            {
-                                                frequency = frequency,
-                                                productid = product.GetAttributeValue<string>(productEntity.Fields.ProductNumber)
-                                            };
+
                                         }
                                     }
                                 }
@@ -317,7 +331,7 @@ namespace CreateContactAsPatient
                         WebRequestData wrData = new WebRequestData();
                         wrData.InputData = jsonObject;
                         wrData.ContentType = "application/json";
-                        wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg0NDQ0NDQ0NCIsImlhdCI6MTYwMTQ5MDc5NywiZXhwIjoxNjAxNTc3MTk3fQ.5-TdWSKcf5ZzXpVdOzcBm0MXhRMuSU0n2OelckkMaH4";
+                        wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAxNTY3MDI1LCJleHAiOjE2MDE2NTM0MjV9.DUu4CxsNaB7FIz3AiMx5sMQ83BRyGPkHDa-gn7ZFq1k";
 
                         wrData.Url = AboxServices.UpdatePatientService;
 
