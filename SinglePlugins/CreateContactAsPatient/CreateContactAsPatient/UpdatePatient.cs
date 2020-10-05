@@ -28,6 +28,8 @@ namespace CreateContactAsPatient
         private DoseEntity doseEntity = null;
         private RequestHelpers helperMethods = null;
 
+       
+
         public void Execute(IServiceProvider serviceProvider)
         {
             try
@@ -39,6 +41,7 @@ namespace CreateContactAsPatient
 
                 Entity contactUpdated = null;
                 UpdatePatientRequest.Request updatePatientRequest = null;
+                UpdateAccountRequest.Request updateAccountRequest = null;
                 ContactMethods contactMethods = null;
 
                 if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is Entity)
@@ -51,7 +54,7 @@ namespace CreateContactAsPatient
                     }
                     else
                     {
-
+                        sharedMethods = new MShared();
                         if (contactUpdated != null)
                         {
                             helperMethods = new RequestHelpers();
@@ -60,12 +63,23 @@ namespace CreateContactAsPatient
 
                             //contactMethods = new ContactMethods();
 
-                            string[] columnsToGet = new string[] { contactEntity.Fields.IdAboxPatient, contactEntity.Fields.Country, contactEntity.Fields.UserType, contactEntity.Fields.IdType, contactEntity.Fields.Id, contactEntity.Fields.Firstname, contactEntity.Fields.SecondLastname, contactEntity.Fields.Lastname, contactEntity.Fields.Gender, contactEntity.Fields.Birthdate };
+                            string[] columnsToGet = new string[] { contactEntity.Fields.IdAboxPatient, contactEntity.Fields.Country,contactEntity.Fields.Province,contactEntity.Fields.Canton,contactEntity.Fields.District,contactEntity.Fields.Interests, contactEntity.Fields.UserType, contactEntity.Fields.IdType, contactEntity.Fields.Id, contactEntity.Fields.Firstname, contactEntity.Fields.SecondLastname, contactEntity.Fields.Lastname, contactEntity.Fields.Gender, contactEntity.Fields.Birthdate, contactEntity.Fields.ContactxContactLookup,contactEntity.Fields.Phone,contactEntity.Fields.SecondaryPhone,contactEntity.Fields.Email };
                             var columnSet = new ColumnSet(columnsToGet);
                             Entity contactData = service.Retrieve(contactEntity.EntitySingularName, contactUpdated.Id, columnSet);
-                           
 
-                           
+
+                            string userType = "";
+
+                            if (contactData.Attributes.Contains(contactEntity.Fields.UserType))
+                            {
+                                EntityReference userTypeReference = null;
+                                userTypeReference = (EntityReference)contactData.Attributes[contactEntity.Fields.UserType];
+                                if (userTypeReference != null)
+                                {
+                                    userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
+                                }
+                            }
+
                             /*Recorrer los atributos que cambiaron y sobreescribirselos a la entidad contacto actual para
                              tener la información completa que se enviará al servicio*/
                             foreach (string keyName in contactUpdated.Attributes.Keys)
@@ -77,17 +91,49 @@ namespace CreateContactAsPatient
                             }
 
 
-                            updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service);
+                            /*Dependiendo del tipo de usuario y si tiene contactos a cargo o no, se utiizan los servicios de
+                             updateAccount o updatePatient*/
+                            if (!string.IsNullOrEmpty(userType))
+                            {
+                                /*Validar si es un usuario tipo Paciente y no tiene un cuidador o tutor, se utilizara el servicio
+                                 *de update patient*/
+                                if (userType == "01" && !(contactData.Attributes.Contains(contactEntity.Fields.ContactxContactLookup)))
+                                {
+                                    updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service);
+                                }
+                                else
+                                {
+                                    //Si es cuidador, tutor, o paciente que no está a cargo de nadie se usa el update account
+                                    updateAccountRequest = helperMethods.GetAccountUpdateStructure(contactData,service);
+                                }
+                               
+                            }
+
+
 
                             #endregion
 
 
-                            sharedMethods = new MShared();
 
 
-                            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.Request));
+
+                            DataContractJsonSerializer serializer = null;
                             MemoryStream memoryStream = new MemoryStream();
-                            serializer.WriteObject(memoryStream, updatePatientRequest);
+                            string serviceUrl = "";
+                            if (updatePatientRequest != null)
+                            {
+                                serializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.Request));
+                                serializer.WriteObject(memoryStream, updatePatientRequest);
+                                serviceUrl = AboxServices.UpdatePatientService;
+                            }
+                            else if (updateAccountRequest != null)
+                            {
+                                serializer = new DataContractJsonSerializer(typeof(UpdateAccountRequest.Request));
+                                serializer.WriteObject(memoryStream, updateAccountRequest);
+                                serviceUrl = AboxServices.UpdateAccountService;
+                            }
+
+
                             var jsonObject = Encoding.Default.GetString(memoryStream.ToArray());
                             memoryStream.Dispose();
 
@@ -95,33 +141,67 @@ namespace CreateContactAsPatient
                             WebRequestData wrData = new WebRequestData();
                             wrData.InputData = jsonObject;
                             wrData.ContentType = "application/json";
-                            wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAxNTY3MDI1LCJleHAiOjE2MDE2NTM0MjV9.DUu4CxsNaB7FIz3AiMx5sMQ83BRyGPkHDa-gn7ZFq1k";
+                            wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAxOTIwNTQ5LCJleHAiOjE2MDIwMDY5NDl9.6M-3n9In6R5ze-r0Z8d1eupIAQSfxyEGZuM7ymroZEY";
 
-                            wrData.Url = AboxServices.UpdatePatientService;
+                            wrData.Url = serviceUrl;
 
 
                             var serviceResponse = sharedMethods.DoPostRequest(wrData);
-                            UpdatePatientRequest.ServiceResponse serviceResponseProperties = null;
+                            UpdatePatientRequest.ServiceResponse updatePatientResponse = null;
+                            UpdateAccountRequest.ServiceResponse updateAccountResponse = null;
                             if (serviceResponse.IsSuccessful)
                             {
-                                DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.ServiceResponse));
 
-                                using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponse.Data)))
-                                {
-                                    deserializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.ServiceResponse));
-                                    serviceResponseProperties = (UpdatePatientRequest.ServiceResponse)deserializer.ReadObject(ms);
-                                }
-
-                                if (serviceResponseProperties.response.code != "MEMCTRL-1014")
+                                if (updatePatientRequest!=null)
                                 {
 
-                                    throw new InvalidPluginExecutionException("Ocurrió un error al guardar la información en Abox Plan:\n" + serviceResponseProperties.response.message);
+                                    //Leer respuesta del servicio de Update Patient
+
+                                    DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.ServiceResponse));
+
+                                    using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponse.Data)))
+                                    {
+                                        deserializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.ServiceResponse));
+                                        updatePatientResponse = (UpdatePatientRequest.ServiceResponse)deserializer.ReadObject(ms);
+                                    }
+
+                                    if (updatePatientResponse.response.code != "MEMCTRL-1014")
+                                    {
+
+                                        throw new InvalidPluginExecutionException("Ocurrió un error al guardar la información en Abox Plan:\n" + updatePatientResponse.response.message);
+
+                                    }
+                                    else
+                                    {
+                                        //contact.Attributes.Add("new_idaboxpatient", serviceResponseProperties.response.details.idPaciente);
+                                    }
+
 
                                 }
-                                else
+                                else if (updateAccountRequest!=null)
                                 {
-                                    //contact.Attributes.Add("new_idaboxpatient", serviceResponseProperties.response.details.idPaciente);
+                                    //Leer respuesta del servicio Update Account
+                                    DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(UpdateAccountRequest.ServiceResponse));
+
+                                    using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponse.Data)))
+                                    {
+                                        deserializer = new DataContractJsonSerializer(typeof(UpdateAccountRequest.ServiceResponse));
+                                        updateAccountResponse = (UpdateAccountRequest.ServiceResponse)deserializer.ReadObject(ms);
+                                    }
+
+                                    if (updateAccountResponse.response.code != "MEMCTRL-1014")
+                                    {
+
+                                        throw new InvalidPluginExecutionException("Ocurrió un error al guardar la información en Abox Plan:\n" + updateAccountResponse.response.message);
+
+                                    }
+                                    else
+                                    {
+                                        //contact.Attributes.Add("new_idaboxpatient", serviceResponseProperties.response.details.idPaciente);
+                                    }
                                 }
+
+                               
                             }
                             else
                             {

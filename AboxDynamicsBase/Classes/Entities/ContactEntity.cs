@@ -72,6 +72,7 @@ namespace AboxDynamicsBase.Classes.Entities
         public string Province { get; }
         public string ContactxDoseRelationship { get;  }
         public string Interests { get;  }
+        public string ContactxContactLookup { get; set; }
 
         public ContactFields()
         {
@@ -101,6 +102,7 @@ namespace AboxDynamicsBase.Classes.Entities
             this.District = "new_distrit";
             this.Province = "new_cityid";
             this.Interests = "new_clientinterest";
+            this.ContactxContactLookup = "new_contactcontactid";
         }
 
 

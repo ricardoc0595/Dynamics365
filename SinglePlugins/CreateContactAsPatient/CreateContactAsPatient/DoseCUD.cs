@@ -331,7 +331,7 @@ namespace CreateContactAsPatient
                         WebRequestData wrData = new WebRequestData();
                         wrData.InputData = jsonObject;
                         wrData.ContentType = "application/json";
-                        wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAxNTY3MDI1LCJleHAiOjE2MDE2NTM0MjV9.DUu4CxsNaB7FIz3AiMx5sMQ83BRyGPkHDa-gn7ZFq1k";
+                        wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAxOTIwNTQ5LCJleHAiOjE2MDIwMDY5NDl9.6M-3n9In6R5ze-r0Z8d1eupIAQSfxyEGZuM7ymroZEY";
 
                         wrData.Url = AboxServices.UpdatePatientService;
 
