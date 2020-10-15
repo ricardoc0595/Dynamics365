@@ -18,12 +18,13 @@ namespace CrmAboxApi.Logic.Classes
     public class EDose : AboxDynamicsBase.Classes.Entities.DoseEntity
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+        private MShared sharedMethods = null;
         string connectionString = null;
 
 
         public EDose()
         {
-
+            sharedMethods = new MShared();
             connectionString = ConfigurationManager.AppSettings["ConnectionString"].ToString();
         }
 
@@ -41,12 +42,17 @@ namespace CrmAboxApi.Logic.Classes
                     
                     jObject.Add($"{this.Schemas.DosexProduct}@odata.bind", new JValue($"/{productEntity.EntityPluralName}({productEntity.Fields.ProductNumber}='{doseRecord.IdProduct}')"));
                 }
-              
+
+                if (!String.IsNullOrEmpty(doseRecord.ContactBinding))
+                {
+                    jObject.Add($"{this.Schemas.ContactxDose}@odata.bind", new JValue($"/{doseRecord.ContactBinding}"));
+                }
+
 
 
                 if (!(String.IsNullOrEmpty(doseRecord.Dose)))
                 {
-                    jObject.Add($"{this.Fields.Dose}", doseRecord.Dose);
+                    jObject.Add($"{this.Fields.Dose}", sharedMethods.GetDoseFrequencyValue(doseRecord.Dose));
                 }
 
 
@@ -143,6 +149,85 @@ namespace CrmAboxApi.Logic.Classes
 
         }
 
+        private OperationResult DoseDeleteRequest(string doseId)
+        {
+            OperationResult operationResult = new OperationResult();
+            try
+            {
+
+                if (doseId != null)
+                {
+                    try
+                    {
+                        using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
+                        {
+
+
+                            client.DefaultRequestHeaders.Add("Accept", "application/json");
+                            client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
+                            client.DefaultRequestHeaders.Add("OData-Version", "4.0");
+                            //client.DefaultRequestHeaders.Add("Prefer", "return=representation");
+
+                            //HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
+                            var response = client.DeleteAsync($"{this.EntityPluralName}({doseId})").Result;
+                            if (response.IsSuccessStatusCode)
+                            {
+
+                                //Get the response content and parse it.
+                                //JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                                //string userId = (string)body[this.Fields.EntityId];
+                                operationResult.Code = "";
+                                operationResult.Message = "Dosis eliminada correctamente del CRM";
+                                operationResult.IsSuccessful = true;
+                                operationResult.Data = null;
+
+                            }
+                            else
+                            {
+                                //Get the response content and parse it.
+                                JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                                //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
+                                JObject userId = JObject.Parse(body.ToString());
+                                CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
+
+                                Logger.Error("", response.RequestMessage);
+                                operationResult.Code = "Error al eliminar la dosis del CRM";
+                                operationResult.Message = response.ReasonPhrase;
+                                operationResult.IsSuccessful = false;
+                                operationResult.Data = null;
+                                operationResult.InternalError = err;
+                            }
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex.ToString());
+                        operationResult.Code = "";
+                        operationResult.Message = ex.ToString();
+                        operationResult.IsSuccessful = false;
+                        operationResult.Data = null;
+
+                    }
+                }
+
+
+
+                return operationResult;
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.ToString());
+                operationResult.Code = "";
+                operationResult.Message = ex.ToString();
+                operationResult.IsSuccessful = false;
+                operationResult.Data = null;
+                return operationResult;
+            }
+
+        }
+
         public OperationResult Create(DoseRecord doseRecord)
         {
             OperationResult responseObject = new OperationResult();
@@ -155,6 +240,30 @@ namespace CrmAboxApi.Logic.Classes
                
 
                 responseObject = this.DoseCreateRequest(newDose);
+                return responseObject;
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.ToString());
+                responseObject.Code = "";
+                responseObject.Message = ex.ToString();
+                responseObject.IsSuccessful = false;
+                responseObject.Data = null;
+            }
+
+
+            return responseObject;
+        }
+
+        public OperationResult Delete(string doseId)
+        {
+            OperationResult responseObject = new OperationResult();
+
+            try
+            {
+
+                responseObject = this.DoseDeleteRequest(doseId);
                 return responseObject;
 
             }

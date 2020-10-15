@@ -7,8 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Serialization.Json;
 using System.IO;
-using CrmAboxApi.Logic.Classes.Helper;
+
 using System.Runtime.Remoting.Messaging;
+using AboxDynamicsBase.Classes;
 
 namespace CrmAboxApi.Logic.Methods
 {
@@ -140,5 +141,41 @@ namespace CrmAboxApi.Logic.Methods
 
         }
 
+        public int GetDoseFrequencyValue(string valueFromJson)
+        {
+            int result = -1;
+            try
+            {
+                switch (valueFromJson.ToLower())
+                {
+                    case "1 al día":
+                        result = Constants.DoseFrequencyOnePerDay;
+                        break;
+                    case "2 al día":
+                        result = Constants.DoseFrequencyTwoPerDay;
+                        break;
+                    case "3 al día":
+                        result = Constants.DoseFrequencyThreePerDay;
+                        break;
+                    case "4 al día":
+                        result = Constants.DoseFrequencyFourPerDay;
+                        break;
+                    case "Otro":
+                        result = Constants.DoseFrequencyOther;
+                        break;
+                    default:
+                        result =  Constants.DoseFrequencyOther; 
+                        break;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                result = -1;
+
+            }
+            return result;
+
+        }
     }
 }

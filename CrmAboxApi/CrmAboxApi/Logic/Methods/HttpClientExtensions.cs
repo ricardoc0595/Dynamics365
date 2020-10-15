@@ -10,10 +10,13 @@ namespace CrmAboxApi.Logic.Methods
 {
     public static class HttpClientExtensions
     {
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         public async static Task<HttpResponseMessage> PatchAsync(this HttpClient client, string requestUri, HttpContent content)
         {
             var method = new HttpMethod("PATCH");
 
+
+            
             var request = new HttpRequestMessage(method, requestUri)
             {
                 Content = content
@@ -26,6 +29,7 @@ namespace CrmAboxApi.Logic.Methods
         {
             var method = new HttpMethod("PATCH");
 
+           
             var request = new HttpRequestMessage(method, requestUri)
             {
                 Content = content
@@ -37,7 +41,7 @@ namespace CrmAboxApi.Logic.Methods
         public async static Task<HttpResponseMessage> PatchAsync(this HttpClient client, string requestUri, HttpContent content, CancellationToken cancellationToken)
         {
             var method = new HttpMethod("PATCH");
-
+           
             var request = new HttpRequestMessage(method, requestUri)
             {
                 Content = content
@@ -49,7 +53,7 @@ namespace CrmAboxApi.Logic.Methods
         public async static Task<HttpResponseMessage> PatchAsync(this HttpClient client, Uri requestUri, HttpContent content, CancellationToken cancellationToken)
         {
             var method = new HttpMethod("PATCH");
-
+            
             var request = new HttpRequestMessage(method, requestUri)
             {
                 Content = content

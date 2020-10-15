@@ -152,7 +152,10 @@ namespace CreateContactAsPatient
 
                                             if (doseInput.Attributes.Contains(doseEntity.Fields.Dose))
                                             {
-                                                frequency = doseInput.GetAttributeValue<string>(doseEntity.Fields.Dose);
+                                                //frequency = doseInput.GetAttributeValue<string>(doseEntity.Fields.Dose);
+                                                int value =(doseInput.GetAttributeValue<OptionSetValue>(doseEntity.Fields.Dose)).Value;
+                                                frequency = sharedMethods.GetDoseFrequencyValue(value);
+
                                             }
 
                                             if (updatePatientRequest.medication==null)
@@ -279,7 +282,8 @@ namespace CreateContactAsPatient
 
                                             if (doseInput.Attributes.Contains(doseEntity.Fields.Dose))
                                             {
-                                                frequency = doseInput.GetAttributeValue<string>(doseEntity.Fields.Dose);
+                                                int value = (doseInput.GetAttributeValue<OptionSetValue>(doseEntity.Fields.Dose)).Value;
+                                                frequency = sharedMethods.GetDoseFrequencyValue(value);
                                             }
 
                                             if (updatePatientRequest.medication == null)

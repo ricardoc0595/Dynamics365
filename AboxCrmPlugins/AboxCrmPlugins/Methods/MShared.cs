@@ -173,5 +173,43 @@ namespace AboxCrmPlugins.Methods
 
         }
 
+        public string GetDoseFrequencyValue(int value)
+        {
+            
+            string result = "";
+            try
+            {
+                switch (value)
+                {
+                    case Constants.DoseFrequencyOnePerDay:
+                        result = "1 al día";
+                        break;
+                    case Constants.DoseFrequencyTwoPerDay:
+                        result = "2 al día";
+                        break;
+                    case Constants.DoseFrequencyThreePerDay:
+                        result = "3 al día";
+                        break;
+                    case Constants.DoseFrequencyFourPerDay:
+                        result = "4 al día";
+                        break;
+                    case Constants.DoseFrequencyOther:
+                        result = "Otro";
+                        break;
+                    default:
+                        result = "";
+                        break;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                result = "";
+
+            }
+            return result;
+
+        }
+
     }
 }

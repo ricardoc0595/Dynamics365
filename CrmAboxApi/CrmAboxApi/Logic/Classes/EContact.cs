@@ -19,22 +19,24 @@ namespace CrmAboxApi.Logic.Classes
     public class EContact : ContactEntity
     {
         MShared sharedMethods = null;
-        
+
         CountryEntity countryEntity = null;
         ProvinceEntity provinceEntity = null;
         CantonEntity cantonEntity = null;
         DistrictEntity districtEntity = null;
+        DoctorEntity doctorEntity = null;
         EDose doseEntity = null;
         string connectionString = null;
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         public EContact()
         {
             sharedMethods = new MShared();
-            
+
             countryEntity = new CountryEntity();
             provinceEntity = new ProvinceEntity();
             cantonEntity = new CantonEntity();
             districtEntity = new DistrictEntity();
+            doctorEntity = new DoctorEntity();
             connectionString = ConfigurationManager.AppSettings["ConnectionString"].ToString();
             doseEntity = new EDose();
         }
@@ -78,7 +80,7 @@ namespace CrmAboxApi.Logic.Classes
 
                     if (!String.IsNullOrEmpty(signupProperties.otherInterest))
                     {
-                        
+
                         bool parsed = Int32.TryParse(signupProperties.otherInterest.ToString(), out int aux);
                         if (parsed)
                         {
@@ -146,7 +148,7 @@ namespace CrmAboxApi.Logic.Classes
                         //JArray dosesArray = new JArray();
                         //JArray productsArray = new JArray();
                         JArray medicsArray = new JArray();
-                       
+
                         DoctorEntity doctorEntity = new DoctorEntity();
 
 
@@ -344,36 +346,36 @@ namespace CrmAboxApi.Logic.Classes
 
                     if (updateProperties.medication != null)
                     {
-                        JArray productsArray = new JArray();
-                        JArray medicsArray = new JArray();
-                        ProductEntity productEntity = new ProductEntity();
-                        DoctorEntity doctorEntity = new DoctorEntity();
+                        //JArray productsArray = new JArray();
+                        //JArray medicsArray = new JArray();
+                        //ProductEntity productEntity = new ProductEntity();
+                        //DoctorEntity doctorEntity = new DoctorEntity();
 
 
-                        int productsLength = updateProperties.medication.products.Length;
-                        for (int i = 0; i < productsLength; i++)
-                        {
-                            productsArray.Add(new JValue($"/{productEntity.EntityPluralName}({productEntity.Fields.ProductNumber}='{updateProperties.medication.products[i].productid}')"));
-                        }
+                        //int productsLength = updateProperties.medication.products.Length;
+                        //for (int i = 0; i < productsLength; i++)
+                        //{
+                        //    productsArray.Add(new JValue($"/{productEntity.EntityPluralName}({productEntity.Fields.ProductNumber}='{updateProperties.medication.products[i].productid}')"));
+                        //}
 
 
 
-                        int medicsLength = updateProperties.medication.medics.Length;
-                        for (int i = 0; i < medicsLength; i++)
-                        {
-                            medicsArray.Add(new JValue($"/{doctorEntity.EntityPluralName}({doctorEntity.Fields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
-                        }
+                        //int medicsLength = updateProperties.medication.medics.Length;
+                        //for (int i = 0; i < medicsLength; i++)
+                        //{
+                        //    medicsArray.Add(new JValue($"/{doctorEntity.EntityPluralName}({doctorEntity.Fields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
+                        //}
 
 
-                        if (productsArray != null)
-                        {
-                            jObject.Add($"{this.Fields.ContactxProductRelationship}@odata.bind", productsArray);
-                        }
+                        //if (productsArray != null)
+                        //{
+                        //    jObject.Add($"{this.Fields.ContactxProductRelationship}@odata.bind", productsArray);
+                        //}
 
-                        if (medicsArray != null)
-                        {
-                            jObject.Add($"{this.Fields.ContactxDoctorRelationship}@odata.bind", medicsArray);
-                        }
+                        //if (medicsArray != null)
+                        //{
+                        //    jObject.Add($"{this.Fields.ContactxDoctorRelationship}@odata.bind", medicsArray);
+                        //}
                     }
 
 
@@ -533,6 +535,7 @@ namespace CrmAboxApi.Logic.Classes
         }
 
 
+
         private OperationResult ContactCreateRequest(JObject jsonObject)
         {
             OperationResult operationResult = new OperationResult();
@@ -552,6 +555,7 @@ namespace CrmAboxApi.Logic.Classes
                             client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                             client.DefaultRequestHeaders.Add("Prefer", "return=representation");
 
+                            Logger.Debug($"Create Contact | JSON: {jsonObject.ToString(Formatting.None)}");
                             HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
                             var response = client.PostAsync($"contacts?$select={this.Fields.EntityId}", c).Result;
                             if (response.IsSuccessStatusCode)
@@ -612,7 +616,180 @@ namespace CrmAboxApi.Logic.Classes
 
         }
 
+        private OperationResult ContactRelatedDosesRequest(int idContact)
+        {
+            OperationResult operationResult = new OperationResult();
+            try
+            {
 
+
+                try
+                {
+                    using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
+                    {
+
+
+                        client.DefaultRequestHeaders.Add("Accept", "application/json");
+                        client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
+                        client.DefaultRequestHeaders.Add("OData-Version", "4.0");
+                        client.DefaultRequestHeaders.Add("Prefer", "return=representation");
+
+
+                        var response = client.GetAsync($"{this.EntityPluralName}({this.Fields.IdAboxPatient}={idContact})?$select={this.Fields.EntityId}&$expand={this.Fields.ContactxDoseRelationship}($select={doseEntity.Fields.EntityId})").Result;
+                        if (response.IsSuccessStatusCode)
+                        {
+
+                            //Get the response content and parse it.
+                            JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                            // string doseId = (string)body[doseEntity.Fields.EntityId];
+                            var dataFromBody = body[doseEntity.Fields.ContactxDoseRelationship];
+                            JArray dosesRetrieved = JArray.FromObject(dataFromBody);
+                            string[] idsFound = new string[dosesRetrieved.Count];
+
+                            for (int i = 0; i < dosesRetrieved.Count; i++)
+                            {
+                                idsFound[i] = dosesRetrieved[i].SelectToken(doseEntity.Fields.EntityId).ToString();
+                            }
+
+                            operationResult.Code = "";
+                            operationResult.Message = "Dosis extraídas correctamente";
+                            operationResult.IsSuccessful = true;
+                            operationResult.Data = idsFound;
+
+                        }
+                        else
+                        {
+                            //Get the response content and parse it.
+                            JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                            //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
+                            JObject userId = JObject.Parse(body.ToString());
+                            CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
+
+                            Logger.Error("", response.RequestMessage);
+                            operationResult.Code = "Error al obtener las dosis del contacto en el CRM";
+                            operationResult.Message = response.ReasonPhrase;
+                            operationResult.IsSuccessful = false;
+                            operationResult.Data = null;
+                            operationResult.InternalError = err;
+                        }
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex.ToString());
+                    operationResult.Code = "";
+                    operationResult.Message = ex.ToString();
+                    operationResult.IsSuccessful = false;
+                    operationResult.Data = null;
+
+                }
+
+
+
+
+                return operationResult;
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.ToString());
+                operationResult.Code = "";
+                operationResult.Message = ex.ToString();
+                operationResult.IsSuccessful = false;
+                operationResult.Data = null;
+                return operationResult;
+            }
+
+        }
+
+
+        private OperationResult ContactRelatedDoctorsRequest(int idContact)
+        {
+            OperationResult operationResult = new OperationResult();
+            try
+            {
+
+
+                try
+                {
+                    using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
+                    {
+
+
+                        client.DefaultRequestHeaders.Add("Accept", "application/json");
+                        client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
+                        client.DefaultRequestHeaders.Add("OData-Version", "4.0");
+                        client.DefaultRequestHeaders.Add("Prefer", "return=representation");
+
+
+                        var response = client.GetAsync($"{this.EntityPluralName}({this.Fields.IdAboxPatient}={idContact})?$select={this.Fields.EntityId}&$expand={this.Fields.ContactxDoctorRelationship}($select={doctorEntity.Fields.EntityId})").Result;
+                        if (response.IsSuccessStatusCode)
+                        {
+
+                            //Get the response content and parse it.
+                            JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                            // string doseId = (string)body[doseEntity.Fields.EntityId];
+                            var dataFromBody = body[this.Fields.ContactxDoctorRelationship];
+                            JArray doctorsRetrieved = JArray.FromObject(dataFromBody);
+                            string[] idsFound = new string[doctorsRetrieved.Count];
+
+                            for (int i = 0; i < doctorsRetrieved.Count; i++)
+                            {
+                                idsFound[i] = doctorsRetrieved[i].SelectToken(doctorEntity.Fields.EntityId).ToString();
+                            }
+
+                            operationResult.Code = "";
+                            operationResult.Message = "Doctores extraídos correctamente";
+                            operationResult.IsSuccessful = true;
+                            operationResult.Data = idsFound;
+
+                        }
+                        else
+                        {
+                            //Get the response content and parse it.
+                            JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                            //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
+                            JObject userId = JObject.Parse(body.ToString());
+                            CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
+
+                            Logger.Error("", response.RequestMessage);
+                            operationResult.Code = "Error al obtener los doctores relacionados del contacto en el CRM";
+                            operationResult.Message = response.ReasonPhrase;
+                            operationResult.IsSuccessful = false;
+                            operationResult.Data = null;
+                            operationResult.InternalError = err;
+                        }
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex.ToString());
+                    operationResult.Code = "";
+                    operationResult.Message = ex.ToString();
+                    operationResult.IsSuccessful = false;
+                    operationResult.Data = null;
+
+                }
+
+
+
+
+                return operationResult;
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.ToString());
+                operationResult.Code = "";
+                operationResult.Message = ex.ToString();
+                operationResult.IsSuccessful = false;
+                operationResult.Data = null;
+                return operationResult;
+            }
+
+        }
 
         private OperationResult ContactUpdateRequest(JObject jsonObject, string idToUpdate)
         {
@@ -633,6 +810,8 @@ namespace CrmAboxApi.Logic.Classes
                             client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                             //client.DefaultRequestHeaders.Add("Prefer", "return=representation");
 
+
+                            Logger.Debug($"Update Contact | JSON: {jsonObject.ToString(Formatting.None)}");
                             HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
                             var response = client.PatchAsync($"contacts({this.Fields.IdAboxPatient}={idToUpdate})", c).Result;
                             if (response.IsSuccessStatusCode)
@@ -1011,10 +1190,283 @@ namespace CrmAboxApi.Logic.Classes
 
                 if (updatePatientRequest != null)
                 {
+                    int contactId = Int32.Parse(updatePatientRequest.patientid);
+                    #region Doses Delete
+                    OperationResult dosesResult = null;
+                    string[] contactRelatedDoses = null;
+                    /*Eliminar las dosis que tenga el usuario para relacionarle las nuevas, no se hace un update, se hace un delete
+                     completamente y se relacionan nuevas dosis*/
+                    bool dosesDeleted = false;
+                    if (!String.IsNullOrEmpty(updatePatientRequest.patientid))
+                    {
+
+                        dosesResult = this.GetDosesRelated(contactId);
+                        if (dosesResult.IsSuccessful)
+                        {
+
+                            contactRelatedDoses = (string[])dosesResult.Data;
+
+                            if (contactRelatedDoses != null && contactRelatedDoses.Length > 0)
+                            {
+                                if (contactRelatedDoses.Length > 0)
+                                {
+                                    int deletedCount = 0;
+                                    for (int i = 0; i < contactRelatedDoses.Length; i++)
+                                    {
+                                        OperationResult deleteResult = doseEntity.Delete(contactRelatedDoses[i]);
+                                        if (deleteResult.IsSuccessful)
+                                        {
+                                            deletedCount++;
+                                        }
+                                    }
+                                    if (deletedCount == contactRelatedDoses.Length)
+                                    {
+                                        dosesDeleted = true;
+                                    }
+                                }
+                            }
+
+                        }
+                        else
+                        {
+                            result = dosesResult;
+                            return result;
+                        }
+
+                    }
+
+                    if ((contactRelatedDoses != null) && (contactRelatedDoses.Length > 0))
+                    {
+                        if (!dosesDeleted)
+                        {
+                            return new OperationResult
+                            {
+                                IsSuccessful = false,
+                                Message = "Las dosis relacionadas del contacto no se pudieron eliminar",
+                                InternalError = null,
+                                Code = ""
+                            };
+
+                        }
+                    }
+
+                    #endregion
 
                     var contactStructure = this.GetUpdatePatientJsonStructure(updatePatientRequest);
 
+                    /*Este request se deja por fuera del metodo que crea toda la estructura de
+                * Contacto porque es un proceso individual de crear una entidad de Dosis,
+                * la cual puede eventualmente fallar o no crearse correctamente, ademas se necesita
+                * ligar el resultado de esta operacion al request que crea el contacto en el crm                     
+                */
+                    DoseRecord[] dosesArray = null;
+                    string[] dosesCreated = null;
+
+                    #region -> Dose Create
+
+                    if (updatePatientRequest.medication != null)
+                    {
+                        int dosesLength = updatePatientRequest.medication.products.Length;
+                        dosesArray = new DoseRecord[dosesLength];
+                        dosesCreated = new string[dosesLength];
+
+                        for (int i = 0; i < dosesLength; i++)
+                        {
+
+                            string frequency = "";
+                            if (!String.IsNullOrEmpty(updatePatientRequest.medication.products[i].other))
+                                frequency = updatePatientRequest.medication.products[i].other;
+                            else
+                                frequency = updatePatientRequest.medication.products[i].frequency;
+
+                            dosesArray[i] = new DoseRecord
+                            {
+                                Dose = frequency,
+                                IdProduct = updatePatientRequest.medication.products[i].productid,
+                                ContactBinding = $"{this.EntityPluralName}({this.Fields.IdAboxPatient}={updatePatientRequest.patientid})"
+
+                            };
+                        }
+
+
+                        if (dosesArray != null)
+                        {
+                            if (dosesArray.Length > 0)
+                            {
+
+                                try
+                                {
+                                    int length = dosesArray.Length;
+
+                                    for (int i = 0; i < length; i++)
+                                    {
+                                        //OperationResult doseCreateResult = doseEntity.Create(new DoseRecord
+                                        //{
+                                        //    Dose = dosesArray[i].Dose,
+                                        //    IdProduct = dosesArray[i].IdProduct
+                                        //});
+                                        OperationResult doseCreateResult = doseEntity.Create(dosesArray[i]);
+
+
+
+                                        if (doseCreateResult.IsSuccessful)
+                                        {
+                                            dosesCreated[i] = (string)doseCreateResult.Data;
+
+                                        }
+
+                                    }
+
+                                    if (dosesCreated.Length != dosesArray.Length)
+                                    {
+                                        return new OperationResult
+                                        {
+                                            IsSuccessful = false,
+                                            Message = "Ocurrió un error creando alguna de las dosis del paciente",
+                                            InternalError = null,
+                                            Code = ""
+                                        };
+                                    }
+
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.Error(ex.ToString());
+                                    throw ex;
+                                }
+
+                            }
+
+                        }
+                    }
+
+                    #endregion
+
+
+
+
+                    #region Medics Disassociate
+
+                    OperationResult doctorsResult = null;
+                    string[] contactRelatedDoctors = null;
+
+                    /*TODO: validar posibilidad de identificar cuantos medicamentos del request hacen match con los
+                     que tiene ya el contacto para evitar tener que hacer desasociaciones*/
+                    doctorsResult = this.GetDoctorsRelated(contactId);
+                    bool contactsDisassociated = false;
+                    if (doctorsResult.IsSuccessful)
+                    {
+
+                        contactRelatedDoctors = (string[])doctorsResult.Data;
+
+                        if (contactRelatedDoctors != null)
+                        {
+                            if (contactRelatedDoctors.Length > 0)
+                            {
+                                int disassociatedCount = 0;
+                                for (int i = 0; i < contactRelatedDoctors.Length; i++)
+                                {
+                                    EntityAssociation entityDisassociation = new EntityAssociation
+                                    {
+                                        RelatedEntityId = contactRelatedDoctors[i],
+                                        RelatedEntityIdKeyToUse = null,
+                                        RelatedEntityName = doctorEntity.EntityPluralName,
+                                        TargetEntityId = updatePatientRequest.patientid,
+                                        TargetEntityName = this.EntityPluralName,
+                                        TargetIdKeyToUse = this.Fields.IdAboxPatient,
+                                        RelationshipDefinitionName = this.Fields.ContactxDoctorRelationship
+
+                                    };
+                                    var disassociateResult = entityDisassociation.Disassociate(connectionString);
+
+                                    if (disassociateResult.IsSuccessful)
+                                    {
+                                        disassociatedCount++;
+                                    }
+                                }
+                                if (disassociatedCount == contactRelatedDoctors.Length)
+                                {
+                                    contactsDisassociated = true;
+                                }
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        result = doctorsResult;
+                        return result;
+                    }
+
+                    if ((contactRelatedDoctors != null) && (contactRelatedDoctors.Length > 0))
+                    {
+                        if (!contactsDisassociated)
+                        {
+                            return new OperationResult
+                            {
+                                IsSuccessful = false,
+                                Message = "Los doctores relacionados del contacto no se pudieron desasociar",
+                                InternalError = null,
+                                Code = ""
+                            };
+
+                        }
+                    }
+
+
+
+
+                    #endregion
+
+
+                    #region Medics Associate
+
+                    if (updatePatientRequest.medication != null)
+                    {
+                        if ((updatePatientRequest.medication.medics != null) && (updatePatientRequest.medication.medics.Length > 0))
+                        {
+                            var medicsLength = updatePatientRequest.medication.medics.Length;
+
+
+                            for (int i = 0; i < medicsLength; i++)
+                            {
+                                EntityAssociation entityAssociation = new EntityAssociation
+                                {
+                                    RelatedEntityId = updatePatientRequest.medication.medics[i].medicid,
+                                    RelatedEntityIdKeyToUse = doctorEntity.Fields.DoctorIdKey,
+                                    RelatedEntityName = doctorEntity.EntityPluralName,
+                                    TargetEntityId = updatePatientRequest.patientid,
+                                    TargetEntityName = this.EntityPluralName,
+                                    TargetIdKeyToUse = this.Fields.IdAboxPatient,
+                                    RelationshipDefinitionName = this.Fields.ContactxDoctorRelationship
+
+                                };
+
+                                var associationResult = entityAssociation.Associate(connectionString);
+
+                                if (!associationResult.IsSuccessful)
+                                {
+                                    return new OperationResult
+                                    {
+                                        IsSuccessful = false,
+                                        Message = "Ocurrió un error relacionando los doctores al contacto",
+                                        InternalError = null,
+                                        Code = ""
+                                    };
+                                }
+
+
+                            }
+
+                        }
+                    }
+
+
+                    #endregion
+
                     result = this.ContactUpdateRequest(contactStructure, updatePatientRequest.patientid);
+
 
                 }
                 else
@@ -1040,5 +1492,60 @@ namespace CrmAboxApi.Logic.Classes
 
             }
         }
+
+
+        public OperationResult GetDosesRelated(int contactId)
+        {
+            OperationResult result = null;
+            try
+            {
+
+                result = this.ContactRelatedDosesRequest(contactId);
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                result = new OperationResult
+                {
+                    IsSuccessful = false,
+                    Data = null,
+                    Message = "Ocurrió un error obteniendo las dosis relacionadas",
+                    InternalError = null,
+                    Code = ""
+
+                };
+
+            }
+            return result;
+        }
+
+
+        public OperationResult GetDoctorsRelated(int contactId)
+        {
+            OperationResult result = null;
+            try
+            {
+
+                result = this.ContactRelatedDoctorsRequest(contactId);
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                result = new OperationResult
+                {
+                    IsSuccessful = false,
+                    Data = null,
+                    Message = "Ocurrió un error obteniendo los doctores relacionados del paciente",
+                    InternalError = null,
+                    Code = ""
+
+                };
+
+            }
+            return result;
+        }
+
     }
 }

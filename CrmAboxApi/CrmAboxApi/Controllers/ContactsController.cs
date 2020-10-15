@@ -25,58 +25,58 @@ namespace CrmAboxApi.Controllers
         // GET api/contacts/5
         public IHttpActionResult Get(int id)
         {
-            Doctor doctorProcess = new Doctor();
-            OperationResult response = null;
-            var responseAllDoctors = doctorProcess.RetrieveAll();
+            EContact doctorProcess = new EContact();
+            
+            var responseAllDoctors = doctorProcess.GetDosesRelated(id);
+            return null;
+            //if (responseAllDoctors.IsSuccessful)
+            //{
+            //    try
+            //    {
+            //        RetrieveDoctorFromWebAPI doctorsResponse = (RetrieveDoctorFromWebAPI)responseAllDoctors.Data;
 
-            if (responseAllDoctors.IsSuccessful)
-            {
-                try
-                {
-                    RetrieveDoctorFromWebAPI doctorsResponse = (RetrieveDoctorFromWebAPI)responseAllDoctors.Data;
-
-                    //doctorProcess.Delete(doctorsResponse.value[0].new_doctorid);
+            //        //doctorProcess.Delete(doctorsResponse.value[0].new_doctorid);
 
                    
 
-                    foreach (var doc in doctorsResponse.value)
-                    {
-                        doctorProcess.Delete(doc.new_doctorid);
-                    }
+            //        foreach (var doc in doctorsResponse.value)
+            //        {
+            //            doctorProcess.Delete(doc.new_doctorid);
+            //        }
 
-                    return Content(HttpStatusCode.OK, new OperationResult
-                    {
-                        Data = null,
-                        Message = "Doctores eliminados",
-                        IsSuccessful = true,
+            //        return Content(HttpStatusCode.OK, new OperationResult
+            //        {
+            //            Data = null,
+            //            Message = "Doctores eliminados",
+            //            IsSuccessful = true,
 
-                    });
+            //        });
 
-                }
-                catch (Exception ex)
-                {
-                    return Content(HttpStatusCode.InternalServerError, new OperationResult
-                    {
-                        Data = null,
-                        Message = ex.ToString(),
-                        IsSuccessful = false,
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        return Content(HttpStatusCode.InternalServerError, new OperationResult
+            //        {
+            //            Data = null,
+            //            Message = ex.ToString(),
+            //            IsSuccessful = false,
                         
-                    }) ;
+            //        }) ;
                   
-                }
+            //    }
 
 
-            }
-            else
-            {
-                return Content(HttpStatusCode.InternalServerError, new OperationResult
-                {
-                    Data = null,
-                    Message = "Error",
-                    IsSuccessful = false,
+            //}
+            //else
+            //{
+            //    return Content(HttpStatusCode.InternalServerError, new OperationResult
+            //    {
+            //        Data = null,
+            //        Message = "Error",
+            //        IsSuccessful = false,
 
-                });
-            }
+            //    });
+            //}
 
         }
 

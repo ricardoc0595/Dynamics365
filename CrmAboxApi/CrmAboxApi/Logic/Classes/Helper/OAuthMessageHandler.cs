@@ -52,7 +52,7 @@ namespace Logic.CrmAboxApi.Classes.Helper
             }
 
             authHeader = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
-            Logger.Debug($"AuthorizationToken: {authResult.AccessToken}");
+            //Logger.Debug($"AuthorizationToken: {authResult.AccessToken}");
         }
 
         private async Task DiscoveryAuthority2(string serviceUrl)

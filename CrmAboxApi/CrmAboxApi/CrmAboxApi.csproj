@@ -221,6 +221,7 @@
     <Compile Include="Logic\Classes\EContact.cs" />
     <Compile Include="Logic\Classes\Deserializing\PatientSignup.cs" />
     <Compile Include="Logic\Classes\EDose.cs" />
+    <Compile Include="Logic\Classes\EntityAssociation.cs" />
     <Compile Include="Logic\Classes\Helper\ConnectionHelper.cs" />
     <Compile Include="Logic\Classes\Helper\Constants.cs" />
     <Compile Include="Logic\Classes\Helper\CrmWebAPIError.cs" />

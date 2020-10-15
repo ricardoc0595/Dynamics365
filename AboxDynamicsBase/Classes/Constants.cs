@@ -17,6 +17,17 @@ namespace AboxDynamicsBase.Classes
         public const int FemaleGenderValue = 2;
         public const int NationalIdValue = 1;
         public const int ForeignerIdValue = 2;
+        public const int DoseFrequencyOnePerDay= 1;
+        public const int DoseFrequencyTwoPerDay = 2;
+        public const int DoseFrequencyThreePerDay = 3;
+        public const int DoseFrequencyFourPerDay = 4;
+        public const int DoseFrequencyOther = 5;
+
+        //public enum S
+        //{
+        //    DA,
+        //    DE
+        //}
 
     }
 }
