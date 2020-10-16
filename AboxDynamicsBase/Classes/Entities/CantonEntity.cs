@@ -1,46 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AboxDynamicsBase.Classes.Entities
+﻿namespace AboxDynamicsBase.Classes.Entities
 {
-    public class CantonEntity:EntityBase
+    public class CantonEntity : EntityBase
     {
-
-       
-        public CantonFields Fields { get; set; }
+        //public CantonFields Fields { get; set; }
         public CantonSchemas Schemas { get; set; }
-
 
         public CantonEntity()
         {
-
-            this.Fields = new CantonFields();
+            //this.Fields = new CantonFields();
             this.Schemas = new CantonSchemas();
             this.EntityPluralName = "new_cantons";
             this.EntitySingularName = "new_canton";
         }
-
     }
 
-
-
-
-    public class CantonFields :EntityBase.BaseFields
+    public static class CantonFields
     {
-        public CantonFields()
-        {
-            EntityId = "new_cantonid";
-            IdCanton = "new_idcanton";
-            Name = "new_name";
-            ProvincexCanton = "new_provinciacanton";
-        }
-
-        public string IdCanton { get;  }
-        public string Name { get; set; }
-        public string ProvincexCanton { get; set; }
+        public const string EntityId = "new_cantonid";
+        public const string IdCanton = "new_idcanton";
+        public const string Name = "new_name";
+        public const string ProvincexCanton = "new_provinciacanton";
     }
 
     public class CantonSchemas
@@ -52,5 +31,4 @@ namespace AboxDynamicsBase.Classes.Entities
 
         public string ProvincexCanton { get; set; }
     }
-
 }

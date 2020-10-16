@@ -1,8 +1,8 @@
+using CrmAboxApi.Areas.HelpPage.ModelDescriptions;
+using CrmAboxApi.Areas.HelpPage.Models;
 using System;
 using System.Web.Http;
 using System.Web.Mvc;
-using CrmAboxApi.Areas.HelpPage.ModelDescriptions;
-using CrmAboxApi.Areas.HelpPage.Models;
 
 namespace CrmAboxApi.Areas.HelpPage.Controllers
 {

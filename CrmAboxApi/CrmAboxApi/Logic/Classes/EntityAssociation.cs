@@ -3,10 +3,7 @@ using Logic.CrmAboxApi.Classes.Helper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Web;
 
 namespace CrmAboxApi.Logic.Classes
 {
@@ -27,13 +24,10 @@ namespace CrmAboxApi.Logic.Classes
             OperationResult operationResult = new OperationResult();
             try
             {
-
                 try
                 {
                     using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
                     {
-
-
                         client.DefaultRequestHeaders.Add("Accept", "application/json");
                         client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                         client.DefaultRequestHeaders.Add("OData-Version", "4.0");
@@ -49,17 +43,14 @@ namespace CrmAboxApi.Logic.Classes
                         else
                             targetQuery = $"{this.TargetEntityName}({this.TargetIdKeyToUse}={this.TargetEntityId})";
 
-
                         if (String.IsNullOrEmpty(this.RelatedEntityIdKeyToUse))
                             relatedQuery = $"{this.RelationshipDefinitionName}({this.RelatedEntityId})";
                         else
                             relatedQuery = $"{this.RelationshipDefinitionName}({this.RelatedEntityIdKeyToUse}={this.RelatedEntityId})";
 
-
                         var response = client.DeleteAsync($"{targetQuery}/{relatedQuery}/$ref").Result;
                         if (response.IsSuccessStatusCode)
                         {
-
                             //Get the response content and parse it.
                             //JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
                             //string userId = (string)body[this.Fields.EntityId];
@@ -67,7 +58,6 @@ namespace CrmAboxApi.Logic.Classes
                             operationResult.Message = "Desasociación realizada correctamente";
                             operationResult.IsSuccessful = true;
                             operationResult.Data = null;
-
                         }
                         else
                         {
@@ -84,7 +74,6 @@ namespace CrmAboxApi.Logic.Classes
                             operationResult.Data = null;
                             operationResult.InternalError = err;
                         }
-
                     }
                 }
                 catch (Exception ex)
@@ -94,11 +83,9 @@ namespace CrmAboxApi.Logic.Classes
                     operationResult.Message = ex.ToString();
                     operationResult.IsSuccessful = false;
                     operationResult.Data = null;
-
                 }
 
                 return operationResult;
-
             }
             catch (Exception ex)
             {
@@ -109,21 +96,17 @@ namespace CrmAboxApi.Logic.Classes
                 operationResult.Data = null;
                 return operationResult;
             }
-
         }
-
 
         public OperationResult Associate(string connectionString)
         {
             OperationResult operationResult = new OperationResult();
             try
             {
-
                 try
                 {
                     using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
                     {
-
                         string url = ConnectionHelper.GetParameterValueFromConnectionString(connectionString, "Url");
                         url += "/api/data/v9.1/";
                         client.DefaultRequestHeaders.Add("Accept", "application/json");
@@ -143,24 +126,20 @@ namespace CrmAboxApi.Logic.Classes
                         {
                             //Se usa el Key alternativo (los de Abox por ejemplo)
                             jsonObject.Add($"@odata.id", $"{url}{this.RelatedEntityName}({this.RelatedEntityIdKeyToUse}='{this.RelatedEntityId}')");
-
                         }
 
                         string targetQuery = "";
-                        
+
                         if (String.IsNullOrEmpty(this.TargetIdKeyToUse))
                             targetQuery = $"{this.TargetEntityName}({this.TargetEntityId})";
                         else
                             targetQuery = $"{this.TargetEntityName}({this.TargetIdKeyToUse}={this.TargetEntityId})";
 
-
-
-                        HttpContent c = new StringContent(jsonObject.ToString(Formatting.None),System.Text.Encoding.UTF8, "application/json");
+                        HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), System.Text.Encoding.UTF8, "application/json");
                         var response = client.PostAsync($"{targetQuery}/{this.RelationshipDefinitionName}/$ref", c).Result;
 
                         if (response.IsSuccessStatusCode)
                         {
-
                             //Get the response content and parse it.
                             //JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
                             //string userId = (string)body[this.Fields.EntityId];
@@ -168,7 +147,6 @@ namespace CrmAboxApi.Logic.Classes
                             operationResult.Message = "Asociación realizada correctamente";
                             operationResult.IsSuccessful = true;
                             operationResult.Data = null;
-
                         }
                         else
                         {
@@ -185,7 +163,6 @@ namespace CrmAboxApi.Logic.Classes
                             operationResult.Data = null;
                             operationResult.InternalError = err;
                         }
-
                     }
                 }
                 catch (Exception ex)
@@ -195,11 +172,9 @@ namespace CrmAboxApi.Logic.Classes
                     operationResult.Message = ex.ToString();
                     operationResult.IsSuccessful = false;
                     operationResult.Data = null;
-
                 }
 
                 return operationResult;
-
             }
             catch (Exception ex)
             {
@@ -210,9 +185,6 @@ namespace CrmAboxApi.Logic.Classes
                 operationResult.Data = null;
                 return operationResult;
             }
-
         }
-
-
     }
 }

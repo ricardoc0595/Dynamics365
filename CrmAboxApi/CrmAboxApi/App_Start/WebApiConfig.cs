@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Http;
+﻿using System.Web.Http;
 
 namespace CrmAboxApi
 {
@@ -21,7 +18,6 @@ namespace CrmAboxApi
             //    defaults: new { id = RouteParameter.Optional }
             //);
 
-
             ////
             ///
 
@@ -32,14 +28,13 @@ namespace CrmAboxApi
                 routeTemplate: "api/{controller}"
             );
 
-
             // Controller with ID
             // To handle routes like `/api/VTRouting/1`
             config.Routes.MapHttpRoute(
                 name: "ControllerAndId",
                 routeTemplate: "api/{controller}/{id}",
                 defaults: null,
-                constraints: new { id = @"^\d+$" } // Only integers 
+                constraints: new { id = @"^\d+$" } // Only integers
             );
 
             // Controllers with Actions
@@ -48,9 +43,6 @@ namespace CrmAboxApi
                 name: "ControllerAndAction",
                 routeTemplate: "api/{controller}/{action}"
             );
-
-
-
         }
     }
 }

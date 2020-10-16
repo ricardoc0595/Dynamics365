@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CrmAboxApi.Logic.Classes
+﻿namespace CrmAboxApi.Logic.Classes
 {
     public class DoseRecord
     {

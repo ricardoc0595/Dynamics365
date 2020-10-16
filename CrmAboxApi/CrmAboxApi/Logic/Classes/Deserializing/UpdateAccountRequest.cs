@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CrmAboxApi.Logic.Classes.Deserializing
+﻿namespace CrmAboxApi.Logic.Classes.Deserializing
 {
     public class UpdateAccountRequest
     {
@@ -27,7 +22,6 @@ namespace CrmAboxApi.Logic.Classes.Deserializing
         public object Password { get; set; }
         public Medication medication { get; set; }
         public Interest[] interests { get; set; }
-      
 
         public class Medication
         {
@@ -65,8 +59,5 @@ namespace CrmAboxApi.Logic.Classes.Deserializing
             public string relationid { get; set; }
             public string other { get; set; }
         }
-
-
-
     }
 }

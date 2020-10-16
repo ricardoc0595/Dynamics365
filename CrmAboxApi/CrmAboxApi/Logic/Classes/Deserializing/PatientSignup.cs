@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CrmAboxApi.Logic.Classes.Deserializing
+﻿namespace CrmAboxApi.Logic.Classes.Deserializing
 {
     public class PatientSignup
     {
@@ -16,8 +11,6 @@ namespace CrmAboxApi.Logic.Classes.Deserializing
         public Medication medication { get; set; }
         public Interest[] interests { get; set; }
         public string otherInterest { get; set; }
-
-       
 
         public class Personalinfo
         {
@@ -88,7 +81,5 @@ namespace CrmAboxApi.Logic.Classes.Deserializing
             public string relationid { get; set; }
             public string other { get; set; }
         }
-
-
     }
 }

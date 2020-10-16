@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CrmAboxApi.Logic.Classes.Deserializing
+﻿namespace CrmAboxApi.Logic.Classes.Deserializing
 {
     public class RetrieveDoctorFromWebAPI
     {
@@ -11,14 +6,9 @@ namespace CrmAboxApi.Logic.Classes.Deserializing
         public Value[] value { get; set; }
         public string odatanextLink { get; set; }
 
-        
-
         public class Value
         {
             public string new_doctorid { get; set; }
-           
         }
-
-
     }
 }

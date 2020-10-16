@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CrmAboxApi.Logic.Classes.Deserializing
+﻿namespace CrmAboxApi.Logic.Classes.Deserializing
 {
     public class UpdatePatientRequest
     {
@@ -17,8 +12,6 @@ namespace CrmAboxApi.Logic.Classes.Deserializing
         public object interests { get; set; }
         public string imagenfondo { get; set; }
         public string imagenavatar { get; set; }
-
-      
 
         public class Personalinfo
         {
@@ -60,7 +53,5 @@ namespace CrmAboxApi.Logic.Classes.Deserializing
         {
             public string medicid { get; set; }
         }
-
-
     }
 }

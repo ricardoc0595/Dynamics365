@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.IdentityModel.Tokens;
-using System.Linq;
-using Microsoft.IdentityModel.Tokens; 
-using Microsoft.Owin.Security;
+﻿using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin.Security.ActiveDirectory;
 using Owin;
+using System.Configuration;
 
 namespace CrmAboxApi
 {
@@ -19,8 +14,9 @@ namespace CrmAboxApi
                 new WindowsAzureActiveDirectoryBearerAuthenticationOptions
                 {
                     Tenant = ConfigurationManager.AppSettings["ida:Tenant"],
-                    TokenValidationParameters = new TokenValidationParameters {
-                         ValidAudience = ConfigurationManager.AppSettings["ida:Audience"]
+                    TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidAudience = ConfigurationManager.AppSettings["ida:Audience"]
                     },
                 });
         }

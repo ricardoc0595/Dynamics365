@@ -1,17 +1,15 @@
-﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using System.Net.Http.Headers;
-using System.Net.Http;
+﻿using AboxDynamicsBase.Classes.Entities;
+using CrmAboxApi.Logic.Classes.Helper;
+
+//using AboxCrmPlugins.Classes.Entities;
+using CrmAboxApi.Logic.Methods;
+using Logic.CrmAboxApi.Classes.Helper;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Configuration;
-using CrmAboxApi.Logic.Classes.Helper;
-using Logic.CrmAboxApi.Classes.Helper;
+using System.Net.Http;
 using System.Text;
-using Newtonsoft.Json;
-using CrmAboxApi.Logic.Classes.Deserializing;
-//using AboxCrmPlugins.Classes.Entities;
-using CrmAboxApi.Logic.Methods;
-using AboxDynamicsBase.Classes.Entities;
 
 namespace CrmAboxApi.Logic.Classes
 {
@@ -19,8 +17,7 @@ namespace CrmAboxApi.Logic.Classes
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         private MShared sharedMethods = null;
-        string connectionString = null;
-
+        private string connectionString = null;
 
         public EDose()
         {
@@ -35,12 +32,9 @@ namespace CrmAboxApi.Logic.Classes
             ProductEntity productEntity = new ProductEntity();
             try
             {
-
                 if (!String.IsNullOrEmpty(doseRecord.IdProduct))
                 {
-                    
-                    
-                    jObject.Add($"{this.Schemas.DosexProduct}@odata.bind", new JValue($"/{productEntity.EntityPluralName}({productEntity.Fields.ProductNumber}='{doseRecord.IdProduct}')"));
+                    jObject.Add($"{this.Schemas.DosexProduct}@odata.bind", new JValue($"/{productEntity.EntityPluralName}({ProductFields.ProductNumber}='{doseRecord.IdProduct}')"));
                 }
 
                 if (!String.IsNullOrEmpty(doseRecord.ContactBinding))
@@ -48,18 +42,12 @@ namespace CrmAboxApi.Logic.Classes
                     jObject.Add($"{this.Schemas.ContactxDose}@odata.bind", new JValue($"/{doseRecord.ContactBinding}"));
                 }
 
-
-
                 if (!(String.IsNullOrEmpty(doseRecord.Dose)))
                 {
-                    jObject.Add($"{this.Fields.Dose}", sharedMethods.GetDoseFrequencyValue(doseRecord.Dose));
+                    jObject.Add($"{DoseFields.Dose}", sharedMethods.GetDoseFrequencyValue(doseRecord.Dose));
                 }
 
-
-
-
                 return jObject;
-
             }
             catch (Exception ex)
             {
@@ -67,41 +55,35 @@ namespace CrmAboxApi.Logic.Classes
                 jObject = null;
                 return jObject;
             }
-
-
         }
+
         private OperationResult DoseCreateRequest(JObject jsonObject)
         {
             OperationResult operationResult = new OperationResult();
             try
             {
-
                 if (jsonObject != null)
                 {
                     try
                     {
                         using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
                         {
-
-
                             client.DefaultRequestHeaders.Add("Accept", "application/json");
                             client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                             client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                             client.DefaultRequestHeaders.Add("Prefer", "return=representation");
 
                             HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
-                            var response = client.PostAsync($"{this.EntityPluralName}?$select={this.Fields.EntityId}", c).Result;
+                            var response = client.PostAsync($"{this.EntityPluralName}?$select={DoseFields.EntityId}", c).Result;
                             if (response.IsSuccessStatusCode)
                             {
-
                                 //Get the response content and parse it.
                                 JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                                string userId = (string)body[this.Fields.EntityId];
+                                string userId = (string)body[DoseFields.EntityId];
                                 operationResult.Code = "";
                                 operationResult.Message = "Dosis creada correctamente en el CRM";
                                 operationResult.IsSuccessful = true;
                                 operationResult.Data = userId;
-
                             }
                             else
                             {
@@ -118,7 +100,6 @@ namespace CrmAboxApi.Logic.Classes
                                 operationResult.Data = null;
                                 operationResult.InternalError = err;
                             }
-
                         }
                     }
                     catch (Exception ex)
@@ -128,14 +109,10 @@ namespace CrmAboxApi.Logic.Classes
                         operationResult.Message = ex.ToString();
                         operationResult.IsSuccessful = false;
                         operationResult.Data = null;
-
                     }
                 }
 
-
-
                 return operationResult;
-
             }
             catch (Exception ex)
             {
@@ -146,7 +123,6 @@ namespace CrmAboxApi.Logic.Classes
                 operationResult.Data = null;
                 return operationResult;
             }
-
         }
 
         private OperationResult DoseDeleteRequest(string doseId)
@@ -154,15 +130,12 @@ namespace CrmAboxApi.Logic.Classes
             OperationResult operationResult = new OperationResult();
             try
             {
-
                 if (doseId != null)
                 {
                     try
                     {
                         using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
                         {
-
-
                             client.DefaultRequestHeaders.Add("Accept", "application/json");
                             client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                             client.DefaultRequestHeaders.Add("OData-Version", "4.0");
@@ -172,15 +145,13 @@ namespace CrmAboxApi.Logic.Classes
                             var response = client.DeleteAsync($"{this.EntityPluralName}({doseId})").Result;
                             if (response.IsSuccessStatusCode)
                             {
-
                                 //Get the response content and parse it.
                                 //JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                                //string userId = (string)body[this.Fields.EntityId];
+                                //string userId = (string)body[DoseFields.EntityId];
                                 operationResult.Code = "";
                                 operationResult.Message = "Dosis eliminada correctamente del CRM";
                                 operationResult.IsSuccessful = true;
                                 operationResult.Data = null;
-
                             }
                             else
                             {
@@ -197,7 +168,6 @@ namespace CrmAboxApi.Logic.Classes
                                 operationResult.Data = null;
                                 operationResult.InternalError = err;
                             }
-
                         }
                     }
                     catch (Exception ex)
@@ -207,14 +177,10 @@ namespace CrmAboxApi.Logic.Classes
                         operationResult.Message = ex.ToString();
                         operationResult.IsSuccessful = false;
                         operationResult.Data = null;
-
                     }
                 }
 
-
-
                 return operationResult;
-
             }
             catch (Exception ex)
             {
@@ -225,7 +191,6 @@ namespace CrmAboxApi.Logic.Classes
                 operationResult.Data = null;
                 return operationResult;
             }
-
         }
 
         public OperationResult Create(DoseRecord doseRecord)
@@ -234,14 +199,10 @@ namespace CrmAboxApi.Logic.Classes
 
             try
             {
-                
                 var newDose = this.GetCreateDoseJsonStructure(doseRecord);
-
-               
 
                 responseObject = this.DoseCreateRequest(newDose);
                 return responseObject;
-
             }
             catch (Exception ex)
             {
@@ -251,7 +212,6 @@ namespace CrmAboxApi.Logic.Classes
                 responseObject.IsSuccessful = false;
                 responseObject.Data = null;
             }
-
 
             return responseObject;
         }
@@ -262,10 +222,8 @@ namespace CrmAboxApi.Logic.Classes
 
             try
             {
-
                 responseObject = this.DoseDeleteRequest(doseId);
                 return responseObject;
-
             }
             catch (Exception ex)
             {
@@ -276,9 +234,7 @@ namespace CrmAboxApi.Logic.Classes
                 responseObject.Data = null;
             }
 
-
             return responseObject;
         }
-
     }
 }

@@ -1,21 +1,10 @@
-﻿
+﻿using AboxDynamicsBase.Classes;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.Serialization.Json;
-using System.IO;
-
-using System.Runtime.Remoting.Messaging;
-using AboxDynamicsBase.Classes;
 
 namespace CrmAboxApi.Logic.Methods
 {
     public class MShared
     {
-
         /// <summary>
         /// Gets the ProductEntity ID from the CRM
         /// </summary>
@@ -37,23 +26,27 @@ namespace CrmAboxApi.Logic.Methods
                     case "01":
                         result = Constants.PatientIdType;
                         break;
+
                     case "02":
                         result = Constants.CareTakerIdType;
                         break;
+
                     case "03":
                         result = Constants.TutorIdType;
                         break;
+
                     case "04":
                         result = ""; //No se usa en produccion de Abox Plan
                         break;
+
                     case "05":
                         result = Constants.OtherInterestIdType;
                         break;
+
                     default:
                         result = null;
                         break;
                 }
-
             }
             catch (Exception ex)
             {
@@ -61,40 +54,43 @@ namespace CrmAboxApi.Logic.Methods
                 throw;
             }
             return result;
-
         }
 
         public int GetCountryValueForOptionSet(string countryCode)
         {
-            int countryValue=-1;
+            int countryValue = -1;
             switch (countryCode.ToLower())
             {
                 case "cr":
-                    countryValue= 1;
+                    countryValue = 1;
                     break;
+
                 case "hn":
                     countryValue = 2;
-                    break; 
+                    break;
+
                 case "gt":
                     countryValue = 3;
                     break;
+
                 case "ni":
                     countryValue = 4;
                     break;
+
                 case "pa":
                     countryValue = 5;
                     break;
+
                 case "do":
                     countryValue = 6;
                     break;
+
                 default:
                     countryValue = -1;
                     break;
-                    
             }
 
             return countryValue;
-
         }
 
         public string GetIdTypeId(string type)
@@ -110,12 +106,11 @@ namespace CrmAboxApi.Logic.Methods
             }
 
             return idType;
-
         }
 
         public int GetGenderValue(string genderValueFromJson)
         {
-            int result=-1;
+            int result = -1;
             try
             {
                 switch (genderValueFromJson.ToLower())
@@ -123,22 +118,21 @@ namespace CrmAboxApi.Logic.Methods
                     case "masculino":
                         result = Constants.MaleGenderValue;
                         break;
+
                     case "femenino":
                         result = Constants.FemaleGenderValue;
                         break;
+
                     default:
                         result = -1;
                         break;
                 }
-
             }
             catch (Exception ex)
             {
                 result = -1;
-                
             }
             return result;
-
         }
 
         public int GetDoseFrequencyValue(string valueFromJson)
@@ -151,31 +145,33 @@ namespace CrmAboxApi.Logic.Methods
                     case "1 al día":
                         result = Constants.DoseFrequencyOnePerDay;
                         break;
+
                     case "2 al día":
                         result = Constants.DoseFrequencyTwoPerDay;
                         break;
+
                     case "3 al día":
                         result = Constants.DoseFrequencyThreePerDay;
                         break;
+
                     case "4 al día":
                         result = Constants.DoseFrequencyFourPerDay;
                         break;
+
                     case "Otro":
                         result = Constants.DoseFrequencyOther;
                         break;
+
                     default:
-                        result =  Constants.DoseFrequencyOther; 
+                        result = Constants.DoseFrequencyOther;
                         break;
                 }
-
             }
             catch (Exception ex)
             {
                 result = -1;
-
             }
             return result;
-
         }
     }
 }

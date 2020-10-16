@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AboxDynamicsBase.Classes.Entities
+﻿namespace AboxDynamicsBase.Classes.Entities
 {
     public class ProductEntity : EntityBase
     {
-        public ProductFields Fields { get; set; }
+        //public ProductFields Fields { get; set; }
         public ProductSchemas Schemas { get; set; }
+
         public ProductEntity()
         {
-            this.Fields = new ProductFields();
+            //this.Fields = new ProductFields();
             this.Schemas = new ProductSchemas();
             this.EntitySingularName = "product";
             this.EntityPluralName = "products";
@@ -21,69 +16,36 @@ namespace AboxDynamicsBase.Classes.Entities
 
     public class ProductSchemas
     {
-
     }
 
-    public class ProductFields : EntityBase.BaseFields
+    public static class ProductFields
     {
-        public ProductFields()
-        {
-            this.IsProductActive = "new_productactive";
-            this.AnnualTherapyMax = "new_productannualtherapymax";
-            this.AnnualTherapyMin = "new_productannualtherapymin";
-            this.ApplyMultiBrandBonus = "new_productapplymultibrandbonus";
-            this.Category = "new_productcategory";
-            this.Code = "new_productcode";
-            this.ProductxContactId = "new_productcontactid";
-            this.Division = "new_productdivision";
-            this.Exchange = "new_productexchange";
-            this.ExchangeEquivalence = "new_productexchangeequivalence";
-            this.Family = "new_productfamily";
-            this.Flavor = "new_productflavor";
-            this.InternalCode = "new_productinternalcode";
-            this.MaxCosumption = "new_productmaxconsumption";
-            this.Packing = "new_productpacking";
-            this.Points = "new_productpoints";
-            this.AboxPharmacyPoints = "new_productpointsaboxpharmacy";
-            this.Blocked = "new_productsblocked";
-            this.Bonus = "new_productsbonus";
-            this.BonusUnits = "new_productsbonusunits";
-            this.Equivalence = "new_productsequivproduct";
-            this.ProductSubProduct = "new_productsubproduct";
-            this.SuggestedPrice = "new_productsuggestedprice";
-            this.TomasEquivalencia = "new_producttomas_unityequivalence";
-            this.ProductIdKey = "productidkey"; // Entity key referring the Product ID saved in Abox database
-            this.ProductNumber = "productnumber"; // Field which contains the Product ID in Abox plan database
-            this.CreatedFromWebAPI = "new_createdfromwebapi";
-        }
-
-        public string IsProductActive { get; }
-        public string AnnualTherapyMax { get; }
-        public string AnnualTherapyMin { get; }
-        public string ApplyMultiBrandBonus { get; }
-        public string Category { get; }
-        public string Code { get; }
-        public string ProductxContactId { get; }
-        public string Division { get; }
-        
-        public string Exchange { get; }
-        public string ExchangeEquivalence { get; }
-        public string Family { get; }
-        public string Flavor { get; }
-        public string InternalCode { get; }
-        public string MaxCosumption { get; }
-        public string Packing { get; }
-        public string Points { get;  }
-        public string AboxPharmacyPoints { get;}
-        public string Blocked { get;  }
-        public string Bonus { get;  }
-        public string BonusUnits { get;  }
-        public string Equivalence { get; set; }
-        public string ProductSubProduct { get; }
-        public string SuggestedPrice { get;  }
-        public string TomasEquivalencia { get;  }
-        public string ProductIdKey { get;  }
-        public string ProductNumber { get; }
-
+        public const string IsProductActive = "new_productactive";
+        public const string AnnualTherapyMax = "new_productannualtherapymax";
+        public const string AnnualTherapyMin = "new_productannualtherapymin";
+        public const string ApplyMultiBrandBonus = "new_productapplymultibrandbonus";
+        public const string Category = "new_productcategory";
+        public const string Code = "new_productcode";
+        public const string ProductxContactId = "new_productcontactid";
+        public const string Division = "new_productdivision";
+        public const string Exchange = "new_productexchange";
+        public const string ExchangeEquivalence = "new_productexchangeequivalence";
+        public const string Family = "new_productfamily";
+        public const string Flavor = "new_productflavor";
+        public const string InternalCode = "new_productinternalcode";
+        public const string MaxCosumption = "new_productmaxconsumption";
+        public const string Packing = "new_productpacking";
+        public const string Points = "new_productpoints";
+        public const string AboxPharmacyPoints = "new_productpointsaboxpharmacy";
+        public const string Blocked = "new_productsblocked";
+        public const string Bonus = "new_productsbonus";
+        public const string BonusUnits = "new_productsbonusunits";
+        public const string Equivalence = "new_productsequivproduct";
+        public const string ProductSubProduct = "new_productsubproduct";
+        public const string SuggestedPrice = "new_productsuggestedprice";
+        public const string TomasEquivalencia = "new_producttomas_unityequivalence";
+        public const string ProductIdKey = "productidkey"; // Entity key referring the Product ID saved in Abox database
+        public const string ProductNumber = "productnumber"; // Field which contains the Product ID in Abox plan database
+        public const string CreatedFromWebAPI = "new_createdfromwebapi";
     }
 }

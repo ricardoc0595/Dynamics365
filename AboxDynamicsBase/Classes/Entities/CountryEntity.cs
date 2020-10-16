@@ -1,56 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AboxDynamicsBase.Classes.Entities
+﻿namespace AboxDynamicsBase.Classes.Entities
 {
-
     public class CountryEntity : EntityBase
     {
-
-        public CountryFields Fields { get; set; }
+        //public CountryFields Fields { get; set; }
         public CountrySchemas Schemas { get; set; }
-
 
         public CountryEntity()
         {
-
-            this.Fields = new CountryFields();
+            //this.Fields = new CountryFields();
             this.Schemas = new CountrySchemas();
             this.EntityPluralName = "new_countries";
             this.EntitySingularName = "new_country";
         }
     }
 
-
-
-
-    public class CountryFields : EntityBase.BaseFields
+    public static class CountryFields
     {
-        public CountryFields()
-        {
-            EntityId = "new_countryid";
-            IdCountry = "new_idcountry";
-            Name = "new_name";
-            
-        }
-
-        public string IdCountry { get; }
-        public string Name { get; set; }
-        
+        public const string EntityId = "new_countryid";
+        public const string IdCountry = "new_idcountry";
+        public const string Name = "new_name";
     }
 
     public class CountrySchemas
     {
         public CountrySchemas()
         {
-            
         }
-
-        
     }
-
-    
 }

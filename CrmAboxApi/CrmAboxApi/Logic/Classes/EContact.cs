@@ -1,33 +1,32 @@
-﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using System.Net.Http.Headers;
-using System.Net.Http;
+﻿using AboxDynamicsBase.Classes.Entities;
+using CrmAboxApi.Logic.Classes.Deserializing;
+using CrmAboxApi.Logic.Classes.Helper;
+
+//using AboxCrmPlugins.Classes.Entities;
+using CrmAboxApi.Logic.Methods;
+using Logic.CrmAboxApi.Classes.Helper;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Configuration;
-using CrmAboxApi.Logic.Classes.Helper;
-using Logic.CrmAboxApi.Classes.Helper;
+using System.Net.Http;
 using System.Text;
-using Newtonsoft.Json;
-using CrmAboxApi.Logic.Classes.Deserializing;
-//using AboxCrmPlugins.Classes.Entities;
-using CrmAboxApi.Logic.Methods;
-using AboxDynamicsBase.Classes.Entities;
-
 
 namespace CrmAboxApi.Logic.Classes
 {
     public class EContact : ContactEntity
     {
-        MShared sharedMethods = null;
+        private MShared sharedMethods = null;
 
-        CountryEntity countryEntity = null;
-        ProvinceEntity provinceEntity = null;
-        CantonEntity cantonEntity = null;
-        DistrictEntity districtEntity = null;
-        DoctorEntity doctorEntity = null;
-        EDose doseEntity = null;
-        string connectionString = null;
+        private CountryEntity countryEntity = null;
+        private ProvinceEntity provinceEntity = null;
+        private CantonEntity cantonEntity = null;
+        private DistrictEntity districtEntity = null;
+        private DoctorEntity doctorEntity = null;
+        private EDose doseEntity = null;
+        private string connectionString = null;
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
         public EContact()
         {
             sharedMethods = new MShared();
@@ -50,13 +49,11 @@ namespace CrmAboxApi.Logic.Classes
             {
                 if (signupProperties != null)
                 {
-
-                    jObject.Add($"{this.Fields.RegisterDay}", DateTime.Now.ToString("yyyy-MM-dd"));
-
+                    jObject.Add($"{ContactFields.RegisterDay}", DateTime.Now.ToString("yyyy-MM-dd"));
 
                     if (!(String.IsNullOrEmpty(signupProperties.country)))
                     {
-                        jObject.Add($"{this.Schemas.Country}@odata.bind", $"/{countryEntity.EntityPluralName}({countryEntity.Fields.IdCountry}='{signupProperties.country}')");
+                        jObject.Add($"{this.Schemas.Country}@odata.bind", $"/{countryEntity.EntityPluralName}({CountryFields.IdCountry}='{signupProperties.country}')");
                     }
 
                     if (!(String.IsNullOrEmpty(signupProperties.contactinfo.province)))
@@ -66,81 +63,72 @@ namespace CrmAboxApi.Logic.Classes
 
                     if (!(String.IsNullOrEmpty(signupProperties.contactinfo.canton)))
                     {
-                        jObject.Add($"{this.Schemas.Canton}@odata.bind", $"/{cantonEntity.EntityPluralName}({cantonEntity.Fields.IdCanton}='{signupProperties.contactinfo.canton}')");
+                        jObject.Add($"{this.Schemas.Canton}@odata.bind", $"/{cantonEntity.EntityPluralName}({CantonFields.IdCanton}='{signupProperties.contactinfo.canton}')");
                     }
 
                     if (!(String.IsNullOrEmpty(signupProperties.contactinfo.district)))
                     {
-                        jObject.Add($"{this.Schemas.District}@odata.bind", $"/{districtEntity.EntityPluralName}({districtEntity.Fields.IdDistrict}='{signupProperties.contactinfo.district}')");
+                        jObject.Add($"{this.Schemas.District}@odata.bind", $"/{districtEntity.EntityPluralName}({DistrictFields.IdDistrict}='{signupProperties.contactinfo.district}')");
                     }
 
-
                     if (signupProperties.patientid != null)
-                        jObject.Add(this.Fields.IdAboxPatient, signupProperties.patientid.ToString());
+                        jObject.Add(ContactFields.IdAboxPatient, signupProperties.patientid.ToString());
 
                     if (!String.IsNullOrEmpty(signupProperties.otherInterest))
                     {
-
                         bool parsed = Int32.TryParse(signupProperties.otherInterest.ToString(), out int aux);
                         if (parsed)
                         {
                             int value = Int32.Parse(signupProperties.otherInterest.ToString());
-                            jObject.Add(this.Fields.OtherInterest, value);
+                            jObject.Add(ContactFields.OtherInterest, value);
                         }
                     }
-
-
 
                     if (signupProperties.personalinfo != null)
                     {
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.name)))
-                            jObject.Add(this.Fields.Firstname, signupProperties.personalinfo.name);
+                            jObject.Add(ContactFields.Firstname, signupProperties.personalinfo.name);
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.lastname)))
-                            jObject.Add(this.Fields.Lastname, signupProperties.personalinfo.lastname);
+                            jObject.Add(ContactFields.Lastname, signupProperties.personalinfo.lastname);
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.secondlastname)))
-                            jObject.Add(this.Fields.SecondLastname, signupProperties.personalinfo.secondlastname);
+                            jObject.Add(ContactFields.SecondLastname, signupProperties.personalinfo.secondlastname);
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.password)))
-                            jObject.Add(this.Fields.Password, signupProperties.personalinfo.password);
+                            jObject.Add(ContactFields.Password, signupProperties.personalinfo.password);
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.dateofbirth)))
-                            jObject.Add(this.Fields.Birthdate, signupProperties.personalinfo.dateofbirth);
+                            jObject.Add(ContactFields.Birthdate, signupProperties.personalinfo.dateofbirth);
 
                         //TODO: Max length esta en 14 actualmente, validar extension
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.id)))
-                            jObject.Add(this.Fields.Id, signupProperties.personalinfo.id);
+                            jObject.Add(ContactFields.Id, signupProperties.personalinfo.id);
 
                         string idType = sharedMethods.GetIdTypeId(signupProperties.personalinfo.idtype);
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.idtype)))
-                            jObject.Add(this.Fields.IdType, idType);
+                            jObject.Add(ContactFields.IdType, idType);
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.gender)))
-                            jObject.Add(this.Fields.Gender, sharedMethods.GetGenderValue(signupProperties.personalinfo.gender));
+                            jObject.Add(ContactFields.Gender, sharedMethods.GetGenderValue(signupProperties.personalinfo.gender));
 
                         if (!(String.IsNullOrEmpty(signupProperties.userType)))
                         {
                             jObject.Add($"{this.Schemas.UserType}@odata.bind", $"/new_usertypes({sharedMethods.GetUserTypeEntityId(signupProperties.userType)})");
                         }
-
-
                     }
 
                     if (signupProperties.contactinfo != null)
                     {
-
                         if (!(String.IsNullOrEmpty(signupProperties.contactinfo.email)))
-                            jObject.Add(this.Fields.Email, signupProperties.contactinfo.email);
+                            jObject.Add(ContactFields.Email, signupProperties.contactinfo.email);
 
                         if (!(String.IsNullOrEmpty(signupProperties.contactinfo.phone)))
-                            jObject.Add(this.Fields.Phone, signupProperties.contactinfo.phone);
+                            jObject.Add(ContactFields.Phone, signupProperties.contactinfo.phone);
 
                         if (!(String.IsNullOrEmpty(signupProperties.contactinfo.mobilephone)))
-                            jObject.Add(this.Fields.SecondaryPhone, signupProperties.contactinfo.mobilephone);
-
-
+                            jObject.Add(ContactFields.SecondaryPhone, signupProperties.contactinfo.mobilephone);
                     }
 
                     if (signupProperties.medication != null)
@@ -151,34 +139,27 @@ namespace CrmAboxApi.Logic.Classes
 
                         DoctorEntity doctorEntity = new DoctorEntity();
 
-
                         //int productsLength = signupProperties.medication.products.Length;
                         //for (int i = 0; i < productsLength; i++)
                         //{
                         //    productsArray.Add(new JValue($"/{productEntity.EntityPluralName}({productEntity.Fields.ProductNumber}='{signupProperties.medication.products[i].productid}')"));
                         //}
 
-
-
-
-
                         int medicsLength = signupProperties.medication.medics.Length;
                         for (int i = 0; i < medicsLength; i++)
                         {
-                            medicsArray.Add(new JValue($"/{doctorEntity.EntityPluralName}({doctorEntity.Fields.DoctorIdKey}='{signupProperties.medication.medics[i].medicid}')"));
+                            medicsArray.Add(new JValue($"/{doctorEntity.EntityPluralName}({DoctorFields.DoctorIdKey}='{signupProperties.medication.medics[i].medicid}')"));
                         }
-
 
                         //if (productsArray != null)
                         //{
-                        //    jObject.Add($"{this.Fields.ContactxProductRelationship}@odata.bind", productsArray);
+                        //    jObject.Add($"{ContactFields.ContactxProductRelationship}@odata.bind", productsArray);
                         //}
 
                         if (medicsArray != null)
                         {
-                            jObject.Add($"{this.Fields.ContactxDoctorRelationship}@odata.bind", medicsArray);
+                            jObject.Add($"{ContactFields.ContactxDoctorRelationship}@odata.bind", medicsArray);
                         }
-
                     }
 
                     if (signupProperties.interests != null)
@@ -192,17 +173,11 @@ namespace CrmAboxApi.Logic.Classes
                             else
                                 values += signupProperties.interests[i].interestid;
                         }
-                        jObject.Add($"{this.Fields.Interests}", values);
-
+                        jObject.Add($"{ContactFields.Interests}", values);
                     }
-
-
-
-
                 }
 
                 return jObject;
-
             }
             catch (Exception ex)
             {
@@ -210,10 +185,7 @@ namespace CrmAboxApi.Logic.Classes
                 jObject = null;
                 return jObject;
             }
-
-
         }
-
 
         private JObject GetUpdateContactJsonStructure(UpdateAccountRequest updateProperties)
         {
@@ -224,36 +196,28 @@ namespace CrmAboxApi.Logic.Classes
             {
                 if (updateProperties != null)
                 {
-
-                    jObject.Add($"{this.Fields.RegisterDay}", DateTime.Now.ToString("yyyy-MM-dd"));
-
-
+                    jObject.Add($"{ContactFields.RegisterDay}", DateTime.Now.ToString("yyyy-MM-dd"));
 
                     if (!(String.IsNullOrEmpty(updateProperties.Nombre)))
-                        jObject.Add(this.Fields.Firstname, updateProperties.Nombre);
+                        jObject.Add(ContactFields.Firstname, updateProperties.Nombre);
 
                     if (!(String.IsNullOrEmpty(updateProperties.Apellido1)))
-                        jObject.Add(this.Fields.Lastname, updateProperties.Apellido1);
+                        jObject.Add(ContactFields.Lastname, updateProperties.Apellido1);
 
                     if (!(String.IsNullOrEmpty(updateProperties.Apellido2)))
-                        jObject.Add(this.Fields.SecondLastname, updateProperties.Apellido2);
-
-
+                        jObject.Add(ContactFields.SecondLastname, updateProperties.Apellido2);
 
                     if (!(String.IsNullOrEmpty(updateProperties.FechaNacimiento)))
-                        jObject.Add(this.Fields.Birthdate, updateProperties.FechaNacimiento);
-
-
+                        jObject.Add(ContactFields.Birthdate, updateProperties.FechaNacimiento);
 
                     if (!(String.IsNullOrEmpty(updateProperties.Genero)))
-                        jObject.Add(this.Fields.Gender, sharedMethods.GetGenderValue(updateProperties.Genero));
-
+                        jObject.Add(ContactFields.Gender, sharedMethods.GetGenderValue(updateProperties.Genero));
 
                     if (!(String.IsNullOrEmpty(updateProperties.Telefono)))
-                        jObject.Add(this.Fields.Phone, updateProperties.Telefono);
+                        jObject.Add(ContactFields.Phone, updateProperties.Telefono);
 
                     if (!(String.IsNullOrEmpty(updateProperties.Telefono2)))
-                        jObject.Add(this.Fields.SecondaryPhone, updateProperties.Telefono2);
+                        jObject.Add(ContactFields.SecondaryPhone, updateProperties.Telefono2);
 
                     if (updateProperties.medication != null)
                     {
@@ -262,38 +226,31 @@ namespace CrmAboxApi.Logic.Classes
                         ProductEntity productEntity = new ProductEntity();
                         DoctorEntity doctorEntity = new DoctorEntity();
 
-
                         int productsLength = updateProperties.medication.products.Length;
                         for (int i = 0; i < productsLength; i++)
                         {
-                            productsArray.Add(new JValue($"/{productEntity.EntityPluralName}({productEntity.Fields.ProductNumber}='{updateProperties.medication.products[i].productid}')"));
+                            productsArray.Add(new JValue($"/{productEntity.EntityPluralName}({ProductFields.ProductNumber}='{updateProperties.medication.products[i].productid}')"));
                         }
-
-
 
                         int medicsLength = updateProperties.medication.medics.Length;
                         for (int i = 0; i < medicsLength; i++)
                         {
-                            medicsArray.Add(new JValue($"/{doctorEntity.EntityPluralName}({doctorEntity.Fields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
+                            medicsArray.Add(new JValue($"/{doctorEntity.EntityPluralName}({DoctorFields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
                         }
-
 
                         if (productsArray != null && productsArray.Count > 0)
                         {
-                            jObject.Add($"{this.Fields.ContactxProductRelationship}@odata.bind", productsArray);
+                            jObject.Add($"{ContactFields.ContactxProductRelationship}@odata.bind", productsArray);
                         }
 
                         if (medicsArray != null && medicsArray.Count > 0)
                         {
-                            jObject.Add($"{this.Fields.ContactxDoctorRelationship}@odata.bind", medicsArray);
+                            jObject.Add($"{ContactFields.ContactxDoctorRelationship}@odata.bind", medicsArray);
                         }
                     }
-
-
                 }
 
                 return jObject;
-
             }
             catch (Exception ex)
             {
@@ -301,10 +258,7 @@ namespace CrmAboxApi.Logic.Classes
                 jObject = null;
                 return jObject;
             }
-
-
         }
-
 
         private JObject GetUpdatePatientJsonStructure(UpdatePatientRequest updateProperties)
         {
@@ -313,36 +267,25 @@ namespace CrmAboxApi.Logic.Classes
 
             try
             {
-
                 if (updateProperties != null)
                 {
-
-
                     if (updateProperties.personalinfo != null)
                     {
                         if (!(String.IsNullOrEmpty(updateProperties.personalinfo.name)))
-                            jObject.Add(this.Fields.Firstname, updateProperties.personalinfo.name);
+                            jObject.Add(ContactFields.Firstname, updateProperties.personalinfo.name);
 
                         if (!(String.IsNullOrEmpty(updateProperties.personalinfo.lastname)))
-                            jObject.Add(this.Fields.Lastname, updateProperties.personalinfo.lastname);
+                            jObject.Add(ContactFields.Lastname, updateProperties.personalinfo.lastname);
 
                         if (!(String.IsNullOrEmpty(updateProperties.personalinfo.secondlastname)))
-                            jObject.Add(this.Fields.SecondLastname, updateProperties.personalinfo.secondlastname);
-
+                            jObject.Add(ContactFields.SecondLastname, updateProperties.personalinfo.secondlastname);
 
                         if (!(String.IsNullOrEmpty(updateProperties.personalinfo.dateofbirth)))
-                            jObject.Add(this.Fields.Birthdate, updateProperties.personalinfo.dateofbirth);
-
-
-
+                            jObject.Add(ContactFields.Birthdate, updateProperties.personalinfo.dateofbirth);
 
                         if (!(String.IsNullOrEmpty(updateProperties.personalinfo.gender)))
-                            jObject.Add(this.Fields.Gender, sharedMethods.GetGenderValue(updateProperties.personalinfo.gender));
-
-
-
+                            jObject.Add(ContactFields.Gender, sharedMethods.GetGenderValue(updateProperties.personalinfo.gender));
                     }
-
 
                     if (updateProperties.medication != null)
                     {
@@ -351,39 +294,31 @@ namespace CrmAboxApi.Logic.Classes
                         //ProductEntity productEntity = new ProductEntity();
                         //DoctorEntity doctorEntity = new DoctorEntity();
 
-
                         //int productsLength = updateProperties.medication.products.Length;
                         //for (int i = 0; i < productsLength; i++)
                         //{
                         //    productsArray.Add(new JValue($"/{productEntity.EntityPluralName}({productEntity.Fields.ProductNumber}='{updateProperties.medication.products[i].productid}')"));
                         //}
 
-
-
                         //int medicsLength = updateProperties.medication.medics.Length;
                         //for (int i = 0; i < medicsLength; i++)
                         //{
-                        //    medicsArray.Add(new JValue($"/{doctorEntity.EntityPluralName}({doctorEntity.Fields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
+                        //    medicsArray.Add(new JValue($"/{doctorEntity.EntityPluralName}({DoctorFields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
                         //}
-
 
                         //if (productsArray != null)
                         //{
-                        //    jObject.Add($"{this.Fields.ContactxProductRelationship}@odata.bind", productsArray);
+                        //    jObject.Add($"{ContactFields.ContactxProductRelationship}@odata.bind", productsArray);
                         //}
 
                         //if (medicsArray != null)
                         //{
-                        //    jObject.Add($"{this.Fields.ContactxDoctorRelationship}@odata.bind", medicsArray);
+                        //    jObject.Add($"{ContactFields.ContactxDoctorRelationship}@odata.bind", medicsArray);
                         //}
                     }
-
-
                 }
 
                 return jObject;
-
-
             }
             catch (Exception ex)
             {
@@ -391,8 +326,6 @@ namespace CrmAboxApi.Logic.Classes
                 jObject = null;
                 return jObject;
             }
-
-
         }
 
         public OperationResult CreateAsPatient(PatientSignup signupRequest, string idRelatedPatient)
@@ -408,12 +341,12 @@ namespace CrmAboxApi.Logic.Classes
                     DoseRecord[] dosesArray = null;
                     string[] dosesCreated = null;
 
-
                     /*Este request se deja por fuera del metodo que crea toda la estructura de
                      * Contacto porque es un proceso individual de crear una entidad de Dosis,
                      * la cual puede eventualmente fallar o no crearse correctamente, ademas se necesita
-                     * ligar el resultado de esta operacion al request que crea el contacto en el crm                     
+                     * ligar el resultado de esta operacion al request que crea el contacto en el crm
                      */
+
                     #region -> Dose Retrieve
 
                     if (signupProperties.medication != null)
@@ -424,7 +357,6 @@ namespace CrmAboxApi.Logic.Classes
 
                         for (int i = 0; i < dosesLength; i++)
                         {
-
                             string frequency = "";
                             if (!String.IsNullOrEmpty(signupProperties.medication.products[i].other))
                                 frequency = signupProperties.medication.products[i].other;
@@ -434,12 +366,10 @@ namespace CrmAboxApi.Logic.Classes
                             dosesArray[i] = new DoseRecord { Dose = frequency, IdProduct = signupProperties.medication.products[i].productid };
                         }
 
-
                         if (dosesArray != null)
                         {
                             if (dosesArray.Length > 0)
                             {
-
                                 try
                                 {
                                     int length = dosesArray.Length;
@@ -455,33 +385,26 @@ namespace CrmAboxApi.Logic.Classes
                                         if (result.IsSuccessful)
                                         {
                                             dosesCreated[i] = (string)result.Data;
-
                                         }
-
                                     }
 
                                     if (dosesCreated.Length != dosesArray.Length)
                                     {
                                         throw (new Exception("Ha ocurrido un error creando las dosis del paciente " + signupProperties.personalinfo.id + " en el CRM"));
                                     }
-
-
                                 }
                                 catch (Exception ex)
                                 {
                                     Logger.Error(ex.ToString());
                                     throw ex;
                                 }
-
                             }
-
                         }
                     }
 
-                    #endregion
+                    #endregion -> Dose Retrieve
 
                     JObject newContact = this.GetCreateContactJsonStructure(signupProperties);
-
 
                     #region -> Patient Related
 
@@ -489,10 +412,10 @@ namespace CrmAboxApi.Logic.Classes
                     {
                         JArray patientsInChargeArray = new JArray();
                         patientsInChargeArray.Add(new JValue($"/{this.EntityPluralName}({idRelatedPatient})"));
-                        newContact.Add($"{this.Fields.ContactxContactRelationship}@odata.bind", patientsInChargeArray);
+                        newContact.Add($"{ContactFields.ContactxContactRelationship}@odata.bind", patientsInChargeArray);
                     }
 
-                    #endregion
+                    #endregion -> Patient Related
 
                     #region -> Doses Related
 
@@ -505,20 +428,16 @@ namespace CrmAboxApi.Logic.Classes
                             for (int i = 0; i < length; i++)
                             {
                                 dosesToSave.Add(new JValue($"/{doseEntity.EntityPluralName}({dosesCreated[i]})"));
-
                             }
 
-                            newContact.Add($"{this.Fields.ContactxDoseRelationship}@odata.bind", dosesToSave);
-
+                            newContact.Add($"{ContactFields.ContactxDoseRelationship}@odata.bind", dosesToSave);
                         }
                     }
 
-                    #endregion
+                    #endregion -> Doses Related
 
                     responseObject = this.ContactCreateRequest(newContact);
-
                 }
-
             }
             catch (Exception ex)
             {
@@ -529,27 +448,20 @@ namespace CrmAboxApi.Logic.Classes
                 responseObject.Data = null;
             }
 
-
             return responseObject;
-
         }
-
-
 
         private OperationResult ContactCreateRequest(JObject jsonObject)
         {
             OperationResult operationResult = new OperationResult();
             try
             {
-
                 if (jsonObject != null)
                 {
                     try
                     {
                         using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
                         {
-
-
                             client.DefaultRequestHeaders.Add("Accept", "application/json");
                             client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                             client.DefaultRequestHeaders.Add("OData-Version", "4.0");
@@ -557,18 +469,16 @@ namespace CrmAboxApi.Logic.Classes
 
                             Logger.Debug($"Create Contact | JSON: {jsonObject.ToString(Formatting.None)}");
                             HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
-                            var response = client.PostAsync($"contacts?$select={this.Fields.EntityId}", c).Result;
+                            var response = client.PostAsync($"contacts?$select={ContactFields.EntityId}", c).Result;
                             if (response.IsSuccessStatusCode)
                             {
-
                                 //Get the response content and parse it.
                                 JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                                string userId = (string)body[this.Fields.EntityId];
+                                string userId = (string)body[ContactFields.EntityId];
                                 operationResult.Code = "";
                                 operationResult.Message = "Contacto creado correctamente en el CRM";
                                 operationResult.IsSuccessful = true;
                                 operationResult.Data = userId;
-
                             }
                             else
                             {
@@ -585,7 +495,6 @@ namespace CrmAboxApi.Logic.Classes
                                 operationResult.Data = null;
                                 operationResult.InternalError = err;
                             }
-
                         }
                     }
                     catch (Exception ex)
@@ -595,14 +504,10 @@ namespace CrmAboxApi.Logic.Classes
                         operationResult.Message = ex.ToString();
                         operationResult.IsSuccessful = false;
                         operationResult.Data = null;
-
                     }
                 }
 
-
-
                 return operationResult;
-
             }
             catch (Exception ex)
             {
@@ -613,7 +518,6 @@ namespace CrmAboxApi.Logic.Classes
                 operationResult.Data = null;
                 return operationResult;
             }
-
         }
 
         private OperationResult ContactRelatedDosesRequest(int idContact)
@@ -621,41 +525,34 @@ namespace CrmAboxApi.Logic.Classes
             OperationResult operationResult = new OperationResult();
             try
             {
-
-
                 try
                 {
                     using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
                     {
-
-
                         client.DefaultRequestHeaders.Add("Accept", "application/json");
                         client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                         client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                         client.DefaultRequestHeaders.Add("Prefer", "return=representation");
 
-
-                        var response = client.GetAsync($"{this.EntityPluralName}({this.Fields.IdAboxPatient}={idContact})?$select={this.Fields.EntityId}&$expand={this.Fields.ContactxDoseRelationship}($select={doseEntity.Fields.EntityId})").Result;
+                        var response = client.GetAsync($"{this.EntityPluralName}({ContactFields.IdAboxPatient}={idContact})?$select={ContactFields.EntityId}&$expand={ContactFields.ContactxDoseRelationship}($select={DoseFields.EntityId})").Result;
                         if (response.IsSuccessStatusCode)
                         {
-
                             //Get the response content and parse it.
                             JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                            // string doseId = (string)body[doseEntity.Fields.EntityId];
-                            var dataFromBody = body[doseEntity.Fields.ContactxDoseRelationship];
+                            // string doseId = (string)body[DoseFields.EntityId];
+                            var dataFromBody = body[DoseFields.ContactxDoseRelationship];
                             JArray dosesRetrieved = JArray.FromObject(dataFromBody);
                             string[] idsFound = new string[dosesRetrieved.Count];
 
                             for (int i = 0; i < dosesRetrieved.Count; i++)
                             {
-                                idsFound[i] = dosesRetrieved[i].SelectToken(doseEntity.Fields.EntityId).ToString();
+                                idsFound[i] = dosesRetrieved[i].SelectToken(DoseFields.EntityId).ToString();
                             }
 
                             operationResult.Code = "";
                             operationResult.Message = "Dosis extraídas correctamente";
                             operationResult.IsSuccessful = true;
                             operationResult.Data = idsFound;
-
                         }
                         else
                         {
@@ -672,7 +569,6 @@ namespace CrmAboxApi.Logic.Classes
                             operationResult.Data = null;
                             operationResult.InternalError = err;
                         }
-
                     }
                 }
                 catch (Exception ex)
@@ -682,14 +578,9 @@ namespace CrmAboxApi.Logic.Classes
                     operationResult.Message = ex.ToString();
                     operationResult.IsSuccessful = false;
                     operationResult.Data = null;
-
                 }
 
-
-
-
                 return operationResult;
-
             }
             catch (Exception ex)
             {
@@ -700,50 +591,41 @@ namespace CrmAboxApi.Logic.Classes
                 operationResult.Data = null;
                 return operationResult;
             }
-
         }
-
 
         private OperationResult ContactRelatedDoctorsRequest(int idContact)
         {
             OperationResult operationResult = new OperationResult();
             try
             {
-
-
                 try
                 {
                     using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
                     {
-
-
                         client.DefaultRequestHeaders.Add("Accept", "application/json");
                         client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                         client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                         client.DefaultRequestHeaders.Add("Prefer", "return=representation");
 
-
-                        var response = client.GetAsync($"{this.EntityPluralName}({this.Fields.IdAboxPatient}={idContact})?$select={this.Fields.EntityId}&$expand={this.Fields.ContactxDoctorRelationship}($select={doctorEntity.Fields.EntityId})").Result;
+                        var response = client.GetAsync($"{this.EntityPluralName}({ContactFields.IdAboxPatient}={idContact})?$select={ContactFields.EntityId}&$expand={ContactFields.ContactxDoctorRelationship}($select={DoctorFields.EntityId})").Result;
                         if (response.IsSuccessStatusCode)
                         {
-
                             //Get the response content and parse it.
                             JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                            // string doseId = (string)body[doseEntity.Fields.EntityId];
-                            var dataFromBody = body[this.Fields.ContactxDoctorRelationship];
+                            // string doseId = (string)body[DoseFields.EntityId];
+                            var dataFromBody = body[ContactFields.ContactxDoctorRelationship];
                             JArray doctorsRetrieved = JArray.FromObject(dataFromBody);
                             string[] idsFound = new string[doctorsRetrieved.Count];
 
                             for (int i = 0; i < doctorsRetrieved.Count; i++)
                             {
-                                idsFound[i] = doctorsRetrieved[i].SelectToken(doctorEntity.Fields.EntityId).ToString();
+                                idsFound[i] = doctorsRetrieved[i].SelectToken(DoctorFields.EntityId).ToString();
                             }
 
                             operationResult.Code = "";
                             operationResult.Message = "Doctores extraídos correctamente";
                             operationResult.IsSuccessful = true;
                             operationResult.Data = idsFound;
-
                         }
                         else
                         {
@@ -760,7 +642,6 @@ namespace CrmAboxApi.Logic.Classes
                             operationResult.Data = null;
                             operationResult.InternalError = err;
                         }
-
                     }
                 }
                 catch (Exception ex)
@@ -770,14 +651,9 @@ namespace CrmAboxApi.Logic.Classes
                     operationResult.Message = ex.ToString();
                     operationResult.IsSuccessful = false;
                     operationResult.Data = null;
-
                 }
 
-
-
-
                 return operationResult;
-
             }
             catch (Exception ex)
             {
@@ -788,7 +664,6 @@ namespace CrmAboxApi.Logic.Classes
                 operationResult.Data = null;
                 return operationResult;
             }
-
         }
 
         private OperationResult ContactUpdateRequest(JObject jsonObject, string idToUpdate)
@@ -796,35 +671,29 @@ namespace CrmAboxApi.Logic.Classes
             OperationResult operationResult = new OperationResult();
             try
             {
-
                 if (jsonObject != null)
                 {
                     try
                     {
                         using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
                         {
-
-
                             //client.DefaultRequestHeaders.Add("Content-Type", "application/json");
                             client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                             client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                             //client.DefaultRequestHeaders.Add("Prefer", "return=representation");
 
-
                             Logger.Debug($"Update Contact | JSON: {jsonObject.ToString(Formatting.None)}");
                             HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
-                            var response = client.PatchAsync($"contacts({this.Fields.IdAboxPatient}={idToUpdate})", c).Result;
+                            var response = client.PatchAsync($"contacts({ContactFields.IdAboxPatient}={idToUpdate})", c).Result;
                             if (response.IsSuccessStatusCode)
                             {
-
                                 //Get the response content and parse it.
                                 //JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                                //string userId = (string)body[this.Fields.EntityId];
+                                //string userId = (string)body[ContactFields.EntityId];
                                 operationResult.Code = "";
                                 operationResult.Message = "Contacto actualizado correctamente en el CRM";
                                 operationResult.IsSuccessful = true;
                                 operationResult.Data = null;
-
                             }
                             else
                             {
@@ -841,7 +710,6 @@ namespace CrmAboxApi.Logic.Classes
                                 operationResult.Data = null;
                                 operationResult.InternalError = err;
                             }
-
                         }
                     }
                     catch (Exception ex)
@@ -851,14 +719,10 @@ namespace CrmAboxApi.Logic.Classes
                         operationResult.Message = ex.ToString();
                         operationResult.IsSuccessful = false;
                         operationResult.Data = null;
-
                     }
                 }
 
-
-
                 return operationResult;
-
             }
             catch (Exception ex)
             {
@@ -869,7 +733,6 @@ namespace CrmAboxApi.Logic.Classes
                 operationResult.Data = null;
                 return operationResult;
             }
-
         }
 
         public OperationResult CreateAsCaretaker(PatientSignup signupRequest)
@@ -887,8 +750,6 @@ namespace CrmAboxApi.Logic.Classes
                 JArray medicsArray = new JArray();
                 if (signupRequest != null)
                 {
-
-
                     OperationResult responseFromPatientInChargeCreate = null;
                     OperationResult responseFromOwnerCreate = null;
 
@@ -896,6 +757,7 @@ namespace CrmAboxApi.Logic.Classes
                     para poder relacionarlo.*/
 
                     #region -> Crear paciente bajo cuido como contacto
+
                     PatientSignup signupPatientUnderCare = null;
                     signupPatientUnderCare = new PatientSignup
                     {
@@ -936,22 +798,16 @@ namespace CrmAboxApi.Logic.Classes
                         },
                         interests = null,
                         otherInterest = null,
-
-
                     };
 
                     responseFromPatientInChargeCreate = this.CreateAsPatient(signupPatientUnderCare, null);
 
-                    #endregion
-
+                    #endregion -> Crear paciente bajo cuido como contacto
 
                     /*Se crea el paciente a cargo correctamente, ya existe en Dynamics y se procede a crear el dueño de la cuenta
                      *para poder relacionarlo.*/
 
                     #region -> Crear Dueño de la cuenta como Contacto
-
-
-
 
                     PatientSignup signupPatientOwner = null;
                     if (responseFromPatientInChargeCreate.IsSuccessful)
@@ -968,7 +824,6 @@ namespace CrmAboxApi.Logic.Classes
                             responseObject.IsSuccessful = true;
                             responseObject.Message = "Registro completado correctamente";
                             responseObject.Code = "";
-
                         }
                         else
                         {
@@ -978,22 +833,17 @@ namespace CrmAboxApi.Logic.Classes
                             responseObject.InternalError = responseFromPatientInChargeCreate.InternalError;
                             responseObject.Code = "";
                         }
-
                     }
                     else
                     {
-
                         responseObject.IsSuccessful = false;
                         responseObject.Message = "Ocurrió un error al crear el paciente a cargo";
                         responseObject.InternalError = responseFromPatientInChargeCreate.InternalError;
                         responseObject.Code = "";
-
                     }
-                    #endregion
 
-
+                    #endregion -> Crear Dueño de la cuenta como Contacto
                 }
-
             }
             catch (Exception ex)
             {
@@ -1005,7 +855,6 @@ namespace CrmAboxApi.Logic.Classes
 
             return responseObject;
         }
-
 
         public OperationResult CreateAsTutor(PatientSignup signupRequest)
         {
@@ -1013,15 +862,10 @@ namespace CrmAboxApi.Logic.Classes
 
             try
             {
-
                 PatientSignup signupPropertiesFromRequest = signupRequest;
-
-
 
                 if (signupRequest != null)
                 {
-
-
                     OperationResult responseFromPatientInChargeCreate = null;
                     OperationResult responseFromOwnerCreate = null;
 
@@ -1029,6 +873,7 @@ namespace CrmAboxApi.Logic.Classes
                     para poder relacionarlo.*/
 
                     #region -> Crear paciente bajo cuido como contacto
+
                     PatientSignup signupPatientUnderCare = null;
                     signupPatientUnderCare = new PatientSignup
                     {
@@ -1069,22 +914,16 @@ namespace CrmAboxApi.Logic.Classes
                         },
                         interests = null,
                         otherInterest = null,
-
-
                     };
 
                     responseFromPatientInChargeCreate = this.CreateAsPatient(signupPatientUnderCare, null);
 
-                    #endregion
-
+                    #endregion -> Crear paciente bajo cuido como contacto
 
                     /*Se crea el paciente a cargo correctamente, ya existe en Dynamics y se procede a crear el dueño de la cuenta
                      *para poder relacionarlo.*/
 
                     #region -> Crear Dueño de la cuenta como Contacto
-
-
-
 
                     PatientSignup signupPatientOwner = null;
                     if (responseFromPatientInChargeCreate.IsSuccessful)
@@ -1101,7 +940,6 @@ namespace CrmAboxApi.Logic.Classes
                             responseObject.IsSuccessful = true;
                             responseObject.Message = "Registro completado correctamente";
                             responseObject.Code = "";
-
                         }
                         else
                         {
@@ -1111,22 +949,17 @@ namespace CrmAboxApi.Logic.Classes
                             responseObject.InternalError = responseFromPatientInChargeCreate.InternalError;
                             responseObject.Code = "";
                         }
-
                     }
                     else
                     {
-
                         responseObject.IsSuccessful = false;
                         responseObject.Message = "Ocurrió un error al crear el paciente a cargo";
                         responseObject.InternalError = responseFromPatientInChargeCreate.InternalError;
                         responseObject.Code = "";
-
                     }
-                    #endregion
 
-
+                    #endregion -> Crear Dueño de la cuenta como Contacto
                 }
-
             }
             catch (Exception ex)
             {
@@ -1139,24 +972,16 @@ namespace CrmAboxApi.Logic.Classes
             return responseObject;
         }
 
-
-
         public OperationResult UpdateAccount(UpdateAccountRequest updateAccountRequest)
         {
             OperationResult result = null;
             try
             {
-
                 if (updateAccountRequest != null)
                 {
-
                     var contactStructure = this.GetUpdateContactJsonStructure(updateAccountRequest);
 
                     result = this.ContactUpdateRequest(contactStructure, updateAccountRequest.patientId);
-
-
-
-
                 }
                 else
                 {
@@ -1164,11 +989,9 @@ namespace CrmAboxApi.Logic.Classes
                     result.Message = "Datos de consulta incorrectos";
                     result.InternalError = null;
                     result.Code = "";
-
                 }
 
                 return result;
-
             }
             catch (Exception ex)
             {
@@ -1178,7 +1001,6 @@ namespace CrmAboxApi.Logic.Classes
                 result.InternalError = null;
                 result.Code = "";
                 return result;
-
             }
         }
 
@@ -1187,11 +1009,12 @@ namespace CrmAboxApi.Logic.Classes
             OperationResult result = null;
             try
             {
-
                 if (updatePatientRequest != null)
                 {
                     int contactId = Int32.Parse(updatePatientRequest.patientid);
+
                     #region Doses Delete
+
                     OperationResult dosesResult = null;
                     string[] contactRelatedDoses = null;
                     /*Eliminar las dosis que tenga el usuario para relacionarle las nuevas, no se hace un update, se hace un delete
@@ -1199,11 +1022,9 @@ namespace CrmAboxApi.Logic.Classes
                     bool dosesDeleted = false;
                     if (!String.IsNullOrEmpty(updatePatientRequest.patientid))
                     {
-
                         dosesResult = this.GetDosesRelated(contactId);
                         if (dosesResult.IsSuccessful)
                         {
-
                             contactRelatedDoses = (string[])dosesResult.Data;
 
                             if (contactRelatedDoses != null && contactRelatedDoses.Length > 0)
@@ -1225,14 +1046,12 @@ namespace CrmAboxApi.Logic.Classes
                                     }
                                 }
                             }
-
                         }
                         else
                         {
                             result = dosesResult;
                             return result;
                         }
-
                     }
 
                     if ((contactRelatedDoses != null) && (contactRelatedDoses.Length > 0))
@@ -1246,18 +1065,17 @@ namespace CrmAboxApi.Logic.Classes
                                 InternalError = null,
                                 Code = ""
                             };
-
                         }
                     }
 
-                    #endregion
+                    #endregion Doses Delete
 
                     var contactStructure = this.GetUpdatePatientJsonStructure(updatePatientRequest);
 
                     /*Este request se deja por fuera del metodo que crea toda la estructura de
                 * Contacto porque es un proceso individual de crear una entidad de Dosis,
                 * la cual puede eventualmente fallar o no crearse correctamente, ademas se necesita
-                * ligar el resultado de esta operacion al request que crea el contacto en el crm                     
+                * ligar el resultado de esta operacion al request que crea el contacto en el crm
                 */
                     DoseRecord[] dosesArray = null;
                     string[] dosesCreated = null;
@@ -1272,7 +1090,6 @@ namespace CrmAboxApi.Logic.Classes
 
                         for (int i = 0; i < dosesLength; i++)
                         {
-
                             string frequency = "";
                             if (!String.IsNullOrEmpty(updatePatientRequest.medication.products[i].other))
                                 frequency = updatePatientRequest.medication.products[i].other;
@@ -1283,17 +1100,14 @@ namespace CrmAboxApi.Logic.Classes
                             {
                                 Dose = frequency,
                                 IdProduct = updatePatientRequest.medication.products[i].productid,
-                                ContactBinding = $"{this.EntityPluralName}({this.Fields.IdAboxPatient}={updatePatientRequest.patientid})"
-
+                                ContactBinding = $"{this.EntityPluralName}({ContactFields.IdAboxPatient}={updatePatientRequest.patientid})"
                             };
                         }
-
 
                         if (dosesArray != null)
                         {
                             if (dosesArray.Length > 0)
                             {
-
                                 try
                                 {
                                     int length = dosesArray.Length;
@@ -1307,14 +1121,10 @@ namespace CrmAboxApi.Logic.Classes
                                         //});
                                         OperationResult doseCreateResult = doseEntity.Create(dosesArray[i]);
 
-
-
                                         if (doseCreateResult.IsSuccessful)
                                         {
                                             dosesCreated[i] = (string)doseCreateResult.Data;
-
                                         }
-
                                     }
 
                                     if (dosesCreated.Length != dosesArray.Length)
@@ -1327,24 +1137,17 @@ namespace CrmAboxApi.Logic.Classes
                                             Code = ""
                                         };
                                     }
-
-
                                 }
                                 catch (Exception ex)
                                 {
                                     Logger.Error(ex.ToString());
                                     throw ex;
                                 }
-
                             }
-
                         }
                     }
 
-                    #endregion
-
-
-
+                    #endregion -> Dose Create
 
                     #region Medics Disassociate
 
@@ -1357,7 +1160,6 @@ namespace CrmAboxApi.Logic.Classes
                     bool contactsDisassociated = false;
                     if (doctorsResult.IsSuccessful)
                     {
-
                         contactRelatedDoctors = (string[])doctorsResult.Data;
 
                         if (contactRelatedDoctors != null)
@@ -1374,9 +1176,8 @@ namespace CrmAboxApi.Logic.Classes
                                         RelatedEntityName = doctorEntity.EntityPluralName,
                                         TargetEntityId = updatePatientRequest.patientid,
                                         TargetEntityName = this.EntityPluralName,
-                                        TargetIdKeyToUse = this.Fields.IdAboxPatient,
-                                        RelationshipDefinitionName = this.Fields.ContactxDoctorRelationship
-
+                                        TargetIdKeyToUse = ContactFields.IdAboxPatient,
+                                        RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship
                                     };
                                     var disassociateResult = entityDisassociation.Disassociate(connectionString);
 
@@ -1391,7 +1192,6 @@ namespace CrmAboxApi.Logic.Classes
                                 }
                             }
                         }
-
                     }
                     else
                     {
@@ -1410,15 +1210,10 @@ namespace CrmAboxApi.Logic.Classes
                                 InternalError = null,
                                 Code = ""
                             };
-
                         }
                     }
 
-
-
-
-                    #endregion
-
+                    #endregion Medics Disassociate
 
                     #region Medics Associate
 
@@ -1428,19 +1223,17 @@ namespace CrmAboxApi.Logic.Classes
                         {
                             var medicsLength = updatePatientRequest.medication.medics.Length;
 
-
                             for (int i = 0; i < medicsLength; i++)
                             {
                                 EntityAssociation entityAssociation = new EntityAssociation
                                 {
                                     RelatedEntityId = updatePatientRequest.medication.medics[i].medicid,
-                                    RelatedEntityIdKeyToUse = doctorEntity.Fields.DoctorIdKey,
+                                    RelatedEntityIdKeyToUse = DoctorFields.DoctorIdKey,
                                     RelatedEntityName = doctorEntity.EntityPluralName,
                                     TargetEntityId = updatePatientRequest.patientid,
                                     TargetEntityName = this.EntityPluralName,
-                                    TargetIdKeyToUse = this.Fields.IdAboxPatient,
-                                    RelationshipDefinitionName = this.Fields.ContactxDoctorRelationship
-
+                                    TargetIdKeyToUse = ContactFields.IdAboxPatient,
+                                    RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship
                                 };
 
                                 var associationResult = entityAssociation.Associate(connectionString);
@@ -1455,19 +1248,13 @@ namespace CrmAboxApi.Logic.Classes
                                         Code = ""
                                     };
                                 }
-
-
                             }
-
                         }
                     }
 
-
-                    #endregion
+                    #endregion Medics Associate
 
                     result = this.ContactUpdateRequest(contactStructure, updatePatientRequest.patientid);
-
-
                 }
                 else
                 {
@@ -1475,11 +1262,9 @@ namespace CrmAboxApi.Logic.Classes
                     result.Message = "Datos de consulta incorrectos";
                     result.InternalError = null;
                     result.Code = "";
-
                 }
 
                 return result;
-
             }
             catch (Exception ex)
             {
@@ -1489,19 +1274,15 @@ namespace CrmAboxApi.Logic.Classes
                 result.InternalError = null;
                 result.Code = "";
                 return result;
-
             }
         }
-
 
         public OperationResult GetDosesRelated(int contactId)
         {
             OperationResult result = null;
             try
             {
-
                 result = this.ContactRelatedDosesRequest(contactId);
-
             }
             catch (Exception ex)
             {
@@ -1513,22 +1294,17 @@ namespace CrmAboxApi.Logic.Classes
                     Message = "Ocurrió un error obteniendo las dosis relacionadas",
                     InternalError = null,
                     Code = ""
-
                 };
-
             }
             return result;
         }
-
 
         public OperationResult GetDoctorsRelated(int contactId)
         {
             OperationResult result = null;
             try
             {
-
                 result = this.ContactRelatedDoctorsRequest(contactId);
-
             }
             catch (Exception ex)
             {
@@ -1540,12 +1316,9 @@ namespace CrmAboxApi.Logic.Classes
                     Message = "Ocurrió un error obteniendo los doctores relacionados del paciente",
                     InternalError = null,
                     Code = ""
-
                 };
-
             }
             return result;
         }
-
     }
 }

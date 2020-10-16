@@ -1,20 +1,14 @@
 ﻿using Logic.CrmAboxApi.Classes.Helper;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
 
 namespace CrmAboxApi.Logic.Classes.Helper
 {
     public class ConnectionHelper
     {
-
         public static string clientId = "6843632f-a6f3-4d1c-84ba-329d7026e286";
         public static string redirectUrl = "http://localhost/CrmAboxApi";
-
-
 
         /// <summary>
         /// Method used to get a value from the connection string
@@ -33,7 +27,6 @@ namespace CrmAboxApi.Logic.Classes.Helper
                 return string.Empty;
             }
         }
-
 
         /// <summary>
         /// Returns an HttpClient configured with an OAuthMessageHandler
@@ -68,7 +61,6 @@ namespace CrmAboxApi.Logic.Classes.Helper
             }
         }
 
-
         /// <summary> Displays exception information to the console. </summary>
         /// <param name="ex">The exception to output</param>
         public static void DisplayException(Exception ex)
@@ -81,6 +73,5 @@ namespace CrmAboxApi.Logic.Classes.Helper
                 //ex = ex.InnerException;
             }
         }
-
     }
 }

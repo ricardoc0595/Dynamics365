@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AboxDynamicsBase.Classes.Entities
+﻿namespace AboxDynamicsBase.Classes.Entities
 {
-    public class DoctorEntity :EntityBase
+    public class DoctorEntity : EntityBase
     {
-        public DoctorFields Fields { get; set; }
+        //public DoctorFields Fields { get; set; }
         public DoctorSchemas Schemas { get; set; }
+
         public DoctorEntity()
         {
-            this.Fields = new DoctorFields();
+            //this.Fields = new DoctorFields();
             this.Schemas = new DoctorSchemas();
             this.EntityPluralName = "new_doctors";
             this.EntitySingularName = "new_doctor";
@@ -24,42 +19,22 @@ namespace AboxDynamicsBase.Classes.Entities
         //TODO: Crear un Objeto que lleve los valores de FIelds y de Schemas, para centralizarlo de mejor forma
     }
 
-    public class DoctorFields : EntityBase.BaseFields
+    public static class DoctorFields
     {
-       
-        public string Address { get; }
-        public string Canton { get; set; }
-        public string Code { get; }
-        public string CodeCloseup { get; }
-        public string Country { get; }
-        public string Division { get; }
-        public string Email { get; }
-        public string Identification { get; }
-        public string Phone { get; }
-        public string Province { get; }
-        public string Specialty { get; }
-        public string FullName { get; }
-        public string DoctorIdKey { get; } // Entity key referring the Product ID saved in Abox database
-        public string IdDoctorEntityKey { get; }
-
-        public DoctorFields()
-        {
-            this.EntityId = "new_doctorid";
-            this.Address = "new_doctoraddress";
-            this.Canton = "new_doctorcanton";
-            this.Code = "new_doctorcode";
-            this.CodeCloseup = "new_doctorcodecloseup";
-            this.Country = "new_doctorcountry";
-            this.Division = "new_doctordivision";
-            this.Email = "new_doctoremail";
-            this.Identification = "new_doctoridentification";
-            this.Phone = "new_doctorphone";
-            this.Province = "new_doctorprovince";
-            this.Specialty = "new_medicalspeciality";
-            this.FullName = "new_doctor";
-            this.DoctorIdKey = "new_doctorid2";
-            this.IdDoctorEntityKey = "idkeyexternaldb";
-
-        }
+        public const string EntityId = "new_doctorid";
+        public const string Address = "new_doctoraddress";
+        public const string Canton = "new_doctorcanton";
+        public const string Code = "new_doctorcode";
+        public const string CodeCloseup = "new_doctorcodecloseup";
+        public const string Country = "new_doctorcountry";
+        public const string Division = "new_doctordivision";
+        public const string Email = "new_doctoremail";
+        public const string Identification = "new_doctoridentification";
+        public const string Phone = "new_doctorphone";
+        public const string Province = "new_doctorprovince";
+        public const string Specialty = "new_medicalspeciality";
+        public const string FullName = "new_doctor";
+        public const string DoctorIdKey = "new_doctorid2";
+        public const string IdDoctorEntityKey = "idkeyexternaldb";
     }
 }

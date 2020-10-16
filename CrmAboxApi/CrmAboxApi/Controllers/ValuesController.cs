@@ -8,19 +8,11 @@
 
 //namespace CrmAboxApi.Controllers
 //{
-    
 //    public class ValuesController : ApiController
 //    {
 //        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-        
-
-
-
-
 
 //        /// //////////////////////////
-      
-
 
 //        // GET api/values
 //        public IEnumerable<string> Get()
@@ -51,12 +43,10 @@
 //            }
 //            catch (Exception ex)
 //            {
-
-               
 //            }
 
 //            return Ok(response);
-            
+
 //        }
 
 //        // POST api/values
