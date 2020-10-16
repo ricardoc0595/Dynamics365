@@ -84,6 +84,16 @@ namespace CrmAboxApi.Controllers
             return Ok(token);
         }
 
+        [HttpGet]
+        public IHttpActionResult WhoAmI()
+        {
+            string token = "";
+            CrmAboxApi.Logic.Methods.MDynamicsWebApiFunctions webAPiFunctions = new Logic.Methods.MDynamicsWebApiFunctions();
+
+            token = webAPiFunctions.whoAmIFunction();
+            return Ok(token);
+        }
+
         public IHttpActionResult Post([FromBody] PatientSignup signupRequest)
         {
             EContact contactProcedures = new EContact();

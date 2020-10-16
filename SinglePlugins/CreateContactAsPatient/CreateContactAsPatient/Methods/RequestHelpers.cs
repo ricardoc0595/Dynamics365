@@ -53,26 +53,26 @@ namespace CreateContactAsPatient.Methods
 
                     requestStructure.personalinfo = new UpdatePatientRequest.Request.Personalinfo();
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Firstname))
-                        requestStructure.personalinfo.name = contact.GetAttributeValue<string>(contactEntity.Fields.Firstname);
+                    if (contact.Attributes.Contains(ContactFields.Firstname))
+                        requestStructure.personalinfo.name = contact.GetAttributeValue<string>(ContactFields.Firstname);
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Lastname))
-                        requestStructure.personalinfo.lastname = contact.GetAttributeValue<string>(contactEntity.Fields.Lastname);
+                    if (contact.Attributes.Contains(ContactFields.Lastname))
+                        requestStructure.personalinfo.lastname = contact.GetAttributeValue<string>(ContactFields.Lastname);
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.SecondLastname))
-                        requestStructure.personalinfo.secondlastname = contact.GetAttributeValue<string>(contactEntity.Fields.SecondLastname);
+                    if (contact.Attributes.Contains(ContactFields.SecondLastname))
+                        requestStructure.personalinfo.secondlastname = contact.GetAttributeValue<string>(ContactFields.SecondLastname);
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Id))
-                        requestStructure.personalinfo.id = contact.GetAttributeValue<string>(contactEntity.Fields.Id);
+                    if (contact.Attributes.Contains(ContactFields.Id))
+                        requestStructure.personalinfo.id = contact.GetAttributeValue<string>(ContactFields.Id);
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.IdAboxPatient))
-                        requestStructure.patientid = Convert.ToString(contact.GetAttributeValue<int>(contactEntity.Fields.IdAboxPatient));
+                    if (contact.Attributes.Contains(ContactFields.IdAboxPatient))
+                        requestStructure.patientid = Convert.ToString(contact.GetAttributeValue<int>(ContactFields.IdAboxPatient));
 
 
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Gender))
+                    if (contact.Attributes.Contains(ContactFields.Gender))
                     {
-                        int val = (contact.GetAttributeValue<OptionSetValue>(contactEntity.Fields.Gender)).Value;
+                        int val = (contact.GetAttributeValue<OptionSetValue>(ContactFields.Gender)).Value;
                         string gender = sharedMethods.GetGenderValue(val);
                         if (!String.IsNullOrEmpty(gender))
                         {
@@ -82,23 +82,23 @@ namespace CreateContactAsPatient.Methods
                     }
 
                     DateTime birthdate = new DateTime();
-                    birthdate = contact.GetAttributeValue<DateTime>(contactEntity.Fields.Birthdate);
+                    birthdate = contact.GetAttributeValue<DateTime>(ContactFields.Birthdate);
                     if (birthdate != null)
                     {
                         requestStructure.personalinfo.dateofbirth = birthdate.ToString("yyyy-MM-dd");
 
                     }
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.IdType))
+                    if (contact.Attributes.Contains(ContactFields.IdType))
                     {
-                        requestStructure.personalinfo.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(contactEntity.Fields.IdType)).Value;
+                        requestStructure.personalinfo.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
                     }
 
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.UserType))
+                    if (contact.Attributes.Contains(ContactFields.UserType))
                     {
                         EntityReference userTypeReference = null;
-                        userTypeReference = (EntityReference)contact.Attributes[contactEntity.Fields.UserType];
+                        userTypeReference = (EntityReference)contact.Attributes[ContactFields.UserType];
                         if (userTypeReference != null)
                         {
                             requestStructure.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
@@ -107,19 +107,19 @@ namespace CreateContactAsPatient.Methods
 
 
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Country))
+                    if (contact.Attributes.Contains(ContactFields.Country))
                     {
                         EntityReference countryReference = null;
                         CountryEntity countryEntity = new CountryEntity();
-                        countryReference = (EntityReference)contact.Attributes[contactEntity.Fields.Country];
+                        countryReference = (EntityReference)contact.Attributes[ContactFields.Country];
                         if (countryReference != null)
                         {
 
-                            var countryRetrieved = service.Retrieve(countryEntity.EntitySingularName, countryReference.Id, new ColumnSet(countryEntity.Fields.IdCountry));
-                            if (countryRetrieved.Attributes.Contains(countryEntity.Fields.IdCountry))
+                            var countryRetrieved = service.Retrieve(countryEntity.EntitySingularName, countryReference.Id, new ColumnSet(CountryFields.IdCountry));
+                            if (countryRetrieved.Attributes.Contains(CountryFields.IdCountry))
                             {
 
-                                string country = countryRetrieved.GetAttributeValue<string>(countryEntity.Fields.IdCountry);
+                                string country = countryRetrieved.GetAttributeValue<string>(CountryFields.IdCountry);
 
                                 if (!String.IsNullOrEmpty(country))
                                 {
@@ -140,12 +140,12 @@ namespace CreateContactAsPatient.Methods
                     //Obtener los productos y dosis que ya tiene actualmente asignados el contacto
 
 
-                    string[] doseColumnsToGet = new string[] { doseEntity.Fields.Dose, doseEntity.Fields.DosexProduct };
+                    string[] doseColumnsToGet = new string[] { DoseFields.Dose, DoseFields.DosexProduct };
                     var doseColumnSet = new ColumnSet(doseColumnsToGet);
 
                     Guid parentId = contact.Id;
                     var query = new QueryExpression(doseEntity.EntitySingularName);
-                    query.Criteria.AddCondition(new ConditionExpression(doseEntity.Fields.ContactxDose, ConditionOperator.Equal, parentId));
+                    query.Criteria.AddCondition(new ConditionExpression(DoseFields.ContactxDose, ConditionOperator.Equal, parentId));
                     query.ColumnSet = doseColumnSet;
                     var contactDosesList = service.RetrieveMultiple(query);
 
@@ -164,29 +164,31 @@ namespace CreateContactAsPatient.Methods
 
                                     var doseChild = contactDosesList[i];
 
-                                    if (doseChild.Attributes.Contains(doseEntity.Fields.DosexProduct))
+                                    if (doseChild.Attributes.Contains(DoseFields.DosexProduct))
                                     {
                                         EntityReference productReference = null;
-                                        productReference = (EntityReference)doseChild.Attributes[doseEntity.Fields.DosexProduct];
+                                        productReference = (EntityReference)doseChild.Attributes[DoseFields.DosexProduct];
                                         if (productReference != null)
                                         {
 
-                                            Entity product = service.Retrieve(productEntity.EntitySingularName, productReference.Id, new ColumnSet(new string[] { productEntity.Fields.ProductNumber }));
+                                            Entity product = service.Retrieve(productEntity.EntitySingularName, productReference.Id, new ColumnSet(new string[] { ProductFields.ProductNumber }));
 
-                                            if (product.Attributes.Contains(productEntity.Fields.ProductNumber))
+                                            if (product.Attributes.Contains(ProductFields.ProductNumber))
                                             {
                                                 string frequency = "";
 
-                                                if (doseChild.Attributes.Contains(doseEntity.Fields.Dose))
+                                                if (doseChild.Attributes.Contains(DoseFields.Dose))
                                                 {
-                                                    frequency = doseChild.GetAttributeValue<string>(doseEntity.Fields.Dose);
+                                                    var optionSet= doseChild.GetAttributeValue<OptionSetValue>(DoseFields.Dose);
+                                                    frequency = sharedMethods.GetDoseFrequencyValue(optionSet.Value);
+                                                    //frequency = doseChild.GetAttributeValue<OptionSetValue>(DoseFields.Dose);
                                                 }
 
 
                                                 requestStructure.medication.products[i] = new UpdatePatientRequest.Request.Product
                                                 {
                                                     frequency = frequency,
-                                                    productid = product.GetAttributeValue<string>(productEntity.Fields.ProductNumber)
+                                                    productid = product.GetAttributeValue<string>(ProductFields.ProductNumber)
                                                 };
                                             }
                                         }
@@ -218,15 +220,15 @@ namespace CreateContactAsPatient.Methods
 
                     string entity2 = contactEntity.EntitySingularName;
 
-                    string relationshipEntityName = contactEntity.Fields.ContactxDoctorRelationship;
+                    string relationshipEntityName = ContactFields.ContactxDoctorRelationship;
 
                     QueryExpression querym = new QueryExpression(entity1);
 
                     querym.ColumnSet = new ColumnSet(true);
 
-                    LinkEntity linkEntity1 = new LinkEntity(entity1, relationshipEntityName, doctorEntity.Fields.EntityId, doctorEntity.Fields.EntityId, Microsoft.Xrm.Sdk.Query.JoinOperator.Inner);
+                    LinkEntity linkEntity1 = new LinkEntity(entity1, relationshipEntityName, DoctorFields.EntityId, DoctorFields.EntityId, Microsoft.Xrm.Sdk.Query.JoinOperator.Inner);
 
-                    LinkEntity linkEntity2 = new LinkEntity(relationshipEntityName, entity2, contactEntity.Fields.EntityId, contactEntity.Fields.EntityId, JoinOperator.Inner);
+                    LinkEntity linkEntity2 = new LinkEntity(relationshipEntityName, entity2, ContactFields.EntityId, ContactFields.EntityId, JoinOperator.Inner);
 
                     //linkEntity2.EntityAlias = "alias";
 
@@ -238,7 +240,7 @@ namespace CreateContactAsPatient.Methods
 
                     linkEntity2.LinkCriteria = new FilterExpression();
 
-                    linkEntity2.LinkCriteria.AddCondition(new ConditionExpression(contactEntity.Fields.EntityId, ConditionOperator.Equal, contact.Id));
+                    linkEntity2.LinkCriteria.AddCondition(new ConditionExpression(ContactFields.EntityId, ConditionOperator.Equal, contact.Id));
 
                     EntityCollection doctorsOfContact = service.RetrieveMultiple(querym);
 
@@ -262,9 +264,9 @@ namespace CreateContactAsPatient.Methods
                                     var medic = doctorsOfContact[i];
 
 
-                                    if (medic.Attributes.Contains(doctorEntity.Fields.DoctorIdKey))
+                                    if (medic.Attributes.Contains(DoctorFields.DoctorIdKey))
                                     {
-                                        string id = medic.GetAttributeValue<string>(doctorEntity.Fields.DoctorIdKey);
+                                        string id = medic.GetAttributeValue<string>(DoctorFields.DoctorIdKey);
 
 
                                         requestStructure.medication.medics[i] = new UpdatePatientRequest.Request.Medic
@@ -312,38 +314,38 @@ namespace CreateContactAsPatient.Methods
 
                     //requestStructure.personalinfo = new UpdatePatientRequest.Request.Personalinfo();
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Firstname))
-                        requestStructure.Nombre = contact.GetAttributeValue<string>(contactEntity.Fields.Firstname);
+                    if (contact.Attributes.Contains(ContactFields.Firstname))
+                        requestStructure.Nombre = contact.GetAttributeValue<string>(ContactFields.Firstname);
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Lastname))
-                        requestStructure.Apellido1 = contact.GetAttributeValue<string>(contactEntity.Fields.Lastname);
+                    if (contact.Attributes.Contains(ContactFields.Lastname))
+                        requestStructure.Apellido1 = contact.GetAttributeValue<string>(ContactFields.Lastname);
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.SecondLastname))
-                        requestStructure.Apellido2 = contact.GetAttributeValue<string>(contactEntity.Fields.SecondLastname);
+                    if (contact.Attributes.Contains(ContactFields.SecondLastname))
+                        requestStructure.Apellido2 = contact.GetAttributeValue<string>(ContactFields.SecondLastname);
 
-                    //if (contact.Attributes.Contains(contactEntity.Fields.Id))
-                    //    requestStructure. = contact.GetAttributeValue<string>(contactEntity.Fields.Id);
+                    //if (contact.Attributes.Contains(ContactFields.Id))
+                    //    requestStructure. = contact.GetAttributeValue<string>(ContactFields.Id);
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.IdAboxPatient))
-                        requestStructure.patientId = Convert.ToString(contact.GetAttributeValue<int>(contactEntity.Fields.IdAboxPatient));
+                    if (contact.Attributes.Contains(ContactFields.IdAboxPatient))
+                        requestStructure.patientId = Convert.ToString(contact.GetAttributeValue<int>(ContactFields.IdAboxPatient));
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Phone))
-                        requestStructure.Telefono = Convert.ToString(contact.GetAttributeValue<string>(contactEntity.Fields.Phone));
+                    if (contact.Attributes.Contains(ContactFields.Phone))
+                        requestStructure.Telefono = Convert.ToString(contact.GetAttributeValue<string>(ContactFields.Phone));
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.SecondaryPhone))
-                        requestStructure.Telefono2 = Convert.ToString(contact.GetAttributeValue<string>(contactEntity.Fields.SecondaryPhone));
+                    if (contact.Attributes.Contains(ContactFields.SecondaryPhone))
+                        requestStructure.Telefono2 = Convert.ToString(contact.GetAttributeValue<string>(ContactFields.SecondaryPhone));
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Email))
-                        requestStructure.Email = contact.Attributes[contactEntity.Fields.Email].ToString();
+                    if (contact.Attributes.Contains(ContactFields.Email))
+                        requestStructure.Email = contact.Attributes[ContactFields.Email].ToString();
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Id))
-                        requestStructure.user = contact.Attributes[contactEntity.Fields.Id].ToString();
+                    if (contact.Attributes.Contains(ContactFields.Id))
+                        requestStructure.user = contact.Attributes[ContactFields.Id].ToString();
 
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Province))
+                    if (contact.Attributes.Contains(ContactFields.Province))
                     {
                         EntityReference provinceReference = null;
-                        provinceReference = (EntityReference)contact.Attributes[contactEntity.Fields.Province];
+                        provinceReference = (EntityReference)contact.Attributes[ContactFields.Province];
                         if (provinceReference != null)
                         {
 
@@ -356,33 +358,33 @@ namespace CreateContactAsPatient.Methods
                     }
 
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Canton))
+                    if (contact.Attributes.Contains(ContactFields.Canton))
                     {
                         EntityReference cantonReference = null;
-                        cantonReference = (EntityReference)contact.Attributes[contactEntity.Fields.Canton];
+                        cantonReference = (EntityReference)contact.Attributes[ContactFields.Canton];
                         if (cantonReference != null)
                         {
 
-                            var cantonRetrieved = service.Retrieve(cantonEntity.EntitySingularName, cantonReference.Id, new ColumnSet(cantonEntity.Fields.IdCanton));
-                            if (cantonRetrieved.Attributes.Contains(cantonEntity.Fields.IdCanton))
+                            var cantonRetrieved = service.Retrieve(cantonEntity.EntitySingularName, cantonReference.Id, new ColumnSet(CantonFields.IdCanton));
+                            if (cantonRetrieved.Attributes.Contains(CantonFields.IdCanton))
                             {
-                                requestStructure.Canton = cantonRetrieved.GetAttributeValue<string>(cantonEntity.Fields.IdCanton);
+                                requestStructure.Canton = cantonRetrieved.GetAttributeValue<string>(CantonFields.IdCanton);
                             }
                         }
                     }
 
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.District))
+                    if (contact.Attributes.Contains(ContactFields.District))
                     {
                         EntityReference districtReference = null;
-                        districtReference = (EntityReference)contact.Attributes[contactEntity.Fields.District];
+                        districtReference = (EntityReference)contact.Attributes[ContactFields.District];
                         if (districtReference != null)
                         {
                             Entity district = new Entity(districtEntity.EntitySingularName);
-                            var districtRetrieved = service.Retrieve(districtEntity.EntitySingularName, districtReference.Id, new ColumnSet(districtEntity.Fields.IdDistrict));
-                            if (districtRetrieved.Attributes.Contains(districtEntity.Fields.IdDistrict))
+                            var districtRetrieved = service.Retrieve(districtEntity.EntitySingularName, districtReference.Id, new ColumnSet(DistrictFields.IdDistrict));
+                            if (districtRetrieved.Attributes.Contains(DistrictFields.IdDistrict))
                             {
-                                requestStructure.Distrito = districtRetrieved.GetAttributeValue<string>(districtEntity.Fields.IdDistrict);
+                                requestStructure.Distrito = districtRetrieved.GetAttributeValue<string>(DistrictFields.IdDistrict);
                             }
                         }
                     }
@@ -390,9 +392,9 @@ namespace CreateContactAsPatient.Methods
 
 
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Gender))
+                    if (contact.Attributes.Contains(ContactFields.Gender))
                     {
-                        int val = (contact.GetAttributeValue<OptionSetValue>(contactEntity.Fields.Gender)).Value;
+                        int val = (contact.GetAttributeValue<OptionSetValue>(ContactFields.Gender)).Value;
                         string gender = sharedMethods.GetGenderValue(val);
                         if (!String.IsNullOrEmpty(gender))
                         {
@@ -402,7 +404,7 @@ namespace CreateContactAsPatient.Methods
                     }
 
                     DateTime birthdate = new DateTime();
-                    birthdate = contact.GetAttributeValue<DateTime>(contactEntity.Fields.Birthdate);
+                    birthdate = contact.GetAttributeValue<DateTime>(ContactFields.Birthdate);
                     if (birthdate != null)
                     {
                         requestStructure.FechaNacimiento = birthdate.ToString("yyyy-MM-dd");
@@ -411,10 +413,10 @@ namespace CreateContactAsPatient.Methods
 
 
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.UserType))
+                    if (contact.Attributes.Contains(ContactFields.UserType))
                     {
                         EntityReference userTypeReference = null;
-                        userTypeReference = (EntityReference)contact.Attributes[contactEntity.Fields.UserType];
+                        userTypeReference = (EntityReference)contact.Attributes[ContactFields.UserType];
                         if (userTypeReference != null)
                         {
                             requestStructure.TipoUsuario = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
@@ -423,9 +425,9 @@ namespace CreateContactAsPatient.Methods
 
 
 
-                    if (contact.Attributes.Contains(contactEntity.Fields.Interests))
+                    if (contact.Attributes.Contains(ContactFields.Interests))
                     {
-                        var interests = (contact.GetAttributeValue<OptionSetValueCollection>(contactEntity.Fields.Interests));
+                        var interests = (contact.GetAttributeValue<OptionSetValueCollection>(ContactFields.Interests));
                         requestStructure.interests = new UpdateAccountRequest.Request.Interest[interests.Count];
 
                         for (int i = 0; i < interests.Count; i++)
@@ -468,12 +470,12 @@ namespace CreateContactAsPatient.Methods
                     //Obtener los productos y dosis que ya tiene actualmente asignados el contacto
 
 
-                    string[] doseColumnsToGet = new string[] { doseEntity.Fields.Dose, doseEntity.Fields.DosexProduct };
+                    string[] doseColumnsToGet = new string[] { DoseFields.Dose, DoseFields.DosexProduct };
                     var doseColumnSet = new ColumnSet(doseColumnsToGet);
 
                     Guid parentId = contact.Id;
                     var query = new QueryExpression(doseEntity.EntitySingularName);
-                    query.Criteria.AddCondition(new ConditionExpression(doseEntity.Fields.ContactxDose, ConditionOperator.Equal, parentId));
+                    query.Criteria.AddCondition(new ConditionExpression(DoseFields.ContactxDose, ConditionOperator.Equal, parentId));
                     query.ColumnSet = doseColumnSet;
                     var contactDosesList = service.RetrieveMultiple(query);
 
@@ -492,29 +494,29 @@ namespace CreateContactAsPatient.Methods
 
                                     var doseChild = contactDosesList[i];
 
-                                    if (doseChild.Attributes.Contains(doseEntity.Fields.DosexProduct))
+                                    if (doseChild.Attributes.Contains(DoseFields.DosexProduct))
                                     {
                                         EntityReference productReference = null;
-                                        productReference = (EntityReference)doseChild.Attributes[doseEntity.Fields.DosexProduct];
+                                        productReference = (EntityReference)doseChild.Attributes[DoseFields.DosexProduct];
                                         if (productReference != null)
                                         {
 
-                                            Entity product = service.Retrieve(productEntity.EntitySingularName, productReference.Id, new ColumnSet(new string[] { productEntity.Fields.ProductNumber }));
+                                            Entity product = service.Retrieve(productEntity.EntitySingularName, productReference.Id, new ColumnSet(new string[] { ProductFields.ProductNumber }));
 
-                                            if (product.Attributes.Contains(productEntity.Fields.ProductNumber))
+                                            if (product.Attributes.Contains(ProductFields.ProductNumber))
                                             {
                                                 string frequency = "";
 
-                                                if (doseChild.Attributes.Contains(doseEntity.Fields.Dose))
+                                                if (doseChild.Attributes.Contains(DoseFields.Dose))
                                                 {
-                                                    frequency = doseChild.GetAttributeValue<string>(doseEntity.Fields.Dose);
+                                                    frequency = doseChild.GetAttributeValue<string>(DoseFields.Dose);
                                                 }
 
 
                                                 requestStructure.medication.products[i] = new UpdateAccountRequest.Request.Product
                                                 {
                                                     frequency = frequency,
-                                                    productid = product.GetAttributeValue<string>(productEntity.Fields.ProductNumber)
+                                                    productid = product.GetAttributeValue<string>(ProductFields.ProductNumber)
                                                 };
                                             }
                                         }
@@ -546,15 +548,15 @@ namespace CreateContactAsPatient.Methods
 
                     string entity2 = contactEntity.EntitySingularName;
 
-                    string relationshipEntityName = contactEntity.Fields.ContactxDoctorRelationship;
+                    string relationshipEntityName = ContactFields.ContactxDoctorRelationship;
 
                     QueryExpression querym = new QueryExpression(entity1);
 
                     querym.ColumnSet = new ColumnSet(true);
 
-                    LinkEntity linkEntity1 = new LinkEntity(entity1, relationshipEntityName, doctorEntity.Fields.EntityId, doctorEntity.Fields.EntityId, Microsoft.Xrm.Sdk.Query.JoinOperator.Inner);
+                    LinkEntity linkEntity1 = new LinkEntity(entity1, relationshipEntityName, DoctorFields.EntityId, DoctorFields.EntityId, Microsoft.Xrm.Sdk.Query.JoinOperator.Inner);
 
-                    LinkEntity linkEntity2 = new LinkEntity(relationshipEntityName, entity2, contactEntity.Fields.EntityId, contactEntity.Fields.EntityId, JoinOperator.Inner);
+                    LinkEntity linkEntity2 = new LinkEntity(relationshipEntityName, entity2, ContactFields.EntityId, ContactFields.EntityId, JoinOperator.Inner);
 
                     //linkEntity2.EntityAlias = "alias";
 
@@ -566,7 +568,7 @@ namespace CreateContactAsPatient.Methods
 
                     linkEntity2.LinkCriteria = new FilterExpression();
 
-                    linkEntity2.LinkCriteria.AddCondition(new ConditionExpression(contactEntity.Fields.EntityId, ConditionOperator.Equal, contact.Id));
+                    linkEntity2.LinkCriteria.AddCondition(new ConditionExpression(ContactFields.EntityId, ConditionOperator.Equal, contact.Id));
 
                     EntityCollection doctorsOfContact = service.RetrieveMultiple(querym);
 
@@ -590,9 +592,9 @@ namespace CreateContactAsPatient.Methods
                                     var medic = doctorsOfContact[i];
 
 
-                                    if (medic.Attributes.Contains(doctorEntity.Fields.DoctorIdKey))
+                                    if (medic.Attributes.Contains(DoctorFields.DoctorIdKey))
                                     {
-                                        string id = medic.GetAttributeValue<string>(doctorEntity.Fields.DoctorIdKey);
+                                        string id = medic.GetAttributeValue<string>(DoctorFields.DoctorIdKey);
 
 
                                         requestStructure.medication.medics[i] = new UpdateAccountRequest.Request.Medic

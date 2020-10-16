@@ -74,7 +74,7 @@ namespace CreateContactAsPatient
 
                     // Check the "Relationship Name" with your intended one
 
-                    if (relationshipName != contactEntity.Fields.ContactxDoctorRelationship)
+                    if (relationshipName != ContactFields.ContactxDoctorRelationship)
                     {
                         return;
                     }
@@ -93,7 +93,7 @@ namespace CreateContactAsPatient
                             targetEntity = (EntityReference)context.InputParameters["Target"];
 
 
-                            string[] columnsToGet = new string[] { contactEntity.Fields.IdAboxPatient, contactEntity.Fields.Country, contactEntity.Fields.UserType, contactEntity.Fields.IdType, contactEntity.Fields.Id, contactEntity.Fields.Firstname, contactEntity.Fields.SecondLastname, contactEntity.Fields.Lastname, contactEntity.Fields.Gender, contactEntity.Fields.Birthdate };
+                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate };
                             var columnSet = new ColumnSet(columnsToGet);
                             contact = service.Retrieve(contactEntity.EntitySingularName, targetEntity.Id, columnSet);
 
@@ -158,12 +158,12 @@ namespace CreateContactAsPatient
 
                                     doctorRelated = relatedEntities[i];
 
-                                    Entity doctor = service.Retrieve(doctorEntity.EntitySingularName, doctorRelated.Id, new ColumnSet(doctorEntity.Fields.DoctorIdKey));
-                                    if (doctor.Attributes.Contains(doctorEntity.Fields.DoctorIdKey))
+                                    Entity doctor = service.Retrieve(doctorEntity.EntitySingularName, doctorRelated.Id, new ColumnSet(DoctorFields.DoctorIdKey));
+                                    if (doctor.Attributes.Contains(DoctorFields.DoctorIdKey))
                                     {
                                         medicsToSave.Add(new UpdatePatientRequest.Request.Medic
                                         {
-                                            medicid = doctor.GetAttributeValue<string>(doctorEntity.Fields.DoctorIdKey)
+                                            medicid = doctor.GetAttributeValue<string>(DoctorFields.DoctorIdKey)
                                         });
                                     }
                                 }
@@ -189,14 +189,14 @@ namespace CreateContactAsPatient
                                         foreach (var relatedItem in relatedEntities)
                                         {
                                             //Obtener la entidad con el Id de Medico
-                                            Entity doctorToRemove = service.Retrieve(doctorEntity.EntitySingularName, relatedItem.Id, new ColumnSet(doctorEntity.Fields.DoctorIdKey));
+                                            Entity doctorToRemove = service.Retrieve(doctorEntity.EntitySingularName, relatedItem.Id, new ColumnSet(DoctorFields.DoctorIdKey));
                                             int medicsLength = updatePatientRequest.medication.medics.Length;
 
                                             //Buscar en la lista de medicos que tiene el usuario
                                             for (int i = 0; i < medicsLength; i++)
                                             {
                                                 //Agregar a la lista de medicos a guardar, aquellos que no fueron desasociados
-                                                if (updatePatientRequest.medication.medics[i].medicid != doctorToRemove.GetAttributeValue<string>(doctorEntity.Fields.DoctorIdKey))
+                                                if (updatePatientRequest.medication.medics[i].medicid != doctorToRemove.GetAttributeValue<string>(DoctorFields.DoctorIdKey))
                                                 {
                                                     medicsToSave.Add(updatePatientRequest.medication.medics[i]);
 
@@ -248,7 +248,7 @@ namespace CreateContactAsPatient
                         WebRequestData wrData = new WebRequestData();
                         wrData.InputData = jsonObject;
                         wrData.ContentType = "application/json";
-                        wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAxOTIwNTQ5LCJleHAiOjE2MDIwMDY5NDl9.6M-3n9In6R5ze-r0Z8d1eupIAQSfxyEGZuM7ymroZEY";
+                        wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAyODg1MjA2LCJleHAiOjE2MDI5NzE2MDZ9.pjW8YC5YIg7hQDXGZw-ciUfvM3L1b4oqs9WpAsk-Gwc";
 
                         wrData.Url = AboxServices.UpdatePatientService;
 

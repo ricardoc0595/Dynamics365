@@ -39,6 +39,13 @@ namespace CreateContactAsPatient
                 IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
                 ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
 
+                ///*Esta validación previene la ejecución del Plugin de cualquier
+                // * transacción realizada a través del Web API desde Abox*/
+                //if (context.UserId == new Guid("7dbf49f3-8be8-ea11-a817-002248029f77"))
+                //{
+                //    return;
+                //}
+
                 Entity contactUpdated = null;
                 UpdatePatientRequest.Request updatePatientRequest = null;
                 UpdateAccountRequest.Request updateAccountRequest = null;
@@ -63,17 +70,17 @@ namespace CreateContactAsPatient
 
                             //contactMethods = new ContactMethods();
 
-                            string[] columnsToGet = new string[] { contactEntity.Fields.IdAboxPatient, contactEntity.Fields.Country,contactEntity.Fields.Province,contactEntity.Fields.Canton,contactEntity.Fields.District,contactEntity.Fields.Interests, contactEntity.Fields.UserType, contactEntity.Fields.IdType, contactEntity.Fields.Id, contactEntity.Fields.Firstname, contactEntity.Fields.SecondLastname, contactEntity.Fields.Lastname, contactEntity.Fields.Gender, contactEntity.Fields.Birthdate, contactEntity.Fields.ContactxContactLookup,contactEntity.Fields.Phone,contactEntity.Fields.SecondaryPhone,contactEntity.Fields.Email };
+                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country,ContactFields.Province,ContactFields.Canton,ContactFields.District,ContactFields.Interests, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate, ContactFields.ContactxContactLookup,ContactFields.Phone,ContactFields.SecondaryPhone,ContactFields.Email };
                             var columnSet = new ColumnSet(columnsToGet);
                             Entity contactData = service.Retrieve(contactEntity.EntitySingularName, contactUpdated.Id, columnSet);
 
 
                             string userType = "";
 
-                            if (contactData.Attributes.Contains(contactEntity.Fields.UserType))
+                            if (contactData.Attributes.Contains(ContactFields.UserType))
                             {
                                 EntityReference userTypeReference = null;
-                                userTypeReference = (EntityReference)contactData.Attributes[contactEntity.Fields.UserType];
+                                userTypeReference = (EntityReference)contactData.Attributes[ContactFields.UserType];
                                 if (userTypeReference != null)
                                 {
                                     userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
@@ -97,7 +104,7 @@ namespace CreateContactAsPatient
                             {
                                 /*Validar si es un usuario tipo Paciente y no tiene un cuidador o tutor, se utilizara el servicio
                                  *de update patient*/
-                                if (userType == "01" && !(contactData.Attributes.Contains(contactEntity.Fields.ContactxContactLookup)))
+                                if (userType == "01" && contactData.Attributes.Contains(ContactFields.ContactxContactLookup))
                                 {
                                     updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service);
                                 }
@@ -141,7 +148,7 @@ namespace CreateContactAsPatient
                             WebRequestData wrData = new WebRequestData();
                             wrData.InputData = jsonObject;
                             wrData.ContentType = "application/json";
-                            wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAxOTIwNTQ5LCJleHAiOjE2MDIwMDY5NDl9.6M-3n9In6R5ze-r0Z8d1eupIAQSfxyEGZuM7ymroZEY";
+                            wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAyODg1MjA2LCJleHAiOjE2MDI5NzE2MDZ9.pjW8YC5YIg7hQDXGZw-ciUfvM3L1b4oqs9WpAsk-Gwc";
 
                             wrData.Url = serviceUrl;
 
