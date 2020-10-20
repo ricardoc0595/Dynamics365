@@ -629,7 +629,537 @@ namespace CreateContactAsPatient.Methods
 
         }
 
+        public QuickSignupRequest.Request GetQuickSignupRequestObject(Entity contact, IOrganizationService service)
+        {
+            var request = new QuickSignupRequest.Request();
+            try
+            {
+                ContactEntity contactEntity = new ContactEntity();
+                CantonEntity cantonEntity = new CantonEntity();
+                DistrictEntity districtEntity = new DistrictEntity();
+                ProvinceEntity provinceEntity = new ProvinceEntity();
+                CountryEntity countryEntity = new CountryEntity();
 
+                if (contact.Attributes.Contains(ContactFields.UserType))
+                {
+                    EntityReference userTypeReference = null;
+                    userTypeReference = (EntityReference)contact.Attributes[ContactFields.UserType];
+                    if (userTypeReference != null)
+                    {
+                        request.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
+                    }
+                }
+
+
+
+                #region Personal Info
+                request.personalinfo = new QuickSignupRequest.Request.Personalinfo();
+
+                if (contact.Attributes.Contains(ContactFields.IdType))
+                {
+                    request.personalinfo.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
+                }
+
+
+
+                if (contact.Attributes.Contains(ContactFields.Id))
+                {
+                    request.personalinfo.id = contact.Attributes[ContactFields.Id].ToString();
+
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Firstname))
+                {
+                    request.personalinfo.name = contact.Attributes[ContactFields.Firstname].ToString();
+
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Lastname))
+                {
+                    request.personalinfo.lastname = contact.Attributes[ContactFields.Lastname].ToString();
+
+                }
+
+                if (contact.Attributes.Contains(ContactFields.SecondLastname))
+                {
+                    request.personalinfo.secondlastname = contact.Attributes[ContactFields.SecondLastname].ToString();
+
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Password))
+                {
+                    request.personalinfo.password = contact.Attributes[ContactFields.Password].ToString();
+
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Gender))
+                {
+                    int val = (contact.GetAttributeValue<OptionSetValue>(ContactFields.Gender)).Value;
+                    string gender = sharedMethods.GetGenderValue(val);
+                    if (!String.IsNullOrEmpty(gender))
+                    {
+                        request.personalinfo.gender = gender;
+
+                    }
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Birthdate))
+                {
+                    DateTime birthdate = new DateTime();
+                    birthdate = contact.GetAttributeValue<DateTime>(ContactFields.Birthdate);
+                    if (birthdate != null)
+                    {
+                        request.personalinfo.dateofbirth = birthdate.ToString("yyyy-MM-dd");
+
+                    }
+                }
+
+
+                #endregion
+
+                #region ContactInfo
+
+                request.contactinfo = new QuickSignupRequest.Request.Contactinfo();
+
+
+                if (contact.Attributes.Contains(ContactFields.Phone))
+                {
+                    request.contactinfo.phone = contact.Attributes[ContactFields.Phone].ToString();
+
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Email))
+                {
+                    request.contactinfo.email = contact.Attributes[ContactFields.Email].ToString();
+                }
+
+
+
+                if (contact.Attributes.Contains(ContactFields.Country))
+                {
+                    EntityReference countryReference = null;
+                    countryReference = (EntityReference)contact.Attributes[ContactFields.Country];
+                    if (countryReference != null)
+                    {
+
+                        var countryRetrieved = service.Retrieve(countryEntity.EntitySingularName, countryReference.Id, new ColumnSet(CountryFields.IdCountry));
+                        if (countryRetrieved.Attributes.Contains(CountryFields.IdCountry))
+                        {
+
+                            string country = countryRetrieved.GetAttributeValue<string>(CountryFields.IdCountry);
+
+                            if (!String.IsNullOrEmpty(country))
+                            {
+                                request.country = country;
+
+                            }
+
+                        }
+                    }
+                }
+
+
+                if (contact.Attributes.Contains(ContactFields.Province))
+                {
+                    EntityReference provinceReference = null;
+                    provinceReference = (EntityReference)contact.Attributes[ContactFields.Province];
+                    if (provinceReference != null)
+                    {
+
+                        var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(provinceEntity.Fields.IdProvince));
+                        if (provinceRetrieved.Attributes.Contains(provinceEntity.Fields.IdProvince))
+                        {
+
+                            bool parsed = Int32.TryParse(provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince), out int aux);
+
+                            if (parsed)
+                            {
+                                int parsedValue = Int32.Parse(provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince));
+                                request.contactinfo.province = parsedValue;
+
+                            }
+
+                        }
+                    }
+                }
+
+
+                if (contact.Attributes.Contains(ContactFields.Canton))
+                {
+                    EntityReference cantonReference = null;
+                    cantonReference = (EntityReference)contact.Attributes[ContactFields.Canton];
+                    if (cantonReference != null)
+                    {
+
+                        var cantonRetrieved = service.Retrieve(cantonEntity.EntitySingularName, cantonReference.Id, new ColumnSet(CantonFields.IdCanton));
+                        if (cantonRetrieved.Attributes.Contains(CantonFields.IdCanton))
+                        {
+
+                            bool parsed = Int32.TryParse(cantonRetrieved.GetAttributeValue<string>(CantonFields.IdCanton), out int aux);
+
+                            if (parsed)
+                            {
+                                int parsedValue = Int32.Parse(cantonRetrieved.GetAttributeValue<string>(CantonFields.IdCanton));
+                                request.contactinfo.canton = parsedValue;
+
+                            }
+
+                        }
+                    }
+                }
+
+                if (contact.Attributes.Contains(ContactFields.District))
+                {
+                    EntityReference districtReference = null;
+                    districtReference = (EntityReference)contact.Attributes[ContactFields.District];
+                    if (districtReference != null)
+                    {
+                        Entity district = new Entity(districtEntity.EntitySingularName);
+                        var districtRetrieved = service.Retrieve(districtEntity.EntitySingularName, districtReference.Id, new ColumnSet(DistrictFields.IdDistrict));
+                        if (districtRetrieved.Attributes.Contains(DistrictFields.IdDistrict))
+                        {
+
+                            bool parsed = Int32.TryParse(districtRetrieved.GetAttributeValue<string>(DistrictFields.IdDistrict), out int aux);
+                            if (parsed)
+                            {
+                                int parsedValue = Int32.Parse(districtRetrieved.GetAttributeValue<string>(DistrictFields.IdDistrict));
+                                request.contactinfo.district = parsedValue;
+                            }
+
+
+                        }
+                    }
+                }
+
+
+
+
+                #endregion
+
+                #region Medication
+
+                //if (request.medication!=null)
+                //{
+
+                //    #region Products
+
+                //    //contact.RelatedEntities;
+                //    ////contact.
+                //    //service.Retrieve("product", , new ColumnSet(true));
+                //    //contact.Attributes[ContactFields.ContactxProductRelationShip]= new EntityReference("product",);
+
+
+                //    #endregion
+
+
+                //    #region Medics
+
+                //    #endregion
+
+                //}
+
+                #endregion
+
+                #region Interests
+
+
+
+                #endregion
+
+
+                return request;
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
+        public PatientSignupRequest.Request GetSignupPatientRequestObject(Entity contact, IOrganizationService service)
+        {
+            var request = new PatientSignupRequest.Request();
+            try
+            {
+                ContactEntity contactEntity = new ContactEntity();
+                CantonEntity cantonEntity = new CantonEntity();
+                DistrictEntity districtEntity = new DistrictEntity();
+                ProvinceEntity provinceEntity = new ProvinceEntity();
+                CountryEntity countryEntity = new CountryEntity();
+
+                if (contact.Attributes.Contains(ContactFields.UserType))
+                {
+                    EntityReference userTypeReference = null;
+                    userTypeReference = (EntityReference)contact.Attributes[ContactFields.UserType];
+                    if (userTypeReference != null)
+                    {
+                        request.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
+                    }
+                }
+
+
+                request.personalinfo = new PatientSignupRequest.Request.Personalinfo();
+                request.patientincharge = new PatientSignupRequest.Request.Patientincharge();
+                #region Personal Info
+
+                if (contact.Attributes.Contains(ContactFields.IdType))
+                {
+                    request.personalinfo.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
+                    request.patientincharge.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
+                }
+
+
+
+                if (contact.Attributes.Contains(ContactFields.Id))
+                {
+                    request.personalinfo.id = contact.Attributes[ContactFields.Id].ToString();
+                    request.patientincharge.id = contact.Attributes[ContactFields.Id].ToString();
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Firstname))
+                {
+                    request.personalinfo.name = contact.Attributes[ContactFields.Firstname].ToString();
+                    request.patientincharge.name = contact.Attributes[ContactFields.Firstname].ToString();
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Lastname))
+                {
+                    request.personalinfo.lastname = contact.Attributes[ContactFields.Lastname].ToString();
+                    request.patientincharge.lastname= contact.Attributes[ContactFields.Lastname].ToString();
+                }
+
+                if (contact.Attributes.Contains(ContactFields.SecondLastname))
+                {
+                    request.personalinfo.secondlastname = contact.Attributes[ContactFields.SecondLastname].ToString();
+                    request.patientincharge.secondlastname= contact.Attributes[ContactFields.SecondLastname].ToString();
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Password))
+                {
+                    request.personalinfo.password = contact.Attributes[ContactFields.Password].ToString();
+
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Gender))
+                {
+                    int val = (contact.GetAttributeValue<OptionSetValue>(ContactFields.Gender)).Value;
+                    string gender = sharedMethods.GetGenderValue(val);
+                    if (!String.IsNullOrEmpty(gender))
+                    {
+                        request.personalinfo.gender = gender;
+                        request.patientincharge.gender = gender;
+                    }
+
+
+
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Birthdate))
+                {
+                    DateTime birthdate = new DateTime();
+                    birthdate = contact.GetAttributeValue<DateTime>(ContactFields.Birthdate);
+                    if (birthdate != null)
+                    {
+                        request.personalinfo.dateofbirth = birthdate.ToString("yyyy-MM-dd");
+                        request.patientincharge.dateofbirth = birthdate.ToString("yyyy-MM-dd"); 
+                    }
+                }
+
+
+                #endregion
+
+                #region ContactInfo
+
+                request.contactinfo = new PatientSignupRequest.Request.Contactinfo();
+
+
+                if (contact.Attributes.Contains(ContactFields.Phone))
+                {
+                    request.contactinfo.phone = contact.Attributes[ContactFields.Phone].ToString();
+
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Email))
+                {
+                    request.contactinfo.email = contact.Attributes[ContactFields.Email].ToString();
+                }
+
+
+
+                if (contact.Attributes.Contains(ContactFields.Country))
+                {
+                    EntityReference countryReference = null;
+                    countryReference = (EntityReference)contact.Attributes[ContactFields.Country];
+                    if (countryReference != null)
+                    {
+
+                        var countryRetrieved = service.Retrieve(countryEntity.EntitySingularName, countryReference.Id, new ColumnSet(CountryFields.IdCountry));
+                        if (countryRetrieved.Attributes.Contains(CountryFields.IdCountry))
+                        {
+
+                            string country = countryRetrieved.GetAttributeValue<string>(CountryFields.IdCountry);
+
+                            if (!String.IsNullOrEmpty(country))
+                            {
+                                request.country = country;
+
+                            }
+
+                        }
+                    }
+                }
+
+
+                if (contact.Attributes.Contains(ContactFields.Province))
+                {
+                    EntityReference provinceReference = null;
+                    provinceReference = (EntityReference)contact.Attributes[ContactFields.Province];
+                    if (provinceReference != null)
+                    {
+
+                        var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(provinceEntity.Fields.IdProvince));
+                        if (provinceRetrieved.Attributes.Contains(provinceEntity.Fields.IdProvince))
+                        {
+
+                            string value = provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince);
+
+                            if (!String.IsNullOrEmpty(value))
+                            {
+                                
+                                request.contactinfo.province = value;
+
+                            }
+
+                        }
+                    }
+                }
+
+
+                if (contact.Attributes.Contains(ContactFields.Canton))
+                {
+                    EntityReference cantonReference = null;
+                    cantonReference = (EntityReference)contact.Attributes[ContactFields.Canton];
+                    if (cantonReference != null)
+                    {
+
+                        var cantonRetrieved = service.Retrieve(cantonEntity.EntitySingularName, cantonReference.Id, new ColumnSet(CantonFields.IdCanton));
+                        if (cantonRetrieved.Attributes.Contains(CantonFields.IdCanton))
+                        {
+
+                            string value= cantonRetrieved.GetAttributeValue<string>(CantonFields.IdCanton);
+
+                            if (!String.IsNullOrEmpty(value))
+                            {
+                                
+                                request.contactinfo.canton = value;
+
+                            }
+
+                        }
+                    }
+                }
+
+                if (contact.Attributes.Contains(ContactFields.District))
+                {
+                    EntityReference districtReference = null;
+                    districtReference = (EntityReference)contact.Attributes[ContactFields.District];
+                    if (districtReference != null)
+                    {
+                        Entity district = new Entity(districtEntity.EntitySingularName);
+                        var districtRetrieved = service.Retrieve(districtEntity.EntitySingularName, districtReference.Id, new ColumnSet(DistrictFields.IdDistrict));
+                        if (districtRetrieved.Attributes.Contains(DistrictFields.IdDistrict))
+                        {
+
+                            string value = districtRetrieved.GetAttributeValue<string>(DistrictFields.IdDistrict);
+                            if (!String.IsNullOrEmpty(value))
+                            {
+                                
+                                request.contactinfo.district = value;
+                            }
+
+
+                        }
+                    }
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Interests))
+                {
+                    var interests = (contact.GetAttributeValue<OptionSetValueCollection>(ContactFields.Interests));
+                    request.interests = new List<PatientSignupRequest.Request.Interest>();
+
+                    for (int i = 0; i < interests.Count; i++)
+                    {
+                        string value = interests[i].Value.ToString();
+
+                        if (!String.IsNullOrEmpty(value))
+                        {
+                            request.interests.Add(new PatientSignupRequest.Request.Interest
+                            {
+                                interestid = value,
+                                //TODO: Traer cantidad real de relaciones
+                                relations = new List<PatientSignupRequest.Request.Relation> {
+                                        new PatientSignupRequest.Request.Relation
+                                        {
+                                            relation=new PatientSignupRequest.Request.Relation1
+                                            {
+                                                other="",
+                                                relationid="Para mí"
+                                            }
+                                        }
+                                    }
+                            }); 
+
+                        }
+                    }
+
+                }
+
+
+
+
+                #endregion
+
+                #region Medication
+
+                //if (request.medication!=null)
+                //{
+
+                //    #region Products
+
+                //    //contact.RelatedEntities;
+                //    ////contact.
+                //    //service.Retrieve("product", , new ColumnSet(true));
+                //    //contact.Attributes[ContactFields.ContactxProductRelationShip]= new EntityReference("product",);
+
+
+                //    #endregion
+
+
+                //    #region Medics
+
+                //    #endregion
+
+                //}
+
+                #endregion
+
+                #region Interests
+
+
+
+                #endregion
+
+
+                return request;
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
 
     }
 }

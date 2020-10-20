@@ -1,14 +1,10 @@
 ﻿namespace AboxDynamicsBase.Classes
 {
-    public class AboxServices
+    public static class AboxServices
     {
-        public const string _quickSignupService = "https://apidev.aboxplan.com/member/signup/kyn";
-        private const string updatePatientService = "https://apidev.aboxplan.com/member/patient/update";
-        private const string _updateAccountService = "https://apidev.aboxplan.com/member/account/update";
-        public static string QuickSignupService => _quickSignupService;
-
-        public static string UpdatePatientService => updatePatientService;
-
-        public static string UpdateAccountService => _updateAccountService;
+        public const string QuickSignupService = "https://apidev.aboxplan.com/member/signup/kyn";
+        public const string UpdatePatientService = "https://apidev.aboxplan.com/member/patient/update";
+        public const string UpdateAccountService = "https://apidev.aboxplan.com/member/account/update";
+        public const string PatientSignup = "https://apidev.aboxplan.com/member/signup/patient";
     }
 }

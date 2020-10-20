@@ -215,6 +215,8 @@ namespace CreateContactAsPatient.Classes
             [DataContract]
             public class Details
             {
+                [DataMember]
+                public int idPaciente { get; set; }
             }
 
 
