@@ -38,6 +38,13 @@ namespace CreateContactAsPatient
                 ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
                 // The InputParameters collection contains all the data passed in the message request.
 
+                /*Esta validación previene la ejecución del Plugin de cualquier
+                 * transacción realizada a través del Web API desde Abox*/
+                if (context.InitiatingUserId == new Guid("7dbf49f3-8be8-ea11-a817-002248029f77"))
+                {
+                    return;
+                }
+
                 EntityReference targetEntity = null;
 
                 string relationshipName = string.Empty;
@@ -248,7 +255,7 @@ namespace CreateContactAsPatient
                         WebRequestData wrData = new WebRequestData();
                         wrData.InputData = jsonObject;
                         wrData.ContentType = "application/json";
-                        wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAyODg1MjA2LCJleHAiOjE2MDI5NzE2MDZ9.pjW8YC5YIg7hQDXGZw-ciUfvM3L1b4oqs9WpAsk-Gwc";
+                        wrData.Authorization = "Bearer "+ Constants.TokenForAboxServices;
 
                         wrData.Url = AboxServices.UpdatePatientService;
 

@@ -188,7 +188,7 @@ namespace CrmAboxApi.Logic.Classes
             }
         }
 
-        private JObject GetUpdateContactJsonStructure(UpdateAccountRequest updateProperties)
+        private JObject GetUpdateAccountRequestStructure(UpdateAccountRequest updateProperties)
         {
             OperationResult result = new OperationResult();
             JObject jObject = new JObject();
@@ -220,6 +220,23 @@ namespace CrmAboxApi.Logic.Classes
                     if (!(String.IsNullOrEmpty(updateProperties.Telefono2)))
                         jObject.Add(ContactFields.SecondaryPhone, updateProperties.Telefono2);
 
+
+                    if (!(String.IsNullOrEmpty(updateProperties.Provincia)))
+                    {
+                        jObject.Add($"{this.Schemas.Province}@odata.bind", $"/{provinceEntity.EntityPluralName}({provinceEntity.Fields.IdProvince}='{updateProperties.Provincia}')");
+                    }
+
+                    if (!(String.IsNullOrEmpty(updateProperties.Canton)))
+                    {
+                        jObject.Add($"{this.Schemas.Canton}@odata.bind", $"/{cantonEntity.EntityPluralName}({CantonFields.IdCanton}='{updateProperties.Canton}')");
+                    }
+
+                    if (!(String.IsNullOrEmpty(updateProperties.Distrito)))
+                    {
+                        jObject.Add($"{this.Schemas.District}@odata.bind", $"/{districtEntity.EntityPluralName}({DistrictFields.IdDistrict}='{updateProperties.Distrito}')");
+                    }
+
+
                     if (updateProperties.medication != null)
                     {
                         JArray productsArray = new JArray();
@@ -249,6 +266,23 @@ namespace CrmAboxApi.Logic.Classes
                             jObject.Add($"{ContactFields.ContactxDoctorRelationship}@odata.bind", medicsArray);
                         }
                     }
+
+                    if (updateProperties.interests != null)
+                    {
+                        string values = "";
+                        int length = updateProperties.interests.Length;
+                        for (int i = 0; i < length; i++)
+                        {
+                            if (values != "")
+                                values += "," + updateProperties.interests[i].interestid;
+                            else
+                                values += updateProperties.interests[i].interestid;
+                        }
+                        jObject.Add($"{ContactFields.Interests}", values);
+                    }
+
+
+
                 }
 
                 return jObject;
@@ -1026,7 +1060,7 @@ namespace CrmAboxApi.Logic.Classes
             {
                 if (updateAccountRequest != null)
                 {
-                    var contactStructure = this.GetUpdateContactJsonStructure(updateAccountRequest);
+                    var contactStructure = this.GetUpdateAccountRequestStructure(updateAccountRequest);
 
                     result = this.ContactUpdateRequest(contactStructure, updateAccountRequest.patientId);
                 }
@@ -1084,14 +1118,14 @@ namespace CrmAboxApi.Logic.Classes
                                     int deletedCount = 0;
                                     for (int i = 0; i < contactRelatedDoses.Length; i++)
                                     {
-                                        if (!matchingDoses.Contains(contactRelatedDoses[i].DoseId))
-                                        {
+                                        //if (!matchingDoses.Contains(contactRelatedDoses[i].DoseId))
+                                        //{
                                             OperationResult deleteResult = doseEntity.Delete(contactRelatedDoses[i].DoseId);
                                             if (deleteResult.IsSuccessful)
                                             {
                                                 deletedCount++;
                                             }
-                                        }
+                                        //}
                                         
                                     }
                                     //if (deletedCount == contactRelatedDoses.Length)
@@ -1173,15 +1207,15 @@ namespace CrmAboxApi.Logic.Classes
                                         //    Dose = dosesArray[i].Dose,
                                         //    IdProduct = dosesArray[i].IdProduct
                                         //});
-                                        if (!matchingDoses.Contains(dosesArray[i].IdProduct))
-                                        {
+                                        //if (!matchingDoses.Contains(dosesArray[i].IdProduct))
+                                        //{
                                             OperationResult doseCreateResult = doseEntity.Create(dosesArray[i]);
 
                                             if (doseCreateResult.IsSuccessful)
                                             {
                                                 dosesCreated[i] = (string)doseCreateResult.Data;
                                             }
-                                        }
+                                        //}
                                         
                                     }
 
@@ -1237,7 +1271,7 @@ namespace CrmAboxApi.Logic.Classes
                                         EntityAssociation entityDisassociation = new EntityAssociation
                                         {
                                             RelatedEntityId = contactRelatedDoctors[i],
-                                            RelatedEntityIdKeyToUse = null,
+                                            RelatedEntityIdKeyToUse = DoctorFields.DoctorIdKey,
                                             RelatedEntityName = doctorEntity.EntityPluralName,
                                             TargetEntityId = updatePatientRequest.patientid,
                                             TargetEntityName = this.EntityPluralName,

@@ -46,7 +46,7 @@ namespace CrmAboxApi.Logic.Classes
                         if (String.IsNullOrEmpty(this.RelatedEntityIdKeyToUse))
                             relatedQuery = $"{this.RelationshipDefinitionName}({this.RelatedEntityId})";
                         else
-                            relatedQuery = $"{this.RelationshipDefinitionName}({this.RelatedEntityIdKeyToUse}={this.RelatedEntityId})";
+                            relatedQuery = $"{this.RelationshipDefinitionName}({this.RelatedEntityIdKeyToUse}='{this.RelatedEntityId}')";
 
                         var response = client.DeleteAsync($"{targetQuery}/{relatedQuery}/$ref").Result;
                         if (response.IsSuccessStatusCode)

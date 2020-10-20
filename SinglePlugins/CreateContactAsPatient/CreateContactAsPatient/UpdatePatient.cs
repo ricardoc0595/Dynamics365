@@ -39,12 +39,12 @@ namespace CreateContactAsPatient
                 IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
                 ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
 
-                ///*Esta validación previene la ejecución del Plugin de cualquier
-                // * transacción realizada a través del Web API desde Abox*/
-                //if (context.UserId == new Guid("7dbf49f3-8be8-ea11-a817-002248029f77"))
-                //{
-                //    return;
-                //}
+                /*Esta validación previene la ejecución del Plugin de cualquier
+                 * transacción realizada a través del Web API desde Abox*/
+                if (context.InitiatingUserId == new Guid("7dbf49f3-8be8-ea11-a817-002248029f77"))
+                {
+                    return;
+                }
 
                 Entity contactUpdated = null;
                 UpdatePatientRequest.Request updatePatientRequest = null;
@@ -148,7 +148,7 @@ namespace CreateContactAsPatient
                             WebRequestData wrData = new WebRequestData();
                             wrData.InputData = jsonObject;
                             wrData.ContentType = "application/json";
-                            wrData.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAyODg1MjA2LCJleHAiOjE2MDI5NzE2MDZ9.pjW8YC5YIg7hQDXGZw-ciUfvM3L1b4oqs9WpAsk-Gwc";
+                            wrData.Authorization = "Bearer "+Constants.TokenForAboxServices;
 
                             wrData.Url = serviceUrl;
 
@@ -196,7 +196,7 @@ namespace CreateContactAsPatient
                                         updateAccountResponse = (UpdateAccountRequest.ServiceResponse)deserializer.ReadObject(ms);
                                     }
 
-                                    if (updateAccountResponse.response.code != "MEMCTRL-1014")
+                                    if (updateAccountResponse.response.code != "MEMCTRL-1015")
                                     {
 
                                         throw new InvalidPluginExecutionException("Ocurrió un error al guardar la información en Abox Plan:\n" + updateAccountResponse.response.message);

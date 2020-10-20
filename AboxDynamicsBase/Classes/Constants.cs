@@ -15,6 +15,7 @@
         public const int DoseFrequencyThreePerDay = 3;
         public const int DoseFrequencyFourPerDay = 4;
         public const int DoseFrequencyOther = 5;
+        public const string TokenForAboxServices = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJjY3VpZDAxIiwiaWF0IjoxNjAzMTQ3NTYyLCJleHAiOjE2MDMyMzM5NjJ9.jKf_9roY2w3FBk7PFKO9QTGo4-NfUFqE9ZT66b4TGBE";
 
         //public enum S
         //{

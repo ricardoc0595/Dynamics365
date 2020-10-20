@@ -277,6 +277,15 @@ namespace CreateContactAsPatient
                 IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
                 IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
                 // The InputParameters collection contains all the data passed in the message request.
+
+                /*Esta validación previene la ejecución del Plugin de cualquier
+                * transacción realizada a través del Web API desde Abox*/
+                if (context.InitiatingUserId == new Guid("7dbf49f3-8be8-ea11-a817-002248029f77"))
+                {
+                    return;
+                }
+
+
                 if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is Entity)
                 {
                     // Obtain the target entity from the input parameters.
