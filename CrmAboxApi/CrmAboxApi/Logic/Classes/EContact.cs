@@ -239,32 +239,32 @@ namespace CrmAboxApi.Logic.Classes
 
                     if (updateProperties.medication != null)
                     {
-                        JArray productsArray = new JArray();
-                        JArray medicsArray = new JArray();
-                        ProductEntity productEntity = new ProductEntity();
-                        DoctorEntity doctorEntity = new DoctorEntity();
+                        //JArray productsArray = new JArray();
+                        //JArray medicsArray = new JArray();
+                        //ProductEntity productEntity = new ProductEntity();
+                        //DoctorEntity doctorEntity = new DoctorEntity();
 
-                        int productsLength = updateProperties.medication.products.Length;
-                        for (int i = 0; i < productsLength; i++)
-                        {
-                            productsArray.Add(new JValue($"/{productEntity.EntityPluralName}({ProductFields.ProductNumber}='{updateProperties.medication.products[i].productid}')"));
-                        }
+                        //int productsLength = updateProperties.medication.products.Length;
+                        //for (int i = 0; i < productsLength; i++)
+                        //{
+                        //    productsArray.Add(new JValue($"/{productEntity.EntityPluralName}({ProductFields.ProductNumber}='{updateProperties.medication.products[i].productid}')"));
+                        //}
 
-                        int medicsLength = updateProperties.medication.medics.Length;
-                        for (int i = 0; i < medicsLength; i++)
-                        {
-                            medicsArray.Add(new JValue($"/{doctorEntity.EntityPluralName}({DoctorFields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
-                        }
+                        //int medicsLength = updateProperties.medication.medics.Length;
+                        //for (int i = 0; i < medicsLength; i++)
+                        //{
+                        //    medicsArray.Add(new JValue($"/{doctorEntity.EntityPluralName}({DoctorFields.DoctorIdKey}='{updateProperties.medication.medics[i].medicid}')"));
+                        //}
 
-                        if (productsArray != null && productsArray.Count > 0)
-                        {
-                            jObject.Add($"{ContactFields.ContactxProductRelationship}@odata.bind", productsArray);
-                        }
+                        //if (productsArray != null && productsArray.Count > 0)
+                        //{
+                        //    jObject.Add($"{ContactFields.ContactxProductRelationship}@odata.bind", productsArray);
+                        //}
 
-                        if (medicsArray != null && medicsArray.Count > 0)
-                        {
-                            jObject.Add($"{ContactFields.ContactxDoctorRelationship}@odata.bind", medicsArray);
-                        }
+                        //if (medicsArray != null && medicsArray.Count > 0)
+                        //{
+                        //    jObject.Add($"{ContactFields.ContactxDoctorRelationship}@odata.bind", medicsArray);
+                        //}
                     }
 
                     if (updateProperties.interests != null)
@@ -523,9 +523,12 @@ namespace CrmAboxApi.Logic.Classes
                                 JObject userId = JObject.Parse(body.ToString());
                                 CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
 
-                                Logger.Error("", response.RequestMessage);
-                                operationResult.Code = "Error al crear el contacto en el CRM";
-                                operationResult.Message = response.ReasonPhrase;
+                                Logger.Trace(response.ReasonPhrase);
+                                if (err != null)
+                                    Logger.Trace($"Cod: {err.error.code} | Error:{err.error.message}");
+
+                                operationResult.Code = "";
+                                operationResult.Message = "Error al crear el contacto en el CRM";
                                 operationResult.IsSuccessful = false;
                                 operationResult.Data = null;
                                 operationResult.InternalError = err;
@@ -585,9 +588,10 @@ namespace CrmAboxApi.Logic.Classes
 
                             for (int i = 0; i < dosesRetrieved.Count; i++)
                             {
-                                dosesFound[i] = new DoseRecord { 
-                                    DoseId=dosesRetrieved[i].SelectToken(DoseFields.EntityId).ToString(),
-                                    Dose= dosesRetrieved[i].SelectToken(DoseFields.Dose).ToString(),
+                                dosesFound[i] = new DoseRecord
+                                {
+                                    DoseId = dosesRetrieved[i].SelectToken(DoseFields.EntityId).ToString(),
+                                    Dose = dosesRetrieved[i].SelectToken(DoseFields.Dose).ToString(),
                                     //IdProduct = dosesRetrieved[i].SelectToken(DoseFields.DosexProduct).ToString()
                                 };
                             }
@@ -605,7 +609,10 @@ namespace CrmAboxApi.Logic.Classes
                             JObject userId = JObject.Parse(body.ToString());
                             CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
 
-                            Logger.Error("", response.RequestMessage);
+                            Logger.Trace(response.ReasonPhrase);
+                            if (err != null)
+                                Logger.Trace($"Cod: {err.error.code} | Error:{err.error.message}");
+
                             operationResult.Code = "Error al obtener las dosis del contacto en el CRM";
                             operationResult.Message = response.ReasonPhrase;
                             operationResult.IsSuccessful = false;
@@ -678,7 +685,10 @@ namespace CrmAboxApi.Logic.Classes
                             JObject userId = JObject.Parse(body.ToString());
                             CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
 
-                            Logger.Error("", response.RequestMessage);
+
+                            Logger.Trace(response.ReasonPhrase);
+                            if (err != null)
+                                Logger.Trace($"Cod: {err.error.code} | Error:{err.error.message}");
                             operationResult.Code = "Error al obtener los doctores relacionados del contacto en el CRM";
                             operationResult.Message = response.ReasonPhrase;
                             operationResult.IsSuccessful = false;
@@ -746,9 +756,11 @@ namespace CrmAboxApi.Logic.Classes
                                 JObject userId = JObject.Parse(body.ToString());
                                 CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
 
-                                Logger.Error("", response.RequestMessage);
-                                operationResult.Code = "Error al actualizar el contacto en el CRM";
-                                operationResult.Message = response.ReasonPhrase;
+                                Logger.Trace(response.ReasonPhrase);
+                                if (err != null)
+                                    Logger.Trace($"Cod: {err.error.code} | Error:{err.error.message}");
+                                operationResult.Code = "";
+                                operationResult.Message = "Error al actualizar el contacto en el CRM";
                                 operationResult.IsSuccessful = false;
                                 operationResult.Data = null;
                                 operationResult.InternalError = err;
@@ -778,23 +790,41 @@ namespace CrmAboxApi.Logic.Classes
             }
         }
 
-        private List<string> MatchingMedics(UpdatePatientRequest.Medic[] array,string[] contactRelatedMedics)
+        //TODO: Optimizar estos dos metodos que hacen lo mismo y buscar forma de reutilizarlos
+        private List<string> MatchingMedicsFromPatientUpdate(UpdatePatientRequest.Medic[] array, string[] contactRelatedMedics)
         {
             List<string> matching = new List<string>();
             int length = array.Length;
-            
+
             for (int i = 0; i < length; i++)
             {
-                if (Array.IndexOf(contactRelatedMedics,array[i].medicid)>-1)
+                if (Array.IndexOf(contactRelatedMedics, array[i].medicid) > -1)
                 {
                     matching.Add(array[i].medicid);
                 }
             }
             return matching;
-           
+
         }
 
-        private List<string> MatchingProducts(UpdatePatientRequest.Product[] array, DoseRecord[] contactRelatedProducts)
+        private List<string> MatchingMedicsFromAccountUpdate(UpdateAccountRequest.Medic[] array, string[] contactRelatedMedics)
+        {
+            List<string> matching = new List<string>();
+            int length = array.Length;
+
+            for (int i = 0; i < length; i++)
+            {
+                if (Array.IndexOf(contactRelatedMedics, array[i].medicid) > -1)
+                {
+                    matching.Add(array[i].medicid);
+                }
+            }
+            return matching;
+
+        }
+
+        //TODO: Optimizar estos dos metodos que hacen lo mismo y buscar forma de reutilizarlos
+        private List<string> MatchingProductsFromPatientUpdate(UpdatePatientRequest.Product[] array, DoseRecord[] contactRelatedProducts)
         {
             List<string> matching = new List<string>();
             int length = array.Length;
@@ -802,9 +832,31 @@ namespace CrmAboxApi.Logic.Classes
             for (int i = 0; i < length; i++)
             {
                 int indexFound = Array.IndexOf(contactRelatedProducts, array[i].productid);
-                if ( indexFound > -1)
+                if (indexFound > -1)
                 {
-                    
+
+                    if (Convert.ToInt32(contactRelatedProducts[indexFound].Dose) == sharedMethods.GetDoseFrequencyValue(array[i].frequency))
+                    {
+                        matching.Add(array[i].productid);
+
+                    }
+                }
+            }
+            return matching;
+
+        }
+
+        private List<string> MatchingProductsFromAccountUpdate(UpdateAccountRequest.Product[] array, DoseRecord[] contactRelatedProducts)
+        {
+            List<string> matching = new List<string>();
+            int length = array.Length;
+
+            for (int i = 0; i < length; i++)
+            {
+                int indexFound = Array.IndexOf(contactRelatedProducts, array[i].productid);
+                if (indexFound > -1)
+                {
+
                     if (Convert.ToInt32(contactRelatedProducts[indexFound].Dose) == sharedMethods.GetDoseFrequencyValue(array[i].frequency))
                     {
                         matching.Add(array[i].productid);
@@ -1060,7 +1112,270 @@ namespace CrmAboxApi.Logic.Classes
             {
                 if (updateAccountRequest != null)
                 {
+                    int contactId = Int32.Parse(updateAccountRequest.patientId);
+
+                    if ((updateAccountRequest.medication != null) && updateAccountRequest.TipoUsuario == "01")
+                    {
+
+
+                        DoseRecord[] contactRelatedDoses = null;
+                        #region Doses Delete
+
+                        OperationResult dosesResult = null;
+                        List<string> matchingDoses = null;
+                        /*Eliminar las dosis que tenga el usuario para relacionarle las nuevas, no se hace un update, se hace un delete
+                         completamente y se relacionan nuevas dosis*/
+                        bool dosesDeleted = false;
+                        if (!String.IsNullOrEmpty(updateAccountRequest.patientId))
+                        {
+                            dosesResult = this.GetDosesRelated(contactId);
+                            if (dosesResult.IsSuccessful)
+                            {
+                                contactRelatedDoses = (DoseRecord[])dosesResult.Data;
+
+                                matchingDoses = this.MatchingProductsFromAccountUpdate(updateAccountRequest.medication.products, contactRelatedDoses);
+
+                                if (contactRelatedDoses != null && contactRelatedDoses.Length > 0)
+                                {
+                                    if (contactRelatedDoses.Length > 0)
+                                    {
+                                        int deletedCount = 0;
+                                        for (int i = 0; i < contactRelatedDoses.Length; i++)
+                                        {
+                                            //if (!matchingDoses.Contains(contactRelatedDoses[i].DoseId))
+                                            //{
+                                            OperationResult deleteResult = doseEntity.Delete(contactRelatedDoses[i].DoseId);
+                                            if (deleteResult.IsSuccessful)
+                                            {
+                                                deletedCount++;
+                                            }
+                                            //}
+
+                                        }
+
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                result = dosesResult;
+                                return result;
+                            }
+                        }
+
+                        #endregion 
+
+                    }
+
                     var contactStructure = this.GetUpdateAccountRequestStructure(updateAccountRequest);
+
+
+                    if ((updateAccountRequest.medication != null) && updateAccountRequest.TipoUsuario == "01")
+                    {
+                        /*Este request se deja por fuera del metodo que crea toda la estructura de
+                * Contacto porque es un proceso individual de crear una entidad de Dosis,
+                * la cual puede eventualmente fallar o no crearse correctamente, ademas se necesita
+                * ligar el resultado de esta operacion al request que crea el contacto en el crm
+                */
+                        DoseRecord[] dosesArray = null;
+                        string[] dosesCreated = null;
+
+                        #region -> Dose Create
+
+                        if (updateAccountRequest.medication != null)
+                        {
+                            int dosesLength = updateAccountRequest.medication.products.Length;
+                            dosesArray = new DoseRecord[dosesLength];
+                            dosesCreated = new string[dosesLength];
+
+                            for (int i = 0; i < dosesLength; i++)
+                            {
+                                string frequency = "";
+                                if (!String.IsNullOrEmpty(updateAccountRequest.medication.products[i].other))
+                                    frequency = updateAccountRequest.medication.products[i].other;
+                                else
+                                    frequency = updateAccountRequest.medication.products[i].frequency;
+
+                                dosesArray[i] = new DoseRecord
+                                {
+                                    Dose = frequency,
+                                    IdProduct = updateAccountRequest.medication.products[i].productid,
+                                    ContactBinding = $"{this.EntityPluralName}({ContactFields.IdAboxPatient}={updateAccountRequest.patientId})"
+                                };
+                            }
+
+                            if (dosesArray != null)
+                            {
+                                if (dosesArray.Length > 0)
+                                {
+                                    try
+                                    {
+                                        int length = dosesArray.Length;
+
+                                        for (int i = 0; i < length; i++)
+                                        {
+                                            //OperationResult doseCreateResult = doseEntity.Create(new DoseRecord
+                                            //{
+                                            //    Dose = dosesArray[i].Dose,
+                                            //    IdProduct = dosesArray[i].IdProduct
+                                            //});
+                                            //if (!matchingDoses.Contains(dosesArray[i].IdProduct))
+                                            //{
+                                            OperationResult doseCreateResult = doseEntity.Create(dosesArray[i]);
+
+                                            if (doseCreateResult.IsSuccessful)
+                                            {
+                                                dosesCreated[i] = (string)doseCreateResult.Data;
+                                            }
+                                            //}
+
+                                        }
+
+                                        //if (dosesCreated.Length != dosesArray.Length)
+                                        //{
+                                        //    return new OperationResult
+                                        //    {
+                                        //        IsSuccessful = false,
+                                        //        Message = "Ocurrió un error creando alguna de las dosis del paciente",
+                                        //        InternalError = null,
+                                        //        Code = ""
+                                        //    };
+                                        //}
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Logger.Error(ex.ToString());
+                                        throw ex;
+                                    }
+                                }
+                            }
+                        }
+
+                        #endregion 
+
+
+                        List<string> matchingMedics = null;
+                        string[] contactRelatedDoctors = null;
+
+                        #region Medics Disassociate
+
+                        OperationResult doctorsResult = null;
+
+                        /*TODO: validar posibilidad de identificar cuantos medicamentos del request hacen match con los
+                         que tiene ya el contacto para evitar tener que hacer desasociaciones*/
+                        doctorsResult = this.GetDoctorsRelated(contactId);
+
+                        bool contactsDisassociated = false;
+                        if (doctorsResult.IsSuccessful)
+                        {
+                            contactRelatedDoctors = (string[])doctorsResult.Data;
+
+                            matchingMedics = this.MatchingMedicsFromAccountUpdate(updateAccountRequest.medication.medics, contactRelatedDoctors);
+
+                            if (contactRelatedDoctors != null)
+                            {
+                                if (contactRelatedDoctors.Length > 0)
+                                {
+                                    int disassociatedCount = 0;
+                                    for (int i = 0; i < contactRelatedDoctors.Length; i++)
+                                    {
+
+                                        if (!matchingMedics.Contains(contactRelatedDoctors[i]))
+                                        {
+                                            EntityAssociation entityDisassociation = new EntityAssociation
+                                            {
+                                                RelatedEntityId = contactRelatedDoctors[i],
+                                                RelatedEntityIdKeyToUse = DoctorFields.DoctorIdKey,
+                                                RelatedEntityName = doctorEntity.EntityPluralName,
+                                                TargetEntityId = updateAccountRequest.patientId,
+                                                TargetEntityName = this.EntityPluralName,
+                                                TargetIdKeyToUse = ContactFields.IdAboxPatient,
+                                                RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship
+                                            };
+                                            var disassociateResult = entityDisassociation.Disassociate(connectionString);
+
+                                            //if (disassociateResult.IsSuccessful)
+                                            //{
+                                            //    disassociatedCount++;
+                                            //}
+                                        }
+
+                                    }
+                                    //if (disassociatedCount == contactRelatedDoctors.Length)
+                                    //{
+                                    //    contactsDisassociated = true;
+                                    //}
+                                }
+                            }
+                        }
+                        else
+                        {
+                            result = doctorsResult;
+                            return result;
+                        }
+
+                        //if ((contactRelatedDoctors != null) && (contactRelatedDoctors.Length > 0))
+                        //{
+                        //    if (!contactsDisassociated)
+                        //    {
+                        //        return new OperationResult
+                        //        {
+                        //            IsSuccessful = false,
+                        //            Message = "Los doctores relacionados del contacto no se pudieron desasociar",
+                        //            InternalError = null,
+                        //            Code = ""
+                        //        };
+                        //    }
+                        //}
+
+                        #endregion 
+
+                        #region Medics Associate
+
+                        if (updateAccountRequest.medication != null)
+                        {
+                            if ((updateAccountRequest.medication.medics != null) && (updateAccountRequest.medication.medics.Length > 0))
+                            {
+                                var medicsLength = updateAccountRequest.medication.medics.Length;
+
+                                for (int i = 0; i < medicsLength; i++)
+                                {
+                                    if (!matchingMedics.Contains(updateAccountRequest.medication.medics[i].medicid))
+                                    {
+                                        EntityAssociation entityAssociation = new EntityAssociation
+                                        {
+                                            RelatedEntityId = updateAccountRequest.medication.medics[i].medicid,
+                                            RelatedEntityIdKeyToUse = DoctorFields.DoctorIdKey,
+                                            RelatedEntityName = doctorEntity.EntityPluralName,
+                                            TargetEntityId = updateAccountRequest.patientId,
+                                            TargetEntityName = this.EntityPluralName,
+                                            TargetIdKeyToUse = ContactFields.IdAboxPatient,
+                                            RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship
+                                        };
+
+                                        var associationResult = entityAssociation.Associate(connectionString);
+
+                                        if (!associationResult.IsSuccessful)
+                                        {
+                                            return new OperationResult
+                                            {
+                                                IsSuccessful = false,
+                                                Message = "Ocurrió un error relacionando los doctores al contacto",
+                                                InternalError = null,
+                                                Code = ""
+                                            };
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+
+                        #endregion Medics Associate
+
+
+                    }
+
 
                     result = this.ContactUpdateRequest(contactStructure, updateAccountRequest.patientId);
                 }
@@ -1109,7 +1424,7 @@ namespace CrmAboxApi.Logic.Classes
                         {
                             contactRelatedDoses = (DoseRecord[])dosesResult.Data;
 
-                            matchingDoses = this.MatchingProducts(updatePatientRequest.medication.products,contactRelatedDoses);
+                            matchingDoses = this.MatchingProductsFromPatientUpdate(updatePatientRequest.medication.products, contactRelatedDoses);
 
                             if (contactRelatedDoses != null && contactRelatedDoses.Length > 0)
                             {
@@ -1120,13 +1435,13 @@ namespace CrmAboxApi.Logic.Classes
                                     {
                                         //if (!matchingDoses.Contains(contactRelatedDoses[i].DoseId))
                                         //{
-                                            OperationResult deleteResult = doseEntity.Delete(contactRelatedDoses[i].DoseId);
-                                            if (deleteResult.IsSuccessful)
-                                            {
-                                                deletedCount++;
-                                            }
+                                        OperationResult deleteResult = doseEntity.Delete(contactRelatedDoses[i].DoseId);
+                                        if (deleteResult.IsSuccessful)
+                                        {
+                                            deletedCount++;
+                                        }
                                         //}
-                                        
+
                                     }
                                     //if (deletedCount == contactRelatedDoses.Length)
                                     //{
@@ -1156,7 +1471,7 @@ namespace CrmAboxApi.Logic.Classes
                     //    }
                     //}
 
-                    #endregion Doses Delete
+                    #endregion 
 
                     var contactStructure = this.GetUpdatePatientJsonStructure(updatePatientRequest);
 
@@ -1209,14 +1524,14 @@ namespace CrmAboxApi.Logic.Classes
                                         //});
                                         //if (!matchingDoses.Contains(dosesArray[i].IdProduct))
                                         //{
-                                            OperationResult doseCreateResult = doseEntity.Create(dosesArray[i]);
+                                        OperationResult doseCreateResult = doseEntity.Create(dosesArray[i]);
 
-                                            if (doseCreateResult.IsSuccessful)
-                                            {
-                                                dosesCreated[i] = (string)doseCreateResult.Data;
-                                            }
+                                        if (doseCreateResult.IsSuccessful)
+                                        {
+                                            dosesCreated[i] = (string)doseCreateResult.Data;
+                                        }
                                         //}
-                                        
+
                                     }
 
                                     //if (dosesCreated.Length != dosesArray.Length)
@@ -1239,9 +1554,9 @@ namespace CrmAboxApi.Logic.Classes
                         }
                     }
 
-                    #endregion -> Dose Create
+                    #endregion 
 
-                   List<string> matchingMedics = null;
+                    List<string> matchingMedics = null;
                     string[] contactRelatedDoctors = null;
                     #region Medics Disassociate
 
@@ -1256,7 +1571,7 @@ namespace CrmAboxApi.Logic.Classes
                     {
                         contactRelatedDoctors = (string[])doctorsResult.Data;
 
-                        matchingMedics = this.MatchingMedics(updatePatientRequest.medication.medics,contactRelatedDoctors);
+                        matchingMedics = this.MatchingMedicsFromPatientUpdate(updatePatientRequest.medication.medics, contactRelatedDoctors);
 
                         if (contactRelatedDoctors != null)
                         {
@@ -1265,7 +1580,7 @@ namespace CrmAboxApi.Logic.Classes
                                 int disassociatedCount = 0;
                                 for (int i = 0; i < contactRelatedDoctors.Length; i++)
                                 {
-                                    
+
                                     if (!matchingMedics.Contains(contactRelatedDoctors[i]))
                                     {
                                         EntityAssociation entityDisassociation = new EntityAssociation
@@ -1285,7 +1600,7 @@ namespace CrmAboxApi.Logic.Classes
                                         //    disassociatedCount++;
                                         //}
                                     }
-                                    
+
                                 }
                                 //if (disassociatedCount == contactRelatedDoctors.Length)
                                 //{
@@ -1352,7 +1667,7 @@ namespace CrmAboxApi.Logic.Classes
                                         };
                                     }
                                 }
-                                
+
                             }
                         }
                     }
@@ -1391,7 +1706,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                Logger.Error(ex.ToString());
                 result = new OperationResult
                 {
                     IsSuccessful = false,
@@ -1413,7 +1728,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                Logger.Error(ex.ToString());
                 result = new OperationResult
                 {
                     IsSuccessful = false,
