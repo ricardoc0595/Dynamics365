@@ -15,7 +15,12 @@
         public const int DoseFrequencyThreePerDay = 3;
         public const int DoseFrequencyFourPerDay = 4;
         public const int DoseFrequencyOther = 5;
-        public const string TokenForAboxServices = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjIwMTAwMSIsImlhdCI6MTYwMzIxNjU1OCwiZXhwIjoxNjAzMzAyOTU4fQ.WboE6nJeqRV7YVXsGGL-s5zyfy7sNsRP9hUrYOSNtIA";
+        public const string TokenForAboxServices = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNybV9hYm94YXBpIiwiYXBpIjp0cnVlLCJpYXQiOjE2MDMzMTIzODB9.Cu8FYQoVWDcof_qFZ5CIA6K2OYloOEn9F-b_XahLf9w";
+
+        public const string GeneralAboxServicesErrorMessage = "Ocurrió un error consultando los servicios de Abox Plan \n";
+        public const string ErrorMessageCodeReturned = "Error en transacción, Código de respuesta servicio:";
+        public const string ErrorMessageTransactionCodeReturned = "Ocurrió un error al guardar la información en Abox Plan:\n";
+
 
         //public enum S
         //{

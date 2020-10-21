@@ -153,7 +153,7 @@ namespace CreateContactAsPatient
                             wrData.Url = serviceUrl;
 
 
-                            var serviceResponse = sharedMethods.DoPostRequest(wrData);
+                            var serviceResponse = sharedMethods.DoPostRequest(wrData,trace);
                             UpdatePatientRequest.ServiceResponse updatePatientResponse = null;
                             UpdateAccountRequest.ServiceResponse updateAccountResponse = null;
                             if (serviceResponse.IsSuccessful)
@@ -175,7 +175,7 @@ namespace CreateContactAsPatient
                                     if (updatePatientResponse.response.code != "MEMCTRL-1014")
                                     {
 
-                                        throw new InvalidPluginExecutionException("Ocurrió un error al guardar la información en Abox Plan:\n" + updatePatientResponse.response.message);
+                                        throw new InvalidPluginExecutionException(Constants.ErrorMessageTransactionCodeReturned + updatePatientResponse.response.message);
 
                                     }
                                     else
@@ -198,8 +198,8 @@ namespace CreateContactAsPatient
 
                                     if (updateAccountResponse.response.code != "MEMCTRL-1015")
                                     {
-
-                                        throw new InvalidPluginExecutionException("Ocurrió un error al guardar la información en Abox Plan:\n" + updateAccountResponse.response.message);
+                                        trace.Trace(Constants.ErrorMessageCodeReturned + updateAccountResponse.response.code);
+                                        throw new InvalidPluginExecutionException(Constants.ErrorMessageTransactionCodeReturned + updateAccountResponse.response.message);
 
                                     }
                                     else
@@ -213,7 +213,7 @@ namespace CreateContactAsPatient
                             else
                             {
                                 //TODO: Manejar error, esta llegando null cuando hay un error de protocolo
-                                throw new InvalidPluginExecutionException("Ocurrió un error al consultar los servicios de Abox Plan" + serviceResponse.ErrorMessage);
+                                throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponse.ErrorMessage);
                             }
 
                         }

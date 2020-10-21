@@ -277,7 +277,7 @@ namespace CreateContactAsPatient
                 IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
                 IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
                 // The InputParameters collection contains all the data passed in the message request.
-
+                ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
                 /*Esta validación previene la ejecución del Plugin de cualquier
                 * transacción realizada a través del Web API desde Abox*/
                 if (context.InitiatingUserId == new Guid("7dbf49f3-8be8-ea11-a817-002248029f77"))
@@ -316,7 +316,7 @@ namespace CreateContactAsPatient
                         wrData.Url = AboxServices.QuickSignupService;
 
 
-                        var serviceResponse = sharedMethods.DoPostRequest(wrData);
+                        var serviceResponse = sharedMethods.DoPostRequest(wrData,trace);
                         QuickSignupRequest.ServiceResponse serviceResponseProperties = null;
                         if (serviceResponse.IsSuccessful)
                         {
@@ -331,7 +331,7 @@ namespace CreateContactAsPatient
                             if (serviceResponseProperties.response.code != "MEMEX-0002")
                             {
 
-                                throw new InvalidPluginExecutionException("Ocurrió un error al guardar la información en Abox Plan:\n" + serviceResponseProperties.response.message);
+                                throw new InvalidPluginExecutionException(Constants.ErrorMessageTransactionCodeReturned + serviceResponseProperties.response.message);
 
                             }
                             else
@@ -341,7 +341,7 @@ namespace CreateContactAsPatient
                         }
                         else
                         {
-                            throw new InvalidPluginExecutionException("Ocurrió un error al consultar los servicios de Abox Plan" + serviceResponseProperties.response.message);
+                            throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
                         }
                         //TODO: Capturar excepción con servicios de Abox Plan y hacer un Logging
                     }

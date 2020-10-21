@@ -31,8 +31,9 @@ namespace CreateContactAsPatient
                 IPluginExecutionContext context = (IPluginExecutionContext)serviceProvider.GetService(typeof(IPluginExecutionContext));
                 IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
                 IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
+                ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
                 // The InputParameters collection contains all the data passed in the message request.
-
+                
                 /*Esta validación previene la ejecución del Plugin de cualquier
                 * transacción realizada a través del Web API desde Abox*/
                 if (context.InitiatingUserId == new Guid("7dbf49f3-8be8-ea11-a817-002248029f77"))
@@ -55,6 +56,7 @@ namespace CreateContactAsPatient
 
                         sharedMethods = new MShared();
                         RequestHelpers reqHelpers = new RequestHelpers();
+                        trace.Trace("Obtendo objeto para enviar a servicio Abox...");
                         PatientSignupRequest.Request request = reqHelpers.GetSignupPatientRequestObject(contact,service);
 
                         DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.Request));
@@ -66,13 +68,14 @@ namespace CreateContactAsPatient
                         //Valores necesarios para hacer el Post Request
                         WebRequestData wrData = new WebRequestData();
                         wrData.InputData = jsonObject;
+                        trace.Trace("Objeto Json:" + jsonObject);
                         wrData.ContentType = "application/json";
                         
                         
                         wrData.Url = AboxServices.PatientSignup;
-                       
-                        
-                        var serviceResponse = sharedMethods.DoPostRequest(wrData);
+                        trace.Trace("Url:"+wrData.Url);
+
+                        var serviceResponse = sharedMethods.DoPostRequest(wrData,trace);
                         PatientSignupRequest.ServiceResponse serviceResponseProperties = null;
                         if (serviceResponse.IsSuccessful)
                         {
@@ -86,8 +89,8 @@ namespace CreateContactAsPatient
 
                             if (serviceResponseProperties.response.code != "MEMEX-0002")
                             {
-
-                                throw new InvalidPluginExecutionException("Ocurrió un error al guardar la información en Abox Plan:\n" + serviceResponseProperties.response.message);
+                                trace.Trace(Constants.ErrorMessageCodeReturned+ serviceResponseProperties.response.code);
+                                throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
 
                             }
                             else
@@ -97,7 +100,8 @@ namespace CreateContactAsPatient
                         }
                         else
                         {
-                            throw new InvalidPluginExecutionException("Ocurrió un error al consultar los servicios de Abox Plan" + serviceResponseProperties.response.message);
+                            trace.Trace(Constants.GeneralAboxServicesErrorMessage);
+                            throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
                         }
                         //TODO: Capturar excepción con servicios de Abox Plan y hacer un Logging
                     }
@@ -106,7 +110,7 @@ namespace CreateContactAsPatient
             }
             catch (Exception ex)
             {
-
+               
                 throw new InvalidPluginExecutionException(ex.Message);
                 //TODO: Crear Log
             }

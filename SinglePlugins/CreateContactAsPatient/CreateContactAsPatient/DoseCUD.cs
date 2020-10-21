@@ -347,7 +347,7 @@ namespace CreateContactAsPatient
                         wrData.Url = AboxServices.UpdatePatientService;
 
 
-                        var serviceResponse = sharedMethods.DoPostRequest(wrData);
+                        var serviceResponse = sharedMethods.DoPostRequest(wrData,trace);
                         UpdatePatientRequest.ServiceResponse serviceResponseProperties = null;
                         if (serviceResponse.IsSuccessful)
                         {
@@ -361,7 +361,7 @@ namespace CreateContactAsPatient
 
                             if (serviceResponseProperties.response.code != "MEMCTRL-1014")
                             {
-
+                                trace.Trace(Constants.ErrorMessageCodeReturned + serviceResponseProperties.response.code);
                                 throw new InvalidPluginExecutionException("Ocurrió un error al guardar la información en Abox Plan:\n" + serviceResponseProperties.response.message);
 
                             }
@@ -372,7 +372,7 @@ namespace CreateContactAsPatient
                         }
                         else
                         {
-                            throw new InvalidPluginExecutionException("Ocurrió un error al consultar los servicios de Abox Plan" + serviceResponseProperties.response.message);
+                            throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
                         }
 
 

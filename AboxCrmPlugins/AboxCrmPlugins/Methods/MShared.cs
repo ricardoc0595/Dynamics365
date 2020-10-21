@@ -17,7 +17,7 @@ namespace AboxCrmPlugins.Methods
     {
 
 
-        public WebRequestResponse DoPostRequest (WebRequestData requestData)
+        public WebRequestResponse DoPostRequest (WebRequestData requestData, Microsoft.Xrm.Sdk.ITracingService trace)
         {
 
             WebRequestResponse wrResponse = new WebRequestResponse();
@@ -41,14 +41,35 @@ namespace AboxCrmPlugins.Methods
                         string serviceUrl = requestData.Url;
                         wrResponse.Data = webClient.UploadString(serviceUrl, requestData.InputData);
 
+                        trace.Trace("Url:" + requestData.Url + " | Data:" + requestData.InputData);
+                        trace.Trace("Respuesta request Servicios Abox:"+wrResponse.Data);
                         if (wrResponse.Data != "")
                             wrResponse.IsSuccessful = true;
+                        
+
 
                     }
 
                 }
                 catch (WebException wex)
                 {
+                    string error = "";
+                    string statusCode = "";
+                    if (wex.Response != null)
+                    {
+                        using (var errorResponse = (HttpWebResponse)wex.Response)
+                        {
+
+                            using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                            {
+                                error = reader.ReadToEnd();
+
+                                //TODO: use JSON.net to parse this string and look at the error message
+                            }
+                        }
+                    }
+                    trace.Trace("Url:"+requestData.Url+" | Data:"+requestData.InputData);
+                    trace.Trace(error);
                     wrResponse.Data = null;
                     wrResponse.ErrorMessage = wex.ToString();
                     wrResponse.IsSuccessful = false;
