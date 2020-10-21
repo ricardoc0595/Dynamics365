@@ -1,24 +1,18 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Runtime.Serialization.Json;
-using System.ServiceModel;
-using System.Text;
-using CreateContactAsPatient.Classes;
-using AboxCrmPlugins;
-
-using Microsoft.Xrm.Sdk;
-using AboxCrmPlugins.Classes;
+﻿using AboxCrmPlugins.Classes;
 using AboxCrmPlugins.Methods;
-
-using AboxDynamicsBase.Classes.Entities;
-using Microsoft.Xrm.Sdk.Query;
 using AboxDynamicsBase.Classes;
+using AboxDynamicsBase.Classes.Entities;
+using CreateContactAsPatient.Classes;
 using CreateContactAsPatient.Methods;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using System;
+using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Text;
 
 namespace CreateContactAsPatient
 {
-
     public class UpdatePatient : IPlugin
     {
         private MShared sharedMethods = null;
@@ -27,8 +21,6 @@ namespace CreateContactAsPatient
         private ProductEntity productEntity = null;
         private DoseEntity doseEntity = null;
         private RequestHelpers helperMethods = null;
-
-       
 
         public void Execute(IServiceProvider serviceProvider)
         {
@@ -65,15 +57,14 @@ namespace CreateContactAsPatient
                         if (contactUpdated != null)
                         {
                             helperMethods = new RequestHelpers();
-                            #region -> Set request data based on Contact
 
+                            #region -> Set request data based on Contact
 
                             //contactMethods = new ContactMethods();
 
-                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country,ContactFields.Province,ContactFields.Canton,ContactFields.District,ContactFields.Interests, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate, ContactFields.ContactxContactLookup,ContactFields.Phone,ContactFields.SecondaryPhone,ContactFields.Email };
+                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.Province, ContactFields.Canton, ContactFields.District, ContactFields.Interests, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate, ContactFields.ContactxContactLookup, ContactFields.Phone, ContactFields.SecondaryPhone, ContactFields.Email };
                             var columnSet = new ColumnSet(columnsToGet);
                             Entity contactData = service.Retrieve(contactEntity.EntitySingularName, contactUpdated.Id, columnSet);
-
 
                             string userType = "";
 
@@ -97,7 +88,6 @@ namespace CreateContactAsPatient
                                 }
                             }
 
-
                             /*Dependiendo del tipo de usuario y si tiene contactos a cargo o no, se utiizan los servicios de
                              updateAccount o updatePatient*/
                             if (!string.IsNullOrEmpty(userType))
@@ -111,18 +101,11 @@ namespace CreateContactAsPatient
                                 else
                                 {
                                     //Si es cuidador, tutor, o paciente que no está a cargo de nadie se usa el update account
-                                    updateAccountRequest = helperMethods.GetAccountUpdateStructure(contactData,service);
+                                    updateAccountRequest = helperMethods.GetAccountUpdateStructure(contactData, service);
                                 }
-                               
                             }
 
-
-
-                            #endregion
-
-
-
-
+                            #endregion -> Set request data based on Contact
 
                             DataContractJsonSerializer serializer = null;
                             MemoryStream memoryStream = new MemoryStream();
@@ -140,7 +123,6 @@ namespace CreateContactAsPatient
                                 serviceUrl = AboxServices.UpdateAccountService;
                             }
 
-
                             var jsonObject = Encoding.Default.GetString(memoryStream.ToArray());
                             memoryStream.Dispose();
 
@@ -148,20 +130,17 @@ namespace CreateContactAsPatient
                             WebRequestData wrData = new WebRequestData();
                             wrData.InputData = jsonObject;
                             wrData.ContentType = "application/json";
-                            wrData.Authorization = "Bearer "+Constants.TokenForAboxServices;
+                            wrData.Authorization = "Bearer " + Constants.TokenForAboxServices;
 
                             wrData.Url = serviceUrl;
 
-
-                            var serviceResponse = sharedMethods.DoPostRequest(wrData,trace);
+                            var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
                             UpdatePatientRequest.ServiceResponse updatePatientResponse = null;
                             UpdateAccountRequest.ServiceResponse updateAccountResponse = null;
                             if (serviceResponse.IsSuccessful)
                             {
-
-                                if (updatePatientRequest!=null)
+                                if (updatePatientRequest != null)
                                 {
-
                                     //Leer respuesta del servicio de Update Patient
 
                                     DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.ServiceResponse));
@@ -174,18 +153,14 @@ namespace CreateContactAsPatient
 
                                     if (updatePatientResponse.response.code != "MEMCTRL-1014")
                                     {
-
                                         throw new InvalidPluginExecutionException(Constants.ErrorMessageTransactionCodeReturned + updatePatientResponse.response.message);
-
                                     }
                                     else
                                     {
                                         //contact.Attributes.Add("new_idaboxpatient", serviceResponseProperties.response.details.idPaciente);
                                     }
-
-
                                 }
-                                else if (updateAccountRequest!=null)
+                                else if (updateAccountRequest != null)
                                 {
                                     //Leer respuesta del servicio Update Account
                                     DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(UpdateAccountRequest.ServiceResponse));
@@ -200,39 +175,27 @@ namespace CreateContactAsPatient
                                     {
                                         trace.Trace(Constants.ErrorMessageCodeReturned + updateAccountResponse.response.code);
                                         throw new InvalidPluginExecutionException(Constants.ErrorMessageTransactionCodeReturned + updateAccountResponse.response.message);
-
                                     }
                                     else
                                     {
                                         //contact.Attributes.Add("new_idaboxpatient", serviceResponseProperties.response.details.idPaciente);
                                     }
                                 }
-
-                               
                             }
                             else
                             {
                                 //TODO: Manejar error, esta llegando null cuando hay un error de protocolo
                                 throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponse.ErrorMessage);
                             }
-
                         }
-
-
                     }
-
                 }
-
-
             }
             catch (Exception ex)
             {
-
                 throw new InvalidPluginExecutionException(ex.Message);
                 //TODO: Crear Log
             }
         }
     }
-
-
 }

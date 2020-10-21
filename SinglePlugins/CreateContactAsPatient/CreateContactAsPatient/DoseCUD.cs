@@ -17,14 +17,13 @@ namespace CreateContactAsPatient
     {
         private MShared sharedMethods = null;
 
-
         private ContactEntity contactEntity = null;
         private ProductEntity productEntity = null;
         private DoseEntity doseEntity = null;
 
         public void Execute(IServiceProvider serviceProvider)
         {
-                ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
+            ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
             try
             {
                 // Obtain the execution context from the service provider.
@@ -32,8 +31,6 @@ namespace CreateContactAsPatient
                 IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
                 IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
                 // The InputParameters collection contains all the data passed in the message request.
-
-                
 
                 /*Esta validación previene la ejecución del Plugin de cualquier
                 * transacción realizada a través del Web API desde Abox que usa un usuario específico*/
@@ -49,9 +46,8 @@ namespace CreateContactAsPatient
                 UpdatePatientRequest.Request updatePatientRequest = null;
 
                 // The InputParameters collection contains all the data passed in the message request.
-                if (context.InputParameters.Contains("Target") && (context.InputParameters["Target"] is Entity)|| context.InputParameters["Target"] is EntityReference)
+                if (context.InputParameters.Contains("Target") && (context.InputParameters["Target"] is Entity) || context.InputParameters["Target"] is EntityReference)
                 {
-                    
                     contactEntity = new ContactEntity();
                     doseEntity = new DoseEntity();
 
@@ -62,9 +58,9 @@ namespace CreateContactAsPatient
                          y se cambia el valor que se está actualizando*/
                         if (context.PreEntityImages.Contains("UpdatedEntity"))
                         {
-                            Entity updatedDose= (Entity)context.InputParameters["Target"];
+                            Entity updatedDose = (Entity)context.InputParameters["Target"];
                             doseInput = (Entity)context.PreEntityImages["UpdatedEntity"];
-                            if (doseInput.Attributes.Contains(DoseFields.Dose)&& updatedDose.Attributes.Contains(DoseFields.Dose))
+                            if (doseInput.Attributes.Contains(DoseFields.Dose) && updatedDose.Attributes.Contains(DoseFields.Dose))
                             {
                                 doseInput[DoseFields.Dose] = updatedDose[DoseFields.Dose];
                             }
@@ -73,16 +69,11 @@ namespace CreateContactAsPatient
                         {
                             doseInput = (Entity)context.InputParameters["Target"];
                         }
-                       
-
                     }
-                    else if(context.InputParameters["Target"] is EntityReference && context.PreEntityImages.Contains("DeletedEntity"))
+                    else if (context.InputParameters["Target"] is EntityReference && context.PreEntityImages.Contains("DeletedEntity"))
                     {
-
                         doseInput = (Entity)context.PreEntityImages["DeletedEntity"];
-
                     }
-
 
                     if (doseInput.LogicalName != doseEntity.EntitySingularName)
                     {
@@ -93,9 +84,6 @@ namespace CreateContactAsPatient
                         sharedMethods = new MShared();
 
                         //Cast as Entity the dose being created
-
-
-                        
 
                         #region -> Related Contact
 
@@ -114,7 +102,6 @@ namespace CreateContactAsPatient
                             }
                         }
 
-
                         string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate };
                         var columnSet = new ColumnSet(columnsToGet);
 
@@ -125,13 +112,9 @@ namespace CreateContactAsPatient
                             RequestHelpers helperMethods = new RequestHelpers();
 
                             updatePatientRequest = helperMethods.GetPatientUpdateStructure(contact, service);
-
                         }
 
-
-
-                        #endregion
-
+                        #endregion -> Related Contact
 
                         doseEntity = new DoseEntity();
                         switch (context.MessageName.ToLower())
@@ -140,7 +123,6 @@ namespace CreateContactAsPatient
 
                                 #region Dose Created
 
-                              
                                 //Validar que exista la relación Dosis-Producto
                                 if (doseInput.Attributes.Contains(DoseFields.DosexProduct))
                                 {
@@ -152,7 +134,7 @@ namespace CreateContactAsPatient
                                         //Se obtiene el producto
                                         product = service.Retrieve(productEntity.EntitySingularName, productReference.Id, new ColumnSet(new string[] { ProductFields.ProductNumber }));
 
-                                        //Se obtiene el ID del producto 
+                                        //Se obtiene el ID del producto
                                         if (product.Attributes.Contains(ProductFields.ProductNumber))
                                         {
                                             string frequency = "";
@@ -160,12 +142,11 @@ namespace CreateContactAsPatient
                                             if (doseInput.Attributes.Contains(DoseFields.Dose))
                                             {
                                                 //frequency = doseInput.GetAttributeValue<string>(DoseFields.Dose);
-                                                int value =(doseInput.GetAttributeValue<OptionSetValue>(DoseFields.Dose)).Value;
+                                                int value = (doseInput.GetAttributeValue<OptionSetValue>(DoseFields.Dose)).Value;
                                                 frequency = sharedMethods.GetDoseFrequencyValue(value);
-
                                             }
 
-                                            if (updatePatientRequest.medication==null)
+                                            if (updatePatientRequest.medication == null)
                                             {
                                                 updatePatientRequest.medication = new UpdatePatientRequest.Request.Medication();
                                             }
@@ -203,15 +184,11 @@ namespace CreateContactAsPatient
                                                     productid = product.GetAttributeValue<string>(ProductFields.ProductNumber)
                                                 };
                                             }
-
-
                                         }
                                     }
                                 }
 
-
-
-                                #endregion
+                                #endregion Dose Created
 
                                 break;
 
@@ -228,10 +205,9 @@ namespace CreateContactAsPatient
 
                                     if (product != null)
                                     {
-                                        //Se obtiene el ID del producto 
+                                        //Se obtiene el ID del producto
                                         if (product.Attributes.Contains(ProductFields.ProductNumber))
                                         {
-
                                             if (updatePatientRequest.medication != null)
                                             {
                                                 System.Collections.Generic.List<UpdatePatientRequest.Request.Product> productsToSave = new System.Collections.Generic.List<UpdatePatientRequest.Request.Product>();
@@ -243,7 +219,6 @@ namespace CreateContactAsPatient
                                                     {
                                                         productsToSave.Add(updatePatientRequest.medication.products[i]);
                                                     }
-
                                                 }
 
                                                 int countProductsRelated = updatePatientRequest.medication.products.Length;
@@ -257,14 +232,8 @@ namespace CreateContactAsPatient
                                                     updatePatientRequest.medication.products[i] = productsToSave[i];
                                                 }
                                             }
-
-
-
                                         }
                                     }
-
-
-
                                 }
 
                                 break;
@@ -282,7 +251,7 @@ namespace CreateContactAsPatient
                                         //Se obtiene el producto
                                         product = service.Retrieve(productEntity.EntitySingularName, productReference.Id, new ColumnSet(new string[] { ProductFields.ProductNumber }));
 
-                                        //Se obtiene el ID del producto 
+                                        //Se obtiene el ID del producto
                                         if (product.Attributes.Contains(ProductFields.ProductNumber))
                                         {
                                             string frequency = "";
@@ -297,9 +266,6 @@ namespace CreateContactAsPatient
                                             {
                                                 updatePatientRequest.medication = new UpdatePatientRequest.Request.Medication();
                                             }
-                                         
-
-                                            
 
                                             for (int i = 0; i < updatePatientRequest.medication.products.Length; i++)
                                             {
@@ -314,10 +280,7 @@ namespace CreateContactAsPatient
                                                     };
                                                     break;
                                                 }
-
                                             }
-
-
                                         }
                                     }
                                 }
@@ -325,12 +288,10 @@ namespace CreateContactAsPatient
                                 break;
                         }
 
-
                         ///Request service POST
                         ///
 
                         sharedMethods = new MShared();
-
 
                         DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.Request));
                         MemoryStream memoryStream = new MemoryStream();
@@ -342,12 +303,11 @@ namespace CreateContactAsPatient
                         WebRequestData wrData = new WebRequestData();
                         wrData.InputData = jsonObject;
                         wrData.ContentType = "application/json";
-                        wrData.Authorization = "Bearer "+ Constants.TokenForAboxServices;
+                        wrData.Authorization = "Bearer " + Constants.TokenForAboxServices;
 
                         wrData.Url = AboxServices.UpdatePatientService;
 
-
-                        var serviceResponse = sharedMethods.DoPostRequest(wrData,trace);
+                        var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
                         UpdatePatientRequest.ServiceResponse serviceResponseProperties = null;
                         if (serviceResponse.IsSuccessful)
                         {
@@ -362,8 +322,7 @@ namespace CreateContactAsPatient
                             if (serviceResponseProperties.response.code != "MEMCTRL-1014")
                             {
                                 trace.Trace(Constants.ErrorMessageCodeReturned + serviceResponseProperties.response.code);
-                                throw new InvalidPluginExecutionException("Ocurrió un error al guardar la información en Abox Plan:\n" + serviceResponseProperties.response.message);
-
+                                throw new InvalidPluginExecutionException(Constants.ErrorMessageTransactionCodeReturned + serviceResponseProperties.response.message);
                             }
                             else
                             {
@@ -375,13 +334,8 @@ namespace CreateContactAsPatient
                             throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
                         }
 
-
-
-
-
                         //TODO: Capturar excepción con servicios de Abox Plan y hacer un Logging
                     }
-
                 }
             }
             catch (Exception ex)
@@ -392,13 +346,4 @@ namespace CreateContactAsPatient
             }
         }
     }
-
-
-
-
-
-
-
-
-
 }

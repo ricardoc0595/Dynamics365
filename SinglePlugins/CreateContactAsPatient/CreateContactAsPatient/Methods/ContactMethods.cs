@@ -1,20 +1,9 @@
-﻿
-using AboxCrmPlugins.Methods;
-using AboxDynamicsBase.Classes.Entities;
-using CreateContactAsPatient.Classes;
-using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Query;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Xrm.Sdk;
 
 namespace CreateContactAsPatient.Methods
 {
     public class ContactMethods
     {
-
         /// <summary>
         /// Se encarga de obtener una entidad con la información completa de Actualización de datos.
         /// </summary>
@@ -25,9 +14,5 @@ namespace CreateContactAsPatient.Methods
         {
             return null;
         }
-
-
-
-
     }
 }

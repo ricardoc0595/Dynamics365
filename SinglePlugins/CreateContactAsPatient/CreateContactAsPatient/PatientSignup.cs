@@ -1,27 +1,19 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Runtime.Serialization.Json;
-using System.ServiceModel;
-using System.Text;
-using CreateContactAsPatient.Classes;
-using AboxCrmPlugins;
-
-using Microsoft.Xrm.Sdk;
-using AboxCrmPlugins.Classes;
+﻿using AboxCrmPlugins.Classes;
 using AboxCrmPlugins.Methods;
-
-using AboxDynamicsBase.Classes.Entities;
-using Microsoft.Xrm.Sdk.Query;
 using AboxDynamicsBase.Classes;
+using CreateContactAsPatient.Classes;
 using CreateContactAsPatient.Methods;
+using Microsoft.Xrm.Sdk;
+using System;
+using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Text;
 
 namespace CreateContactAsPatient
 {
     public class PatientSignup : IPlugin
     {
         private MShared sharedMethods = null;
-        
 
         public void Execute(IServiceProvider serviceProvider)
         {
@@ -33,14 +25,13 @@ namespace CreateContactAsPatient
                 IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
                 ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
                 // The InputParameters collection contains all the data passed in the message request.
-                
+
                 /*Esta validación previene la ejecución del Plugin de cualquier
                 * transacción realizada a través del Web API desde Abox*/
                 if (context.InitiatingUserId == new Guid("7dbf49f3-8be8-ea11-a817-002248029f77"))
                 {
                     return;
                 }
-
 
                 if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is Entity)
                 {
@@ -53,11 +44,10 @@ namespace CreateContactAsPatient
                     }
                     else
                     {
-
                         sharedMethods = new MShared();
                         RequestHelpers reqHelpers = new RequestHelpers();
                         trace.Trace("Obtendo objeto para enviar a servicio Abox...");
-                        PatientSignupRequest.Request request = reqHelpers.GetSignupPatientRequestObject(contact,service);
+                        PatientSignupRequest.Request request = reqHelpers.GetSignupPatientRequestObject(contact, service);
 
                         DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.Request));
                         MemoryStream memoryStream = new MemoryStream();
@@ -70,17 +60,16 @@ namespace CreateContactAsPatient
                         wrData.InputData = jsonObject;
                         trace.Trace("Objeto Json:" + jsonObject);
                         wrData.ContentType = "application/json";
-                        
-                        
-                        wrData.Url = AboxServices.PatientSignup;
-                        trace.Trace("Url:"+wrData.Url);
 
-                        var serviceResponse = sharedMethods.DoPostRequest(wrData,trace);
+                        wrData.Url = AboxServices.PatientSignup;
+                        trace.Trace("Url:" + wrData.Url);
+
+                        var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
                         PatientSignupRequest.ServiceResponse serviceResponseProperties = null;
                         if (serviceResponse.IsSuccessful)
                         {
                             DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.ServiceResponse));
-                            
+
                             using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponse.Data)))
                             {
                                 deserializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.ServiceResponse));
@@ -89,9 +78,8 @@ namespace CreateContactAsPatient
 
                             if (serviceResponseProperties.response.code != "MEMEX-0002")
                             {
-                                trace.Trace(Constants.ErrorMessageCodeReturned+ serviceResponseProperties.response.code);
+                                trace.Trace(Constants.ErrorMessageCodeReturned + serviceResponseProperties.response.code);
                                 throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
-
                             }
                             else
                             {
@@ -105,24 +93,13 @@ namespace CreateContactAsPatient
                         }
                         //TODO: Capturar excepción con servicios de Abox Plan y hacer un Logging
                     }
-
                 }
             }
             catch (Exception ex)
             {
-               
                 throw new InvalidPluginExecutionException(ex.Message);
                 //TODO: Crear Log
             }
         }
     }
-
-
-
-
-    
-
-
-
-
 }

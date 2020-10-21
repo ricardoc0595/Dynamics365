@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.Serialization;
 
 namespace CreateContactAsPatient.Classes
 {
@@ -14,57 +9,56 @@ namespace CreateContactAsPatient.Classes
         {
             [DataMember]
             public object patientid { get; set; }
-            [DataMember]
 
+            [DataMember]
             public string country { get; set; }
-            [DataMember]
 
+            [DataMember]
             public string userType { get; set; }
-            [DataMember]
 
+            [DataMember]
             public Personalinfo personalinfo { get; set; }
-            [DataMember]
 
+            [DataMember]
             public Contactinfo contactinfo { get; set; }
-            [DataMember]
 
+            [DataMember]
             public object patientincharge { get; set; }
-            [DataMember]
 
+            [DataMember]
             public object medication { get; set; }
-            [DataMember]
 
+            [DataMember]
             public object interests { get; set; }
+
             [DataMember]
-
             public object otherInterest { get; set; }
-
 
             [DataContract]
             public class Personalinfo
             {
                 [DataMember]
                 public string idtype { get; set; }
-                [DataMember]
 
+                [DataMember]
                 public string id { get; set; }
-                [DataMember]
 
+                [DataMember]
                 public string name { get; set; }
-                [DataMember]
 
+                [DataMember]
                 public string lastname { get; set; }
-                [DataMember]
 
+                [DataMember]
                 public string secondlastname { get; set; }
-                [DataMember]
 
+                [DataMember]
                 public object gender { get; set; }
-                [DataMember]
 
+                [DataMember]
                 public object dateofbirth { get; set; }
-                [DataMember]
 
+                [DataMember]
                 public string password { get; set; }
             }
 
@@ -73,22 +67,28 @@ namespace CreateContactAsPatient.Classes
             {
                 [DataMember]
                 public object province { get; set; }
+
                 [DataMember]
                 public object canton { get; set; }
+
                 [DataMember]
                 public object district { get; set; }
+
                 [DataMember]
                 public string phone { get; set; }
+
                 [DataMember]
                 public string mobilephone { get; set; }
+
                 [DataMember]
                 public object address { get; set; }
+
                 [DataMember]
                 public string email { get; set; }
+
                 [DataMember]
                 public string password { get; set; }
             }
-
         }
 
         [DataContract]
@@ -96,8 +96,8 @@ namespace CreateContactAsPatient.Classes
         {
             [DataMember]
             public Header header { get; set; }
-            [DataMember]
 
+            [DataMember]
             public Response response { get; set; }
 
             [DataContract]
@@ -109,13 +109,12 @@ namespace CreateContactAsPatient.Classes
             public class Header
             {
                 [DataMember]
-
                 public int code { get; set; }
-                [DataMember]
 
+                [DataMember]
                 public string message { get; set; }
-                [DataMember]
 
+                [DataMember]
                 public Headerdetails headerdetails { get; set; }
             }
 
@@ -123,7 +122,6 @@ namespace CreateContactAsPatient.Classes
             public class Details
             {
                 [DataMember]
-
                 public int idPaciente { get; set; }
             }
 
@@ -131,26 +129,14 @@ namespace CreateContactAsPatient.Classes
             public class Response
             {
                 [DataMember]
-
                 public string code { get; set; }
-                [DataMember]
 
+                [DataMember]
                 public string message { get; set; }
-                [DataMember]
 
+                [DataMember]
                 public Details details { get; set; }
             }
-
-
-
         }
-
-
-
-
-
-
-
-
     }
 }

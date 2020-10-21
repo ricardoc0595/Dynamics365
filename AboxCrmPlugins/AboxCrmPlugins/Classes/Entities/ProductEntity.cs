@@ -1,21 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AboxCrmPlugins.Classes.Entities
+﻿namespace AboxCrmPlugins.Classes.Entities
 {
     public class ProductEntity : EntityBase
     {
         public ProductFields Fields { get; set; }
+
         public ProductEntity()
         {
             this.Fields = new ProductFields();
-
-
-
-
 
             this.EntityName = "products";
         }
@@ -62,7 +53,7 @@ namespace AboxCrmPlugins.Classes.Entities
         public string Code { get; }
         public string ProductxContactId { get; }
         public string Division { get; }
-        
+
         public string Exchange { get; }
         public string ExchangeEquivalence { get; }
         public string Family { get; }
@@ -70,17 +61,16 @@ namespace AboxCrmPlugins.Classes.Entities
         public string InternalCode { get; }
         public string MaxCosumption { get; }
         public string Packing { get; }
-        public string Points { get;  }
-        public string AboxPharmacyPoints { get;}
-        public string Blocked { get;  }
-        public string Bonus { get;  }
-        public string BonusUnits { get;  }
+        public string Points { get; }
+        public string AboxPharmacyPoints { get; }
+        public string Blocked { get; }
+        public string Bonus { get; }
+        public string BonusUnits { get; }
         public string Equivalence { get; set; }
         public string ProductSubProduct { get; }
-        public string SuggestedPrice { get;  }
-        public string TomasEquivalencia { get;  }
-        public string ProductIdKey { get;  }
+        public string SuggestedPrice { get; }
+        public string TomasEquivalencia { get; }
+        public string ProductIdKey { get; }
         public string ProductNumber { get; }
-
     }
 }

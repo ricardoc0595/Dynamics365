@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CreateContactAsPatient.Classes
 {
-
     /// <summary>
     /// Clase que contiene las propiedades que se envían al servicio para registrar un usuario como paciente. Tiene tambien las propiedades que se reciben como respuesta del servicio
     /// </summary>
@@ -21,23 +16,30 @@ namespace CreateContactAsPatient.Classes
         {
             [DataMember]
             public object patientid { get; set; }
+
             [DataMember]
             public string country { get; set; }
+
             [DataMember]
             public string userType { get; set; }
+
             [DataMember]
             public Personalinfo personalinfo { get; set; }
+
             [DataMember]
             public Contactinfo contactinfo { get; set; }
+
             [DataMember]
             public Patientincharge patientincharge { get; set; }
+
             [DataMember]
             public Medication medication { get; set; }
+
             [DataMember]
             public List<Interest> interests { get; set; }
+
             [DataMember]
             public string otherInterest { get; set; }
-
 
             public Request()
             {
@@ -48,46 +50,58 @@ namespace CreateContactAsPatient.Classes
                 this.interests = new List<Interest>();
             }
 
-
             [DataContract]
             public class Personalinfo
             {
                 [DataMember]
                 public string idtype { get; set; }
+
                 [DataMember]
                 public string id { get; set; }
+
                 [DataMember]
                 public string name { get; set; }
+
                 [DataMember]
                 public string lastname { get; set; }
+
                 [DataMember]
                 public string secondlastname { get; set; }
+
                 [DataMember]
                 public string gender { get; set; }
+
                 [DataMember]
                 public string dateofbirth { get; set; }
+
                 [DataMember]
                 public string password { get; set; }
             }
-
 
             [DataContract]
             public class Contactinfo
             {
                 [DataMember]
                 public string province { get; set; }
+
                 [DataMember]
                 public string canton { get; set; }
+
                 [DataMember]
                 public string district { get; set; }
+
                 [DataMember]
                 public string phone { get; set; }
+
                 [DataMember]
                 public string mobilephone { get; set; }
+
                 [DataMember]
                 public string address { get; set; }
+
                 [DataMember]
                 public string email { get; set; }
+
                 [DataMember]
                 public string password { get; set; }
             }
@@ -96,16 +110,22 @@ namespace CreateContactAsPatient.Classes
             {
                 [DataMember]
                 public string idtype { get; set; }
+
                 [DataMember]
                 public string id { get; set; }
+
                 [DataMember]
                 public string name { get; set; }
+
                 [DataMember]
                 public string lastname { get; set; }
+
                 [DataMember]
                 public string secondlastname { get; set; }
+
                 [DataMember]
                 public string gender { get; set; }
+
                 [DataMember]
                 public string dateofbirth { get; set; }
             }
@@ -115,6 +135,7 @@ namespace CreateContactAsPatient.Classes
             {
                 [DataMember]
                 public List<Product> products { get; set; }
+
                 [DataMember]
                 public List<Medic> medics { get; set; }
 
@@ -123,7 +144,6 @@ namespace CreateContactAsPatient.Classes
                     this.products = new List<Product>();
                     this.medics = new List<Medic>();
                 }
-
             }
 
             [DataContract]
@@ -131,8 +151,10 @@ namespace CreateContactAsPatient.Classes
             {
                 [DataMember]
                 public string productid { get; set; }
+
                 [DataMember]
                 public string frequency { get; set; }
+
                 [DataMember]
                 public string other { get; set; }
             }
@@ -149,10 +171,9 @@ namespace CreateContactAsPatient.Classes
             {
                 [DataMember]
                 public string interestid { get; set; }
+
                 [DataMember]
                 public List<Relation> relations { get; set; }
-
-
             }
 
             [DataContract]
@@ -167,10 +188,10 @@ namespace CreateContactAsPatient.Classes
             {
                 [DataMember]
                 public string relationid { get; set; }
+
                 [DataMember]
                 public string other { get; set; }
             }
-
         }
 
         /// <summary>
@@ -181,17 +202,19 @@ namespace CreateContactAsPatient.Classes
         {
             [DataMember]
             public Header header { get; set; }
+
             [DataMember]
             public Response response { get; set; }
-
 
             [DataContract]
             public class Header
             {
                 [DataMember]
                 public int code { get; set; }
+
                 [DataMember]
                 public string message { get; set; }
+
                 [DataMember]
                 public Headerdetails headerdetails { get; set; }
             }
@@ -206,8 +229,10 @@ namespace CreateContactAsPatient.Classes
             {
                 [DataMember]
                 public string code { get; set; }
+
                 [DataMember]
                 public string message { get; set; }
+
                 [DataMember]
                 public Details details { get; set; }
             }
@@ -218,12 +243,6 @@ namespace CreateContactAsPatient.Classes
                 [DataMember]
                 public int idPaciente { get; set; }
             }
-
-
         }
-
-
-
-
     }
 }

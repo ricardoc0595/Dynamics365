@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AboxCrmPlugins.Classes.Entities
+﻿namespace AboxCrmPlugins.Classes.Entities
 {
-    public class ContactEntity :EntityBase
+    public class ContactEntity : EntityBase
     {
         public ContactFields Fields { get; set; }
+
         public ContactEntity()
         {
-
             this.Fields = new ContactFields();
             this.EntityName = "contacts";
         }
@@ -39,9 +33,9 @@ namespace AboxCrmPlugins.Classes.Entities
         public string Birthdate { get; }
         public string ProductxContactId { get; }
         public string RegisterDay { get; }
-       
+
         public string IdAboxPatient { get; }
-        public string ContactxDoctorRelationship { get;  }
+        public string ContactxDoctorRelationship { get; }
         public string ContactxProductRelationship { get; }
         public string EntityId { get; }
         public string ContactxContactRelationship { get; }
@@ -77,7 +71,5 @@ namespace AboxCrmPlugins.Classes.Entities
             this.District = "new_distrit";
             this.Province = "new_cityid";
         }
-
-
     }
 }

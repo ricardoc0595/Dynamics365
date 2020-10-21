@@ -21,7 +21,6 @@
         public const string ErrorMessageCodeReturned = "Error en transacción, Código de respuesta servicio:";
         public const string ErrorMessageTransactionCodeReturned = "Ocurrió un error al guardar la información en Abox Plan:\n";
 
-
         //public enum S
         //{
         //    DA,

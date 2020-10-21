@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AboxCrmPlugins.Classes.Entities
+﻿namespace AboxCrmPlugins.Classes.Entities
 {
-    public class DoctorEntity :EntityBase
+    public class DoctorEntity : EntityBase
     {
         public DoctorFields Fields { get; set; }
+
         public DoctorEntity()
         {
             this.Fields = new DoctorFields();
@@ -56,7 +51,6 @@ namespace AboxCrmPlugins.Classes.Entities
             this.FullName = "new_doctor";
             this.DoctorIdKey = "new_doctorid2";
             this.IdDoctorEntityKey = "idkeyexternaldb";
-
         }
     }
 }

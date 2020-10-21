@@ -1,24 +1,18 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Runtime.Serialization.Json;
-using System.ServiceModel;
-using System.Text;
-using CreateContactAsPatient.Classes;
-using AboxCrmPlugins;
-
-using Microsoft.Xrm.Sdk;
-using AboxCrmPlugins.Classes;
+﻿using AboxCrmPlugins.Classes;
 using AboxCrmPlugins.Methods;
-
-using AboxDynamicsBase.Classes.Entities;
-using Microsoft.Xrm.Sdk.Query;
 using AboxDynamicsBase.Classes;
+using AboxDynamicsBase.Classes.Entities;
+using CreateContactAsPatient.Classes;
 using CreateContactAsPatient.Methods;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using System;
+using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Text;
 
 namespace CreateContactAsPatient
 {
-
     public class DoctorManagement : IPlugin
     {
         private MShared sharedMethods = null;
@@ -27,6 +21,7 @@ namespace CreateContactAsPatient
         private ProductEntity productEntity = null;
         private DoctorEntity doctorEntity = null;
         private RequestHelpers helperMethods = null;
+
         public void Execute(IServiceProvider serviceProvider)
         {
             try
@@ -53,10 +48,7 @@ namespace CreateContactAsPatient
 
                 EntityReference doctorRelated = null;
 
-
                 Entity contact = null;
-
-
 
                 UpdatePatientRequest.Request updatePatientRequest = null;
 
@@ -65,7 +57,6 @@ namespace CreateContactAsPatient
                 // if (context.MessageName.ToLower() == "associate" || context.MessageName.ToLower() == "disassociate")
                 if (context.MessageName.ToLower() == "associate" || context.MessageName.ToLower() == "disassociate")
                 {
-
                     contactEntity = new ContactEntity();
                     sharedMethods = new MShared();
                     // Get the “Relationship” Key from context
@@ -77,8 +68,6 @@ namespace CreateContactAsPatient
                         relationshipName = ((Relationship)context.InputParameters["Relationship"]).SchemaName;
                     }
 
-
-
                     // Check the "Relationship Name" with your intended one
 
                     if (relationshipName != ContactFields.ContactxDoctorRelationship)
@@ -87,10 +76,8 @@ namespace CreateContactAsPatient
                     }
                     else
                     {
-
                         productEntity = new ProductEntity();
                         updatePatientRequest = new UpdatePatientRequest.Request();
-
 
                         #region -> Target
 
@@ -99,31 +86,28 @@ namespace CreateContactAsPatient
                             helperMethods = new RequestHelpers();
                             targetEntity = (EntityReference)context.InputParameters["Target"];
 
-
                             string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate };
                             var columnSet = new ColumnSet(columnsToGet);
                             contact = service.Retrieve(contactEntity.EntitySingularName, targetEntity.Id, columnSet);
 
-
                             //updatePatientRequest.personalinfo = new UpdatePatientRequest.Request.Personalinfo();
 
                             updatePatientRequest = helperMethods.GetPatientUpdateStructure(contact, service);
-
                         }
 
-                        #endregion
+                        #endregion -> Target
 
                         #region -> Related
 
                         doctorEntity = new DoctorEntity();
                         relatedEntities = context.InputParameters["RelatedEntities"] as EntityReferenceCollection;
 
-
                         if (relatedEntities.Count > 0)
                         {
                             if (context.MessageName.ToLower() == "associate")
                             {
                                 #region -> Associate
+
                                 int relatedEntitiesCount = relatedEntities.Count;
                                 int contactCurrentRelatedDoctors = 0;
                                 System.Collections.Generic.List<UpdatePatientRequest.Request.Medic> medicsToSave = new System.Collections.Generic.List<UpdatePatientRequest.Request.Medic>();
@@ -134,7 +118,6 @@ namespace CreateContactAsPatient
                                 }
                                 else
                                 {
-
                                     if (updatePatientRequest.medication.medics == null)
                                     {
                                         updatePatientRequest.medication.medics = new UpdatePatientRequest.Request.Medic[relatedEntitiesCount];
@@ -151,18 +134,12 @@ namespace CreateContactAsPatient
                                             }
 
                                             updatePatientRequest.medication.medics = new UpdatePatientRequest.Request.Medic[relatedEntitiesCount + contactCurrentRelatedDoctors];
-
                                         }
-
-
                                     }
                                 }
 
-
-
                                 for (int i = 0; i < relatedEntitiesCount; i++)
                                 {
-
                                     doctorRelated = relatedEntities[i];
 
                                     Entity doctor = service.Retrieve(doctorEntity.EntitySingularName, doctorRelated.Id, new ColumnSet(DoctorFields.DoctorIdKey));
@@ -180,14 +157,15 @@ namespace CreateContactAsPatient
                                 {
                                     updatePatientRequest.medication.medics[i] = medicsToSave[i];
                                 }
-                                #endregion
+
+                                #endregion -> Associate
                             }
                             else
                             {
                                 #region -> Disassociate
+
                                 if (updatePatientRequest.medication != null)
                                 {
-
                                     if (updatePatientRequest.medication.medics != null)
                                     {
                                         System.Collections.Generic.List<UpdatePatientRequest.Request.Medic> medicsToSave = new System.Collections.Generic.List<UpdatePatientRequest.Request.Medic>();
@@ -206,7 +184,6 @@ namespace CreateContactAsPatient
                                                 if (updatePatientRequest.medication.medics[i].medicid != doctorToRemove.GetAttributeValue<string>(DoctorFields.DoctorIdKey))
                                                 {
                                                     medicsToSave.Add(updatePatientRequest.medication.medics[i]);
-
                                                 }
                                             }
                                         }
@@ -227,23 +204,18 @@ namespace CreateContactAsPatient
                                             }
                                         }
                                     }
-
                                 }
-                                #endregion
+
+                                #endregion -> Disassociate
                             }
-
-
                         }
 
-
-                        #endregion
-
+                        #endregion -> Related
 
                         ///Request service POST
                         ///
 
                         sharedMethods = new MShared();
-
 
                         DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.Request));
                         MemoryStream memoryStream = new MemoryStream();
@@ -255,12 +227,11 @@ namespace CreateContactAsPatient
                         WebRequestData wrData = new WebRequestData();
                         wrData.InputData = jsonObject;
                         wrData.ContentType = "application/json";
-                        wrData.Authorization = "Bearer "+ Constants.TokenForAboxServices;
+                        wrData.Authorization = "Bearer " + Constants.TokenForAboxServices;
 
                         wrData.Url = AboxServices.UpdatePatientService;
 
-
-                        var serviceResponse = sharedMethods.DoPostRequest(wrData,trace);
+                        var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
                         UpdatePatientRequest.ServiceResponse serviceResponseProperties = null;
                         if (serviceResponse.IsSuccessful)
                         {
@@ -286,32 +257,16 @@ namespace CreateContactAsPatient
                         {
                             throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
                         }
-
                     }
-
-
-
-
-
-
-
-
-
                 }
 
-                #endregion
-
-
-
+                #endregion Associate & Disassociate
             }
             catch (Exception ex)
             {
-
                 throw new InvalidPluginExecutionException(ex.Message);
                 //TODO: Crear Log
             }
         }
     }
-
-
 }

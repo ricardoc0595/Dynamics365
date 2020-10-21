@@ -1,14 +1,10 @@
-﻿
-using AboxCrmPlugins.Methods;
+﻿using AboxCrmPlugins.Methods;
 using AboxDynamicsBase.Classes.Entities;
 using CreateContactAsPatient.Classes;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CreateContactAsPatient.Methods
 {
@@ -22,6 +18,7 @@ namespace CreateContactAsPatient.Methods
         private DistrictEntity districtEntity = null;
         private CantonEntity cantonEntity = null;
         private ProvinceEntity provinceEntity = null;
+
         public RequestHelpers()
         {
             doseEntity = new DoseEntity();
@@ -48,7 +45,6 @@ namespace CreateContactAsPatient.Methods
             {
                 if (contact != null)
                 {
-
                     #region -> Set request data based on Contact
 
                     requestStructure.personalinfo = new UpdatePatientRequest.Request.Personalinfo();
@@ -68,8 +64,6 @@ namespace CreateContactAsPatient.Methods
                     if (contact.Attributes.Contains(ContactFields.IdAboxPatient))
                         requestStructure.patientid = Convert.ToString(contact.GetAttributeValue<int>(ContactFields.IdAboxPatient));
 
-
-
                     if (contact.Attributes.Contains(ContactFields.Gender))
                     {
                         int val = (contact.GetAttributeValue<OptionSetValue>(ContactFields.Gender)).Value;
@@ -77,7 +71,6 @@ namespace CreateContactAsPatient.Methods
                         if (!String.IsNullOrEmpty(gender))
                         {
                             requestStructure.personalinfo.gender = gender;
-
                         }
                     }
 
@@ -86,14 +79,12 @@ namespace CreateContactAsPatient.Methods
                     if (birthdate != null)
                     {
                         requestStructure.personalinfo.dateofbirth = birthdate.ToString("yyyy-MM-dd");
-
                     }
 
                     if (contact.Attributes.Contains(ContactFields.IdType))
                     {
                         requestStructure.personalinfo.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
                     }
-
 
                     if (contact.Attributes.Contains(ContactFields.UserType))
                     {
@@ -105,8 +96,6 @@ namespace CreateContactAsPatient.Methods
                         }
                     }
 
-
-
                     if (contact.Attributes.Contains(ContactFields.Country))
                     {
                         EntityReference countryReference = null;
@@ -114,31 +103,24 @@ namespace CreateContactAsPatient.Methods
                         countryReference = (EntityReference)contact.Attributes[ContactFields.Country];
                         if (countryReference != null)
                         {
-
                             var countryRetrieved = service.Retrieve(countryEntity.EntitySingularName, countryReference.Id, new ColumnSet(CountryFields.IdCountry));
                             if (countryRetrieved.Attributes.Contains(CountryFields.IdCountry))
                             {
-
                                 string country = countryRetrieved.GetAttributeValue<string>(CountryFields.IdCountry);
 
                                 if (!String.IsNullOrEmpty(country))
                                 {
                                     requestStructure.country = country;
-
                                 }
-
                             }
                         }
                     }
-                    #endregion
 
-
-
+                    #endregion -> Set request data based on Contact
 
                     #region -> Productos actuales del Contacto 1:N
 
                     //Obtener los productos y dosis que ya tiene actualmente asignados el contacto
-
 
                     string[] doseColumnsToGet = new string[] { DoseFields.Dose, DoseFields.DosexProduct };
                     var doseColumnSet = new ColumnSet(doseColumnsToGet);
@@ -161,7 +143,6 @@ namespace CreateContactAsPatient.Methods
                                 requestStructure.medication.products = new UpdatePatientRequest.Request.Product[length];
                                 for (int i = 0; i < length; i++)
                                 {
-
                                     var doseChild = contactDosesList[i];
 
                                     if (doseChild.Attributes.Contains(DoseFields.DosexProduct))
@@ -170,7 +151,6 @@ namespace CreateContactAsPatient.Methods
                                         productReference = (EntityReference)doseChild.Attributes[DoseFields.DosexProduct];
                                         if (productReference != null)
                                         {
-
                                             Entity product = service.Retrieve(productEntity.EntitySingularName, productReference.Id, new ColumnSet(new string[] { ProductFields.ProductNumber }));
 
                                             if (product.Attributes.Contains(ProductFields.ProductNumber))
@@ -179,11 +159,10 @@ namespace CreateContactAsPatient.Methods
 
                                                 if (doseChild.Attributes.Contains(DoseFields.Dose))
                                                 {
-                                                    var optionSet= doseChild.GetAttributeValue<OptionSetValue>(DoseFields.Dose);
+                                                    var optionSet = doseChild.GetAttributeValue<OptionSetValue>(DoseFields.Dose);
                                                     frequency = sharedMethods.GetDoseFrequencyValue(optionSet.Value);
                                                     //frequency = doseChild.GetAttributeValue<OptionSetValue>(DoseFields.Dose);
                                                 }
-
 
                                                 requestStructure.medication.products[i] = new UpdatePatientRequest.Request.Product
                                                 {
@@ -193,24 +172,12 @@ namespace CreateContactAsPatient.Methods
                                             }
                                         }
                                     }
-
                                 }
                             }
                         }
-
-
-
                     }
 
-
-
-
-
-
-
-
-                    #endregion
-
+                    #endregion -> Productos actuales del Contacto 1:N
 
                     #region -> Médicos actuales del contacto N:N
 
@@ -236,7 +203,7 @@ namespace CreateContactAsPatient.Methods
 
                     querym.LinkEntities.Add(linkEntity1);
 
-                    // Add condition to match 
+                    // Add condition to match
 
                     linkEntity2.LinkCriteria = new FilterExpression();
 
@@ -260,35 +227,23 @@ namespace CreateContactAsPatient.Methods
                                 requestStructure.medication.medics = new UpdatePatientRequest.Request.Medic[length];
                                 for (int i = 0; i < length; i++)
                                 {
-
                                     var medic = doctorsOfContact[i];
-
 
                                     if (medic.Attributes.Contains(DoctorFields.DoctorIdKey))
                                     {
                                         string id = medic.GetAttributeValue<string>(DoctorFields.DoctorIdKey);
 
-
                                         requestStructure.medication.medics[i] = new UpdatePatientRequest.Request.Medic
                                         {
                                             medicid = id,
-
                                         };
                                     }
-
-
-
                                 }
                             }
                         }
-
-
-
                     }
 
-
-                    #endregion
-
+                    #endregion -> Médicos actuales del contacto N:N
                 }
             }
             catch (Exception ex)
@@ -298,7 +253,6 @@ namespace CreateContactAsPatient.Methods
             }
 
             return requestStructure;
-
         }
 
         public UpdateAccountRequest.Request GetAccountUpdateStructure(Entity contact, IOrganizationService service)
@@ -309,7 +263,6 @@ namespace CreateContactAsPatient.Methods
             {
                 if (contact != null)
                 {
-
                     #region -> Set request data based on Contact
 
                     //requestStructure.personalinfo = new UpdatePatientRequest.Request.Personalinfo();
@@ -341,14 +294,12 @@ namespace CreateContactAsPatient.Methods
                     if (contact.Attributes.Contains(ContactFields.Id))
                         requestStructure.user = contact.Attributes[ContactFields.Id].ToString();
 
-
                     if (contact.Attributes.Contains(ContactFields.Province))
                     {
                         EntityReference provinceReference = null;
                         provinceReference = (EntityReference)contact.Attributes[ContactFields.Province];
                         if (provinceReference != null)
                         {
-
                             var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(provinceEntity.Fields.IdProvince));
                             if (provinceRetrieved.Attributes.Contains(provinceEntity.Fields.IdProvince))
                             {
@@ -357,14 +308,12 @@ namespace CreateContactAsPatient.Methods
                         }
                     }
 
-
                     if (contact.Attributes.Contains(ContactFields.Canton))
                     {
                         EntityReference cantonReference = null;
                         cantonReference = (EntityReference)contact.Attributes[ContactFields.Canton];
                         if (cantonReference != null)
                         {
-
                             var cantonRetrieved = service.Retrieve(cantonEntity.EntitySingularName, cantonReference.Id, new ColumnSet(CantonFields.IdCanton));
                             if (cantonRetrieved.Attributes.Contains(CantonFields.IdCanton))
                             {
@@ -372,7 +321,6 @@ namespace CreateContactAsPatient.Methods
                             }
                         }
                     }
-
 
                     if (contact.Attributes.Contains(ContactFields.District))
                     {
@@ -389,9 +337,6 @@ namespace CreateContactAsPatient.Methods
                         }
                     }
 
-
-
-
                     if (contact.Attributes.Contains(ContactFields.Gender))
                     {
                         int val = (contact.GetAttributeValue<OptionSetValue>(ContactFields.Gender)).Value;
@@ -399,7 +344,6 @@ namespace CreateContactAsPatient.Methods
                         if (!String.IsNullOrEmpty(gender))
                         {
                             requestStructure.Genero = gender;
-
                         }
                     }
 
@@ -408,10 +352,7 @@ namespace CreateContactAsPatient.Methods
                     if (birthdate != null)
                     {
                         requestStructure.FechaNacimiento = birthdate.ToString("yyyy-MM-dd");
-
                     }
-
-
 
                     if (contact.Attributes.Contains(ContactFields.UserType))
                     {
@@ -422,8 +363,6 @@ namespace CreateContactAsPatient.Methods
                             requestStructure.TipoUsuario = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
                         }
                     }
-
-
 
                     if (contact.Attributes.Contains(ContactFields.Interests))
                     {
@@ -436,10 +375,11 @@ namespace CreateContactAsPatient.Methods
 
                             if (!String.IsNullOrEmpty(value))
                             {
-                                requestStructure.interests[i] = new UpdateAccountRequest.Request.Interest {
+                                requestStructure.interests[i] = new UpdateAccountRequest.Request.Interest
+                                {
                                     interestid = value,
                                     //TODO: Traer cantidad real de relaciones
-                                    relations = new UpdateAccountRequest.Request.Relation[] { 
+                                    relations = new UpdateAccountRequest.Request.Relation[] {
                                         new UpdateAccountRequest.Request.Relation
                                         {
                                             relation=new UpdateAccountRequest.Request.Relation1
@@ -448,27 +388,17 @@ namespace CreateContactAsPatient.Methods
                                                 relationid="Para mí"
                                             }
                                         }
-                                    
                                     }
-
                                 };
-
                             }
                         }
-
                     }
 
-
-
-                    #endregion
-
-
-
+                    #endregion -> Set request data based on Contact
 
                     #region -> Productos actuales del Contacto 1:N
 
                     //Obtener los productos y dosis que ya tiene actualmente asignados el contacto
-
 
                     string[] doseColumnsToGet = new string[] { DoseFields.Dose, DoseFields.DosexProduct };
                     var doseColumnSet = new ColumnSet(doseColumnsToGet);
@@ -491,7 +421,6 @@ namespace CreateContactAsPatient.Methods
                                 requestStructure.medication.products = new UpdateAccountRequest.Request.Product[length];
                                 for (int i = 0; i < length; i++)
                                 {
-
                                     var doseChild = contactDosesList[i];
 
                                     if (doseChild.Attributes.Contains(DoseFields.DosexProduct))
@@ -500,7 +429,6 @@ namespace CreateContactAsPatient.Methods
                                         productReference = (EntityReference)doseChild.Attributes[DoseFields.DosexProduct];
                                         if (productReference != null)
                                         {
-
                                             Entity product = service.Retrieve(productEntity.EntitySingularName, productReference.Id, new ColumnSet(new string[] { ProductFields.ProductNumber }));
 
                                             if (product.Attributes.Contains(ProductFields.ProductNumber))
@@ -512,7 +440,6 @@ namespace CreateContactAsPatient.Methods
                                                     frequency = doseChild.GetAttributeValue<string>(DoseFields.Dose);
                                                 }
 
-
                                                 requestStructure.medication.products[i] = new UpdateAccountRequest.Request.Product
                                                 {
                                                     frequency = frequency,
@@ -521,24 +448,12 @@ namespace CreateContactAsPatient.Methods
                                             }
                                         }
                                     }
-
                                 }
                             }
                         }
-
-
-
                     }
 
-
-
-
-
-
-
-
-                    #endregion
-
+                    #endregion -> Productos actuales del Contacto 1:N
 
                     #region -> Médicos actuales del contacto N:N
 
@@ -564,7 +479,7 @@ namespace CreateContactAsPatient.Methods
 
                     querym.LinkEntities.Add(linkEntity1);
 
-                    // Add condition to match 
+                    // Add condition to match
 
                     linkEntity2.LinkCriteria = new FilterExpression();
 
@@ -588,35 +503,23 @@ namespace CreateContactAsPatient.Methods
                                 requestStructure.medication.medics = new UpdateAccountRequest.Request.Medic[length];
                                 for (int i = 0; i < length; i++)
                                 {
-
                                     var medic = doctorsOfContact[i];
-
 
                                     if (medic.Attributes.Contains(DoctorFields.DoctorIdKey))
                                     {
                                         string id = medic.GetAttributeValue<string>(DoctorFields.DoctorIdKey);
 
-
                                         requestStructure.medication.medics[i] = new UpdateAccountRequest.Request.Medic
                                         {
                                             medicid = id,
-                                           
                                         };
                                     }
-
-
-
                                 }
                             }
                         }
-
-
-
                     }
 
-
-                    #endregion
-
+                    #endregion -> Médicos actuales del contacto N:N
                 }
             }
             catch (Exception ex)
@@ -626,7 +529,6 @@ namespace CreateContactAsPatient.Methods
             }
 
             return requestStructure;
-
         }
 
         public QuickSignupRequest.Request GetQuickSignupRequestObject(Entity contact, IOrganizationService service)
@@ -650,9 +552,8 @@ namespace CreateContactAsPatient.Methods
                     }
                 }
 
-
-
                 #region Personal Info
+
                 request.personalinfo = new QuickSignupRequest.Request.Personalinfo();
 
                 if (contact.Attributes.Contains(ContactFields.IdType))
@@ -660,36 +561,29 @@ namespace CreateContactAsPatient.Methods
                     request.personalinfo.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
                 }
 
-
-
                 if (contact.Attributes.Contains(ContactFields.Id))
                 {
                     request.personalinfo.id = contact.Attributes[ContactFields.Id].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Firstname))
                 {
                     request.personalinfo.name = contact.Attributes[ContactFields.Firstname].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Lastname))
                 {
                     request.personalinfo.lastname = contact.Attributes[ContactFields.Lastname].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.SecondLastname))
                 {
                     request.personalinfo.secondlastname = contact.Attributes[ContactFields.SecondLastname].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Password))
                 {
                     request.personalinfo.password = contact.Attributes[ContactFields.Password].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Gender))
@@ -699,7 +593,6 @@ namespace CreateContactAsPatient.Methods
                     if (!String.IsNullOrEmpty(gender))
                     {
                         request.personalinfo.gender = gender;
-
                     }
                 }
 
@@ -710,22 +603,18 @@ namespace CreateContactAsPatient.Methods
                     if (birthdate != null)
                     {
                         request.personalinfo.dateofbirth = birthdate.ToString("yyyy-MM-dd");
-
                     }
                 }
 
-
-                #endregion
+                #endregion Personal Info
 
                 #region ContactInfo
 
                 request.contactinfo = new QuickSignupRequest.Request.Contactinfo();
 
-
                 if (contact.Attributes.Contains(ContactFields.Phone))
                 {
                     request.contactinfo.phone = contact.Attributes[ContactFields.Phone].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Email))
@@ -733,31 +622,24 @@ namespace CreateContactAsPatient.Methods
                     request.contactinfo.email = contact.Attributes[ContactFields.Email].ToString();
                 }
 
-
-
                 if (contact.Attributes.Contains(ContactFields.Country))
                 {
                     EntityReference countryReference = null;
                     countryReference = (EntityReference)contact.Attributes[ContactFields.Country];
                     if (countryReference != null)
                     {
-
                         var countryRetrieved = service.Retrieve(countryEntity.EntitySingularName, countryReference.Id, new ColumnSet(CountryFields.IdCountry));
                         if (countryRetrieved.Attributes.Contains(CountryFields.IdCountry))
                         {
-
                             string country = countryRetrieved.GetAttributeValue<string>(CountryFields.IdCountry);
 
                             if (!String.IsNullOrEmpty(country))
                             {
                                 request.country = country;
-
                             }
-
                         }
                     }
                 }
-
 
                 if (contact.Attributes.Contains(ContactFields.Province))
                 {
@@ -765,24 +647,19 @@ namespace CreateContactAsPatient.Methods
                     provinceReference = (EntityReference)contact.Attributes[ContactFields.Province];
                     if (provinceReference != null)
                     {
-
                         var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(provinceEntity.Fields.IdProvince));
                         if (provinceRetrieved.Attributes.Contains(provinceEntity.Fields.IdProvince))
                         {
-
                             bool parsed = Int32.TryParse(provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince), out int aux);
 
                             if (parsed)
                             {
                                 int parsedValue = Int32.Parse(provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince));
                                 request.contactinfo.province = parsedValue;
-
                             }
-
                         }
                     }
                 }
-
 
                 if (contact.Attributes.Contains(ContactFields.Canton))
                 {
@@ -790,20 +667,16 @@ namespace CreateContactAsPatient.Methods
                     cantonReference = (EntityReference)contact.Attributes[ContactFields.Canton];
                     if (cantonReference != null)
                     {
-
                         var cantonRetrieved = service.Retrieve(cantonEntity.EntitySingularName, cantonReference.Id, new ColumnSet(CantonFields.IdCanton));
                         if (cantonRetrieved.Attributes.Contains(CantonFields.IdCanton))
                         {
-
                             bool parsed = Int32.TryParse(cantonRetrieved.GetAttributeValue<string>(CantonFields.IdCanton), out int aux);
 
                             if (parsed)
                             {
                                 int parsedValue = Int32.Parse(cantonRetrieved.GetAttributeValue<string>(CantonFields.IdCanton));
                                 request.contactinfo.canton = parsedValue;
-
                             }
-
                         }
                     }
                 }
@@ -818,29 +691,22 @@ namespace CreateContactAsPatient.Methods
                         var districtRetrieved = service.Retrieve(districtEntity.EntitySingularName, districtReference.Id, new ColumnSet(DistrictFields.IdDistrict));
                         if (districtRetrieved.Attributes.Contains(DistrictFields.IdDistrict))
                         {
-
                             bool parsed = Int32.TryParse(districtRetrieved.GetAttributeValue<string>(DistrictFields.IdDistrict), out int aux);
                             if (parsed)
                             {
                                 int parsedValue = Int32.Parse(districtRetrieved.GetAttributeValue<string>(DistrictFields.IdDistrict));
                                 request.contactinfo.district = parsedValue;
                             }
-
-
                         }
                     }
                 }
 
-
-
-
-                #endregion
+                #endregion ContactInfo
 
                 #region Medication
 
                 //if (request.medication!=null)
                 //{
-
                 //    #region Products
 
                 //    //contact.RelatedEntities;
@@ -848,9 +714,7 @@ namespace CreateContactAsPatient.Methods
                 //    //service.Retrieve("product", , new ColumnSet(true));
                 //    //contact.Attributes[ContactFields.ContactxProductRelationShip]= new EntityReference("product",);
 
-
                 //    #endregion
-
 
                 //    #region Medics
 
@@ -858,23 +722,14 @@ namespace CreateContactAsPatient.Methods
 
                 //}
 
-                #endregion
-
-                #region Interests
-
-
-
-                #endregion
-
+                #endregion Medication
 
                 return request;
-
             }
             catch (Exception ex)
             {
                 throw ex;
             }
-
         }
 
         public PatientSignupRequest.Request GetSignupPatientRequestObject(Entity contact, IOrganizationService service)
@@ -898,9 +753,9 @@ namespace CreateContactAsPatient.Methods
                     }
                 }
 
-
                 request.personalinfo = new PatientSignupRequest.Request.Personalinfo();
                 request.patientincharge = new PatientSignupRequest.Request.Patientincharge();
+
                 #region Personal Info
 
                 if (contact.Attributes.Contains(ContactFields.IdType))
@@ -908,8 +763,6 @@ namespace CreateContactAsPatient.Methods
                     request.personalinfo.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
                     request.patientincharge.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
                 }
-
-
 
                 if (contact.Attributes.Contains(ContactFields.Id))
                 {
@@ -926,19 +779,18 @@ namespace CreateContactAsPatient.Methods
                 if (contact.Attributes.Contains(ContactFields.Lastname))
                 {
                     request.personalinfo.lastname = contact.Attributes[ContactFields.Lastname].ToString();
-                    request.patientincharge.lastname= contact.Attributes[ContactFields.Lastname].ToString();
+                    request.patientincharge.lastname = contact.Attributes[ContactFields.Lastname].ToString();
                 }
 
                 if (contact.Attributes.Contains(ContactFields.SecondLastname))
                 {
                     request.personalinfo.secondlastname = contact.Attributes[ContactFields.SecondLastname].ToString();
-                    request.patientincharge.secondlastname= contact.Attributes[ContactFields.SecondLastname].ToString();
+                    request.patientincharge.secondlastname = contact.Attributes[ContactFields.SecondLastname].ToString();
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Password))
                 {
                     request.personalinfo.password = contact.Attributes[ContactFields.Password].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Gender))
@@ -950,9 +802,6 @@ namespace CreateContactAsPatient.Methods
                         request.personalinfo.gender = gender;
                         request.patientincharge.gender = gender;
                     }
-
-
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Birthdate))
@@ -962,22 +811,19 @@ namespace CreateContactAsPatient.Methods
                     if (birthdate != null)
                     {
                         request.personalinfo.dateofbirth = birthdate.ToString("yyyy-MM-dd");
-                        request.patientincharge.dateofbirth = birthdate.ToString("yyyy-MM-dd"); 
+                        request.patientincharge.dateofbirth = birthdate.ToString("yyyy-MM-dd");
                     }
                 }
 
-
-                #endregion
+                #endregion Personal Info
 
                 #region ContactInfo
 
                 request.contactinfo = new PatientSignupRequest.Request.Contactinfo();
 
-
                 if (contact.Attributes.Contains(ContactFields.Phone))
                 {
                     request.contactinfo.phone = contact.Attributes[ContactFields.Phone].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Email))
@@ -985,31 +831,24 @@ namespace CreateContactAsPatient.Methods
                     request.contactinfo.email = contact.Attributes[ContactFields.Email].ToString();
                 }
 
-
-
                 if (contact.Attributes.Contains(ContactFields.Country))
                 {
                     EntityReference countryReference = null;
                     countryReference = (EntityReference)contact.Attributes[ContactFields.Country];
                     if (countryReference != null)
                     {
-
                         var countryRetrieved = service.Retrieve(countryEntity.EntitySingularName, countryReference.Id, new ColumnSet(CountryFields.IdCountry));
                         if (countryRetrieved.Attributes.Contains(CountryFields.IdCountry))
                         {
-
                             string country = countryRetrieved.GetAttributeValue<string>(CountryFields.IdCountry);
 
                             if (!String.IsNullOrEmpty(country))
                             {
                                 request.country = country;
-
                             }
-
                         }
                     }
                 }
-
 
                 if (contact.Attributes.Contains(ContactFields.Province))
                 {
@@ -1017,24 +856,18 @@ namespace CreateContactAsPatient.Methods
                     provinceReference = (EntityReference)contact.Attributes[ContactFields.Province];
                     if (provinceReference != null)
                     {
-
                         var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(provinceEntity.Fields.IdProvince));
                         if (provinceRetrieved.Attributes.Contains(provinceEntity.Fields.IdProvince))
                         {
-
                             string value = provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince);
 
                             if (!String.IsNullOrEmpty(value))
                             {
-                                
                                 request.contactinfo.province = value;
-
                             }
-
                         }
                     }
                 }
-
 
                 if (contact.Attributes.Contains(ContactFields.Canton))
                 {
@@ -1042,20 +875,15 @@ namespace CreateContactAsPatient.Methods
                     cantonReference = (EntityReference)contact.Attributes[ContactFields.Canton];
                     if (cantonReference != null)
                     {
-
                         var cantonRetrieved = service.Retrieve(cantonEntity.EntitySingularName, cantonReference.Id, new ColumnSet(CantonFields.IdCanton));
                         if (cantonRetrieved.Attributes.Contains(CantonFields.IdCanton))
                         {
-
-                            string value= cantonRetrieved.GetAttributeValue<string>(CantonFields.IdCanton);
+                            string value = cantonRetrieved.GetAttributeValue<string>(CantonFields.IdCanton);
 
                             if (!String.IsNullOrEmpty(value))
                             {
-                                
                                 request.contactinfo.canton = value;
-
                             }
-
                         }
                     }
                 }
@@ -1070,15 +898,11 @@ namespace CreateContactAsPatient.Methods
                         var districtRetrieved = service.Retrieve(districtEntity.EntitySingularName, districtReference.Id, new ColumnSet(DistrictFields.IdDistrict));
                         if (districtRetrieved.Attributes.Contains(DistrictFields.IdDistrict))
                         {
-
                             string value = districtRetrieved.GetAttributeValue<string>(DistrictFields.IdDistrict);
                             if (!String.IsNullOrEmpty(value))
                             {
-                                
                                 request.contactinfo.district = value;
                             }
-
-
                         }
                     }
                 }
@@ -1108,23 +932,17 @@ namespace CreateContactAsPatient.Methods
                                             }
                                         }
                                     }
-                            }); 
-
+                            });
                         }
                     }
-
                 }
 
-
-
-
-                #endregion
+                #endregion ContactInfo
 
                 #region Medication
 
                 //if (request.medication!=null)
                 //{
-
                 //    #region Products
 
                 //    //contact.RelatedEntities;
@@ -1132,9 +950,7 @@ namespace CreateContactAsPatient.Methods
                 //    //service.Retrieve("product", , new ColumnSet(true));
                 //    //contact.Attributes[ContactFields.ContactxProductRelationShip]= new EntityReference("product",);
 
-
                 //    #endregion
-
 
                 //    #region Medics
 
@@ -1142,24 +958,14 @@ namespace CreateContactAsPatient.Methods
 
                 //}
 
-                #endregion
-
-                #region Interests
-
-
-
-                #endregion
-
+                #endregion Medication
 
                 return request;
-
             }
             catch (Exception ex)
             {
                 throw ex;
             }
-
         }
-
     }
 }

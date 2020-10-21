@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CreateContactAsPatient.Classes
+﻿namespace CreateContactAsPatient.Classes
 {
-
-
     public class UpdateAccountRequest
     {
-
         public class Request
         {
             public string user { get; set; }
@@ -33,7 +24,6 @@ namespace CreateContactAsPatient.Classes
             public object Password { get; set; }
             public Medication medication { get; set; }
             public Interest[] interests { get; set; }
-
 
             public class Medication
             {
@@ -71,15 +61,12 @@ namespace CreateContactAsPatient.Classes
                 public string relationid { get; set; }
                 public string other { get; set; }
             }
-
         }
 
         public class ServiceResponse
         {
             public Header header { get; set; }
             public Response response { get; set; }
-
-           
 
             public class Header
             {
@@ -102,14 +89,6 @@ namespace CreateContactAsPatient.Classes
             public class Details
             {
             }
-
-
         }
-
-
     }
-
-
-
-
 }

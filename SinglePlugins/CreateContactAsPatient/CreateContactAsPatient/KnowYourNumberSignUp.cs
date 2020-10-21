@@ -1,25 +1,21 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Runtime.Serialization.Json;
-using System.ServiceModel;
-using System.Text;
-using CreateContactAsPatient.Classes;
-using AboxCrmPlugins;
-
-using Microsoft.Xrm.Sdk;
-using AboxCrmPlugins.Classes;
+﻿using AboxCrmPlugins.Classes;
 using AboxCrmPlugins.Methods;
-
-using AboxDynamicsBase.Classes.Entities;
-using Microsoft.Xrm.Sdk.Query;
 using AboxDynamicsBase.Classes;
+using AboxDynamicsBase.Classes.Entities;
+using CreateContactAsPatient.Classes;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using System;
+using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Text;
 
 namespace CreateContactAsPatient
 {
     public class KnowYourNumberSignup : IPlugin
     {
         private MShared sharedMethods = null;
+
         private QuickSignupRequest.Request GetSignupRequestObject(Entity contact, IOrganizationService service)
         {
             var request = new QuickSignupRequest.Request();
@@ -41,9 +37,8 @@ namespace CreateContactAsPatient
                     }
                 }
 
-
-
                 #region Personal Info
+
                 request.personalinfo = new QuickSignupRequest.Request.Personalinfo();
 
                 if (contact.Attributes.Contains(ContactFields.IdType))
@@ -51,36 +46,29 @@ namespace CreateContactAsPatient
                     request.personalinfo.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
                 }
 
-
-
                 if (contact.Attributes.Contains(ContactFields.Id))
                 {
                     request.personalinfo.id = contact.Attributes[ContactFields.Id].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Firstname))
                 {
                     request.personalinfo.name = contact.Attributes[ContactFields.Firstname].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Lastname))
                 {
                     request.personalinfo.lastname = contact.Attributes[ContactFields.Lastname].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.SecondLastname))
                 {
                     request.personalinfo.secondlastname = contact.Attributes[ContactFields.SecondLastname].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Password))
                 {
                     request.personalinfo.password = contact.Attributes[ContactFields.Password].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Gender))
@@ -90,7 +78,6 @@ namespace CreateContactAsPatient
                     if (!String.IsNullOrEmpty(gender))
                     {
                         request.personalinfo.gender = gender;
-
                     }
                 }
 
@@ -101,22 +88,18 @@ namespace CreateContactAsPatient
                     if (birthdate != null)
                     {
                         request.personalinfo.dateofbirth = birthdate.ToString("yyyy-MM-dd");
-
                     }
                 }
 
-
-                #endregion
+                #endregion Personal Info
 
                 #region ContactInfo
 
                 request.contactinfo = new QuickSignupRequest.Request.Contactinfo();
 
-
                 if (contact.Attributes.Contains(ContactFields.Phone))
                 {
                     request.contactinfo.phone = contact.Attributes[ContactFields.Phone].ToString();
-
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Email))
@@ -124,31 +107,24 @@ namespace CreateContactAsPatient
                     request.contactinfo.email = contact.Attributes[ContactFields.Email].ToString();
                 }
 
-
-
                 if (contact.Attributes.Contains(ContactFields.Country))
                 {
                     EntityReference countryReference = null;
                     countryReference = (EntityReference)contact.Attributes[ContactFields.Country];
                     if (countryReference != null)
                     {
-
                         var countryRetrieved = service.Retrieve(countryEntity.EntitySingularName, countryReference.Id, new ColumnSet(CountryFields.IdCountry));
                         if (countryRetrieved.Attributes.Contains(CountryFields.IdCountry))
                         {
-
                             string country = countryRetrieved.GetAttributeValue<string>(CountryFields.IdCountry);
 
                             if (!String.IsNullOrEmpty(country))
                             {
                                 request.country = country;
-
                             }
-
                         }
                     }
                 }
-
 
                 if (contact.Attributes.Contains(ContactFields.Province))
                 {
@@ -156,24 +132,19 @@ namespace CreateContactAsPatient
                     provinceReference = (EntityReference)contact.Attributes[ContactFields.Province];
                     if (provinceReference != null)
                     {
-
                         var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(provinceEntity.Fields.IdProvince));
                         if (provinceRetrieved.Attributes.Contains(provinceEntity.Fields.IdProvince))
                         {
-
                             bool parsed = Int32.TryParse(provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince), out int aux);
 
                             if (parsed)
                             {
                                 int parsedValue = Int32.Parse(provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince));
                                 request.contactinfo.province = parsedValue;
-
                             }
-
                         }
                     }
                 }
-
 
                 if (contact.Attributes.Contains(ContactFields.Canton))
                 {
@@ -181,20 +152,16 @@ namespace CreateContactAsPatient
                     cantonReference = (EntityReference)contact.Attributes[ContactFields.Canton];
                     if (cantonReference != null)
                     {
-
                         var cantonRetrieved = service.Retrieve(cantonEntity.EntitySingularName, cantonReference.Id, new ColumnSet(CantonFields.IdCanton));
                         if (cantonRetrieved.Attributes.Contains(CantonFields.IdCanton))
                         {
-
                             bool parsed = Int32.TryParse(cantonRetrieved.GetAttributeValue<string>(CantonFields.IdCanton), out int aux);
 
                             if (parsed)
                             {
                                 int parsedValue = Int32.Parse(cantonRetrieved.GetAttributeValue<string>(CantonFields.IdCanton));
                                 request.contactinfo.canton = parsedValue;
-
                             }
-
                         }
                     }
                 }
@@ -209,29 +176,22 @@ namespace CreateContactAsPatient
                         var districtRetrieved = service.Retrieve(districtEntity.EntitySingularName, districtReference.Id, new ColumnSet(DistrictFields.IdDistrict));
                         if (districtRetrieved.Attributes.Contains(DistrictFields.IdDistrict))
                         {
-
                             bool parsed = Int32.TryParse(districtRetrieved.GetAttributeValue<string>(DistrictFields.IdDistrict), out int aux);
                             if (parsed)
                             {
                                 int parsedValue = Int32.Parse(districtRetrieved.GetAttributeValue<string>(DistrictFields.IdDistrict));
                                 request.contactinfo.district = parsedValue;
                             }
-
-
                         }
                     }
                 }
 
-
-
-
-                #endregion
+                #endregion ContactInfo
 
                 #region Medication
 
                 //if (request.medication!=null)
                 //{
-
                 //    #region Products
 
                 //    //contact.RelatedEntities;
@@ -239,9 +199,7 @@ namespace CreateContactAsPatient
                 //    //service.Retrieve("product", , new ColumnSet(true));
                 //    //contact.Attributes[ContactFields.ContactxProductRelationShip]= new EntityReference("product",);
 
-
                 //    #endregion
-
 
                 //    #region Medics
 
@@ -249,23 +207,14 @@ namespace CreateContactAsPatient
 
                 //}
 
-                #endregion
-
-                #region Interests
-
-
-
-                #endregion
-
+                #endregion Medication
 
                 return request;
-
             }
             catch (Exception ex)
             {
                 throw ex;
             }
-
         }
 
         public void Execute(IServiceProvider serviceProvider)
@@ -285,7 +234,6 @@ namespace CreateContactAsPatient
                     return;
                 }
 
-
                 if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is Entity)
                 {
                     // Obtain the target entity from the input parameters.
@@ -297,7 +245,6 @@ namespace CreateContactAsPatient
                     }
                     else
                     {
-
                         sharedMethods = new MShared();
                         QuickSignupRequest.Request request = this.GetSignupRequestObject(contact, service);
 
@@ -312,11 +259,9 @@ namespace CreateContactAsPatient
                         wrData.InputData = jsonObject;
                         wrData.ContentType = "application/json";
 
-
                         wrData.Url = AboxServices.QuickSignupService;
 
-
-                        var serviceResponse = sharedMethods.DoPostRequest(wrData,trace);
+                        var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
                         QuickSignupRequest.ServiceResponse serviceResponseProperties = null;
                         if (serviceResponse.IsSuccessful)
                         {
@@ -330,9 +275,7 @@ namespace CreateContactAsPatient
 
                             if (serviceResponseProperties.response.code != "MEMEX-0002")
                             {
-
                                 throw new InvalidPluginExecutionException(Constants.ErrorMessageTransactionCodeReturned + serviceResponseProperties.response.message);
-
                             }
                             else
                             {
@@ -345,19 +288,13 @@ namespace CreateContactAsPatient
                         }
                         //TODO: Capturar excepción con servicios de Abox Plan y hacer un Logging
                     }
-
                 }
             }
             catch (Exception ex)
             {
-
                 throw new InvalidPluginExecutionException(ex.Message);
                 //TODO: Crear Log
             }
         }
     }
-
-
-    
-
 }
