@@ -24,12 +24,12 @@ namespace CreateContactAsPatient
 
         public void Execute(IServiceProvider serviceProvider)
         {
+            ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
             try
             {
                 IPluginExecutionContext context = (IPluginExecutionContext)serviceProvider.GetService(typeof(IPluginExecutionContext));
                 IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
                 IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
-                ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
 
                 /*Esta validación previene la ejecución del Plugin de cualquier
                  * transacción realizada a través del Web API desde Abox*/
@@ -96,12 +96,12 @@ namespace CreateContactAsPatient
                                  *de update patient*/
                                 if (userType == "01" && contactData.Attributes.Contains(ContactFields.ContactxContactLookup))
                                 {
-                                    updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service);
+                                    updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service,trace);
                                 }
                                 else
                                 {
                                     //Si es cuidador, tutor, o paciente que no está a cargo de nadie se usa el update account
-                                    updateAccountRequest = helperMethods.GetAccountUpdateStructure(contactData, service);
+                                    updateAccountRequest = helperMethods.GetAccountUpdateStructure(contactData, service,trace);
                                 }
                             }
 
@@ -185,7 +185,7 @@ namespace CreateContactAsPatient
                             else
                             {
                                 //TODO: Manejar error, esta llegando null cuando hay un error de protocolo
-                                throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponse.ErrorMessage);
+                                throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage);
                             }
                         }
                     }
@@ -193,7 +193,9 @@ namespace CreateContactAsPatient
             }
             catch (Exception ex)
             {
-                throw new InvalidPluginExecutionException(ex.Message);
+                trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
+
                 //TODO: Crear Log
             }
         }

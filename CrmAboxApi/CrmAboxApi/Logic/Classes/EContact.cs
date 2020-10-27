@@ -10,7 +10,9 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 
 namespace CrmAboxApi.Logic.Classes
@@ -41,7 +43,8 @@ namespace CrmAboxApi.Logic.Classes
             doseEntity = new EDose();
         }
 
-        private JObject GetCreateContactJsonStructure(PatientSignup signupProperties)
+        #region -> Internal Methods
+        private JObject GetCreateContactJsonStructure(PatientSignup signupProperties,Guid processId)
         {
             OperationResult result = new OperationResult();
             JObject jObject = new JObject();
@@ -54,26 +57,41 @@ namespace CrmAboxApi.Logic.Classes
 
                     if (!(String.IsNullOrEmpty(signupProperties.country)))
                     {
-                        jObject.Add($"{this.Schemas.Country}@odata.bind", $"/{countryEntity.EntityPluralName}({CountryFields.IdCountry}='{signupProperties.country}')");
+                        jObject.Add($"{ContactSchemas.Country}@odata.bind", $"/{countryEntity.EntityPluralName}({CountryFields.IdCountry}='{signupProperties.country}')");
                     }
 
                     if (!(String.IsNullOrEmpty(signupProperties.contactinfo.province)))
                     {
-                        jObject.Add($"{this.Schemas.Province}@odata.bind", $"/{provinceEntity.EntityPluralName}({provinceEntity.Fields.IdProvince}='{signupProperties.contactinfo.province}')");
+                        jObject.Add($"{ContactSchemas.Province}@odata.bind", $"/{provinceEntity.EntityPluralName}({ProvinceFields.IdProvince}='{signupProperties.contactinfo.province}')");
                     }
 
                     if (!(String.IsNullOrEmpty(signupProperties.contactinfo.canton)))
                     {
-                        jObject.Add($"{this.Schemas.Canton}@odata.bind", $"/{cantonEntity.EntityPluralName}({CantonFields.IdCanton}='{signupProperties.contactinfo.canton}')");
+                        jObject.Add($"{ContactSchemas.Canton}@odata.bind", $"/{cantonEntity.EntityPluralName}({CantonFields.IdCanton}='{signupProperties.contactinfo.canton}')");
                     }
 
                     if (!(String.IsNullOrEmpty(signupProperties.contactinfo.district)))
                     {
-                        jObject.Add($"{this.Schemas.District}@odata.bind", $"/{districtEntity.EntityPluralName}({DistrictFields.IdDistrict}='{signupProperties.contactinfo.district}')");
+                        jObject.Add($"{ContactSchemas.District}@odata.bind", $"/{districtEntity.EntityPluralName}({DistrictFields.IdDistrict}='{signupProperties.contactinfo.district}')");
                     }
 
-                    if (signupProperties.patientid != null)
-                        jObject.Add(ContactFields.IdAboxPatient, signupProperties.patientid.ToString());
+
+
+
+                    if (!(String.IsNullOrEmpty(signupProperties.userType)))
+                    {
+                        if (signupProperties.userType == "02" || signupProperties.userType == "03")
+                        {
+                            if (signupProperties.patientid_primary != null)
+                                jObject.Add(ContactFields.IdAboxPatient, signupProperties.patientid_primary.ToString());
+                        }
+                        else if (signupProperties.userType == "01")
+                        {
+                            if (signupProperties.patientid != null)
+                                jObject.Add(ContactFields.IdAboxPatient, signupProperties.patientid.ToString());
+                        }
+                    }
+
 
                     if (!String.IsNullOrEmpty(signupProperties.otherInterest))
                     {
@@ -116,7 +134,7 @@ namespace CrmAboxApi.Logic.Classes
 
                         if (!(String.IsNullOrEmpty(signupProperties.userType)))
                         {
-                            jObject.Add($"{this.Schemas.UserType}@odata.bind", $"/new_usertypes({sharedMethods.GetUserTypeEntityId(signupProperties.userType)})");
+                            jObject.Add($"{ContactSchemas.UserType}@odata.bind", $"/new_usertypes({sharedMethods.GetUserTypeEntityId(signupProperties.userType)})");
                         }
                     }
 
@@ -182,13 +200,13 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 jObject = null;
                 return jObject;
             }
         }
 
-        private JObject GetUpdateAccountRequestStructure(UpdateAccountRequest updateProperties)
+        private JObject GetUpdateAccountRequestStructure(UpdateAccountRequest updateProperties,Guid processId)
         {
             OperationResult result = new OperationResult();
             JObject jObject = new JObject();
@@ -223,17 +241,17 @@ namespace CrmAboxApi.Logic.Classes
 
                     if (!(String.IsNullOrEmpty(updateProperties.Provincia)))
                     {
-                        jObject.Add($"{this.Schemas.Province}@odata.bind", $"/{provinceEntity.EntityPluralName}({provinceEntity.Fields.IdProvince}='{updateProperties.Provincia}')");
+                        jObject.Add($"{ContactSchemas.Province}@odata.bind", $"/{provinceEntity.EntityPluralName}({ProvinceFields.IdProvince}='{updateProperties.Provincia}')");
                     }
 
                     if (!(String.IsNullOrEmpty(updateProperties.Canton)))
                     {
-                        jObject.Add($"{this.Schemas.Canton}@odata.bind", $"/{cantonEntity.EntityPluralName}({CantonFields.IdCanton}='{updateProperties.Canton}')");
+                        jObject.Add($"{ContactSchemas.Canton}@odata.bind", $"/{cantonEntity.EntityPluralName}({CantonFields.IdCanton}='{updateProperties.Canton}')");
                     }
 
                     if (!(String.IsNullOrEmpty(updateProperties.Distrito)))
                     {
-                        jObject.Add($"{this.Schemas.District}@odata.bind", $"/{districtEntity.EntityPluralName}({DistrictFields.IdDistrict}='{updateProperties.Distrito}')");
+                        jObject.Add($"{ContactSchemas.District}@odata.bind", $"/{districtEntity.EntityPluralName}({DistrictFields.IdDistrict}='{updateProperties.Distrito}')");
                     }
 
 
@@ -289,13 +307,13 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 jObject = null;
                 return jObject;
             }
         }
 
-        private JObject GetUpdatePatientJsonStructure(UpdatePatientRequest updateProperties)
+        private JObject GetUpdatePatientJsonStructure(UpdatePatientRequest updateProperties,Guid processId)
         {
             OperationResult result = new OperationResult();
             JObject jObject = new JObject();
@@ -357,140 +375,20 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 jObject = null;
                 return jObject;
             }
         }
 
-        public OperationResult CreateAsPatient(PatientSignup signupRequest, string idRelatedPatient)
-        {
-            OperationResult responseObject = new OperationResult();
+       
 
-            try
-            {
-                PatientSignup signupProperties = signupRequest;
-
-                if (signupProperties != null)
-                {
-                    DoseRecord[] dosesArray = null;
-                    string[] dosesCreated = null;
-
-                    /*Este request se deja por fuera del metodo que crea toda la estructura de
-                     * Contacto porque es un proceso individual de crear una entidad de Dosis,
-                     * la cual puede eventualmente fallar o no crearse correctamente, ademas se necesita
-                     * ligar el resultado de esta operacion al request que crea el contacto en el crm
-                     */
-
-                    #region -> Dose Retrieve
-
-                    if (signupProperties.medication != null)
-                    {
-                        int dosesLength = signupProperties.medication.products.Length;
-                        dosesArray = new DoseRecord[dosesLength];
-                        dosesCreated = new string[dosesLength];
-
-                        for (int i = 0; i < dosesLength; i++)
-                        {
-                            string frequency = "";
-                            if (!String.IsNullOrEmpty(signupProperties.medication.products[i].other))
-                                frequency = signupProperties.medication.products[i].other;
-                            else
-                                frequency = signupProperties.medication.products[i].frequency;
-
-                            dosesArray[i] = new DoseRecord { Dose = frequency, IdProduct = signupProperties.medication.products[i].productid };
-                        }
-
-                        if (dosesArray != null)
-                        {
-                            if (dosesArray.Length > 0)
-                            {
-                                try
-                                {
-                                    int length = dosesArray.Length;
-
-                                    for (int i = 0; i < length; i++)
-                                    {
-                                        OperationResult result = doseEntity.Create(new DoseRecord
-                                        {
-                                            Dose = dosesArray[i].Dose,
-                                            IdProduct = dosesArray[i].IdProduct
-                                        });
-
-                                        if (result.IsSuccessful)
-                                        {
-                                            dosesCreated[i] = (string)result.Data;
-                                        }
-                                    }
-
-                                    if (dosesCreated.Length != dosesArray.Length)
-                                    {
-                                        throw (new Exception("Ha ocurrido un error creando las dosis del paciente " + signupProperties.personalinfo.id + " en el CRM"));
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    Logger.Error(ex.ToString());
-                                    throw ex;
-                                }
-                            }
-                        }
-                    }
-
-                    #endregion -> Dose Retrieve
-
-                    JObject newContact = this.GetCreateContactJsonStructure(signupProperties);
-
-                    #region -> Patient Related
-
-                    if (!String.IsNullOrEmpty(idRelatedPatient))
-                    {
-                        JArray patientsInChargeArray = new JArray();
-                        patientsInChargeArray.Add(new JValue($"/{this.EntityPluralName}({idRelatedPatient})"));
-                        newContact.Add($"{ContactFields.ContactxContactRelationship}@odata.bind", patientsInChargeArray);
-                    }
-
-                    #endregion -> Patient Related
-
-                    #region -> Doses Related
-
-                    if (dosesArray != null && dosesCreated != null)
-                    {
-                        if (dosesCreated.Length == dosesArray.Length)
-                        {
-                            JArray dosesToSave = new JArray();
-                            int length = dosesCreated.Length;
-                            for (int i = 0; i < length; i++)
-                            {
-                                dosesToSave.Add(new JValue($"/{doseEntity.EntityPluralName}({dosesCreated[i]})"));
-                            }
-
-                            newContact.Add($"{ContactFields.ContactxDoseRelationship}@odata.bind", dosesToSave);
-                        }
-                    }
-
-                    #endregion -> Doses Related
-
-                    responseObject = this.ContactCreateRequest(newContact);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex.ToString());
-                responseObject.Code = "";
-                responseObject.Message = ex.ToString();
-                responseObject.IsSuccessful = false;
-                responseObject.Data = null;
-            }
-
-            return responseObject;
-        }
-
-        private OperationResult ContactCreateRequest(JObject jsonObject)
+        private OperationResult ContactCreateRequest(JObject jsonObject,Guid processId)
         {
             OperationResult operationResult = new OperationResult();
             try
             {
+                
                 if (jsonObject != null)
                 {
                     try
@@ -501,10 +399,14 @@ namespace CrmAboxApi.Logic.Classes
                             client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                             client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                             client.DefaultRequestHeaders.Add("Prefer", "return=representation");
+                            client.DefaultRequestHeaders.Add("MSCRM.SuppressDuplicateDetection","false");
 
-                            Logger.Debug($"Create Contact | JSON: {jsonObject.ToString(Formatting.None)}");
+                            MethodBase m = MethodBase.GetCurrentMethod();
+                            string url = $"contacts?$select={ContactFields.EntityId}";
+                            Logger.Debug("ProcessID: {processId} Url:{url} Action: {actionName} Data:{requestData}", processId,url, m.Name, jsonObject.ToString(Formatting.None));
+                           
                             HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
-                            var response = client.PostAsync($"contacts?$select={ContactFields.EntityId}", c).Result;
+                            var response = client.PostAsync(url, c).Result;
                             if (response.IsSuccessStatusCode)
                             {
                                 //Get the response content and parse it.
@@ -523,9 +425,8 @@ namespace CrmAboxApi.Logic.Classes
                                 JObject userId = JObject.Parse(body.ToString());
                                 CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
 
-                                Logger.Trace(response.ReasonPhrase);
                                 if (err != null)
-                                    Logger.Trace($"Cod: {err.error.code} | Error:{err.error.message}");
+                                    Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name,url,err.error.code,err.error.message,response.ReasonPhrase);
 
                                 operationResult.Code = "";
                                 operationResult.Message = "Error al crear el contacto en el CRM";
@@ -537,7 +438,8 @@ namespace CrmAboxApi.Logic.Classes
                     }
                     catch (Exception ex)
                     {
-                        Logger.Error(ex.ToString());
+                        //TODO: Crear Queue de procesos fallidos en BD para reprocesar
+                        Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                         operationResult.Code = "";
                         operationResult.Message = ex.ToString();
                         operationResult.IsSuccessful = false;
@@ -549,7 +451,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;
@@ -558,7 +460,78 @@ namespace CrmAboxApi.Logic.Classes
             }
         }
 
-        private OperationResult ContactRelatedDosesRequest(int idContact)
+        private OperationResult ContactDeleteRequest(string contactId, Guid processId)
+        {
+            OperationResult operationResult = new OperationResult();
+            try
+            {
+                if (contactId != null)
+                {
+                    try
+                    {
+                        using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
+                        {
+                            client.DefaultRequestHeaders.Add("Accept", "application/json");
+                            client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
+                            client.DefaultRequestHeaders.Add("OData-Version", "4.0");
+                            MethodBase m = MethodBase.GetCurrentMethod();
+                            //client.DefaultRequestHeaders.Add("Prefer", "return=representation");
+                            string url = $"{this.EntityPluralName}({contactId})";
+                            Logger.Debug("ProcessID: {processId} Url:{url} Action: {actionName} ", processId, url, m.Name);
+                            //HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
+                            var response = client.DeleteAsync(url).Result;
+                            if (response.IsSuccessStatusCode)
+                            {
+                                //Get the response content and parse it.
+                                //JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                                //string userId = (string)body[DoseFields.EntityId];
+                                operationResult.Code = "";
+                                operationResult.Message = "Contacto eliminado correctamente del CRM";
+                                operationResult.IsSuccessful = true;
+                                operationResult.Data = null;
+                            }
+                            else
+                            {
+                                //Get the response content and parse it.
+                                JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                                //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
+                                JObject userId = JObject.Parse(body.ToString());
+                                CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
+
+                                if (err != null)
+                                    Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name, url, err.error.code, err.error.message, response.ReasonPhrase);
+                                operationResult.Code = "Error al eliminar el contacto del CRM";
+                                operationResult.Message = response.ReasonPhrase;
+                                operationResult.IsSuccessful = false;
+                                operationResult.Data = null;
+                                operationResult.InternalError = err;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                        operationResult.Code = "";
+                        operationResult.Message = ex.ToString();
+                        operationResult.IsSuccessful = false;
+                        operationResult.Data = null;
+                    }
+                }
+
+                return operationResult;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                operationResult.Code = "";
+                operationResult.Message = ex.ToString();
+                operationResult.IsSuccessful = false;
+                operationResult.Data = null;
+                return operationResult;
+            }
+        }
+
+        private OperationResult ContactRelatedDosesRequest(int idContact,Guid processId)
         {
             OperationResult operationResult = new OperationResult();
             try
@@ -571,12 +544,14 @@ namespace CrmAboxApi.Logic.Classes
                         client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                         client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                         client.DefaultRequestHeaders.Add("Prefer", "return=representation");
-
+                        MethodBase m = MethodBase.GetCurrentMethod();
+                        string url = $"{this.EntityPluralName}({ContactFields.IdAboxPatient}={idContact})?$select={ContactFields.EntityId}&$expand={ContactFields.ContactxDoseRelationship}($select={DoseFields.EntityId},{DoseFields.Dose};$expand=new_ProductDose($select={ProductFields.ProductNumber}))";
+                        Logger.Debug("ProcessID: {processId} Url:{url} Action: {actionName} ", processId, url, m.Name);
                         //var response = client.GetAsync($"{this.EntityPluralName}({ContactFields.IdAboxPatient}={idContact})?$select={ContactFields.EntityId}&$expand={ContactFields.ContactxDoseRelationship}($select={DoseFields.EntityId},{DoseFields.Dose})").Result;
                         /*TODO: Optimizar este request, el expand no esta trayendo los datos de las dosis, se necesita sacar
                          el ID del producto que tiene esta entidad Dosis para mejorar los tiempos de actualizacion, Valorar
                         ANY o ALL filtros de web API que se pueden usar*/
-                        var response = client.GetAsync($"{this.EntityPluralName}({ContactFields.IdAboxPatient}={idContact})?$select={ContactFields.EntityId}&$expand={ContactFields.ContactxDoseRelationship}($select={DoseFields.EntityId},{DoseFields.Dose};$expand=new_ProductDose($select={ProductFields.ProductNumber}))").Result;
+                        var response = client.GetAsync(url).Result;
                         if (response.IsSuccessStatusCode)
                         {
                             //Get the response content and parse it.
@@ -606,12 +581,12 @@ namespace CrmAboxApi.Logic.Classes
                             //Get the response content and parse it.
                             JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
                             //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
-                            JObject userId = JObject.Parse(body.ToString());
-                            CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
+                            JObject error = JObject.Parse(body.ToString());
+                            CrmWebAPIError err = error.ToObject<CrmWebAPIError>();
 
-                            Logger.Trace(response.ReasonPhrase);
+                            
                             if (err != null)
-                                Logger.Trace($"Cod: {err.error.code} | Error:{err.error.message}");
+                                Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name,url, err.error.code, err.error.message, response.ReasonPhrase);
 
                             operationResult.Code = "Error al obtener las dosis del contacto en el CRM";
                             operationResult.Message = response.ReasonPhrase;
@@ -623,7 +598,7 @@ namespace CrmAboxApi.Logic.Classes
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex.ToString());
+                    Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                     operationResult.Code = "";
                     operationResult.Message = ex.ToString();
                     operationResult.IsSuccessful = false;
@@ -634,7 +609,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;
@@ -643,7 +618,7 @@ namespace CrmAboxApi.Logic.Classes
             }
         }
 
-        private OperationResult ContactRelatedDoctorsRequest(int idContact)
+        private OperationResult ContactRelatedDoctorsRequest(int idContact, Guid processId)
         {
             OperationResult operationResult = new OperationResult();
             try
@@ -656,8 +631,12 @@ namespace CrmAboxApi.Logic.Classes
                         client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                         client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                         client.DefaultRequestHeaders.Add("Prefer", "return=representation");
+                        MethodBase m = MethodBase.GetCurrentMethod();
+                        string url = $"{this.EntityPluralName}({ContactFields.IdAboxPatient}={idContact})?$select={ContactFields.EntityId}&$expand={ContactFields.ContactxDoctorRelationship}($select={DoctorFields.DoctorIdKey})";
 
-                        var response = client.GetAsync($"{this.EntityPluralName}({ContactFields.IdAboxPatient}={idContact})?$select={ContactFields.EntityId}&$expand={ContactFields.ContactxDoctorRelationship}($select={DoctorFields.DoctorIdKey})").Result;
+                        Logger.Debug("ProcessID: {processId} Url:{url} Action:{actionName}", processId, url, m.Name);
+
+                        var response = client.GetAsync(url).Result;
                         if (response.IsSuccessStatusCode)
                         {
                             //Get the response content and parse it.
@@ -686,9 +665,9 @@ namespace CrmAboxApi.Logic.Classes
                             CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
 
 
-                            Logger.Trace(response.ReasonPhrase);
+                            
                             if (err != null)
-                                Logger.Trace($"Cod: {err.error.code} | Error:{err.error.message}");
+                                Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name, url, err.error.code, err.error.message, response.ReasonPhrase);
                             operationResult.Code = "Error al obtener los doctores relacionados del contacto en el CRM";
                             operationResult.Message = response.ReasonPhrase;
                             operationResult.IsSuccessful = false;
@@ -699,7 +678,7 @@ namespace CrmAboxApi.Logic.Classes
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex.ToString());
+                    Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                     operationResult.Code = "";
                     operationResult.Message = ex.ToString();
                     operationResult.IsSuccessful = false;
@@ -710,7 +689,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;
@@ -719,7 +698,7 @@ namespace CrmAboxApi.Logic.Classes
             }
         }
 
-        private OperationResult ContactUpdateRequest(JObject jsonObject, string idToUpdate)
+        private OperationResult ContactUpdateRequest(JObject jsonObject, string idToUpdate,Guid processId)
         {
             OperationResult operationResult = new OperationResult();
             try
@@ -734,10 +713,12 @@ namespace CrmAboxApi.Logic.Classes
                             client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                             client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                             //client.DefaultRequestHeaders.Add("Prefer", "return=representation");
+                            MethodBase m = MethodBase.GetCurrentMethod();
 
-                            Logger.Debug($"Update Contact | JSON: {jsonObject.ToString(Formatting.None)}");
+                            string url = $"contacts({ContactFields.IdAboxPatient}={idToUpdate})";
+                            Logger.Debug("ProcessID: {processId} Url:{url} Action: {actionName} Data:{requestData}", processId,url, m.Name, jsonObject.ToString(Formatting.None));
                             HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
-                            var response = client.PatchAsync($"contacts({ContactFields.IdAboxPatient}={idToUpdate})", c).Result;
+                            var response = client.PatchAsync(url, c).Result;
                             if (response.IsSuccessStatusCode)
                             {
                                 //Get the response content and parse it.
@@ -756,9 +737,9 @@ namespace CrmAboxApi.Logic.Classes
                                 JObject userId = JObject.Parse(body.ToString());
                                 CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
 
-                                Logger.Trace(response.ReasonPhrase);
+                              
                                 if (err != null)
-                                    Logger.Trace($"Cod: {err.error.code} | Error:{err.error.message}");
+                                    Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name,url, err.error.code, err.error.message, response.ReasonPhrase);
                                 operationResult.Code = "";
                                 operationResult.Message = "Error al actualizar el contacto en el CRM";
                                 operationResult.IsSuccessful = false;
@@ -769,7 +750,8 @@ namespace CrmAboxApi.Logic.Classes
                     }
                     catch (Exception ex)
                     {
-                        Logger.Error(ex.ToString());
+                        
+                        Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                         operationResult.Code = "";
                         operationResult.Message = ex.ToString();
                         operationResult.IsSuccessful = false;
@@ -781,7 +763,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;
@@ -846,6 +828,7 @@ namespace CrmAboxApi.Logic.Classes
 
         }
 
+
         private List<string> MatchingProductsFromAccountUpdate(UpdateAccountRequest.Product[] array, DoseRecord[] contactRelatedProducts)
         {
             List<string> matching = new List<string>();
@@ -868,7 +851,137 @@ namespace CrmAboxApi.Logic.Classes
 
         }
 
-        public OperationResult CreateAsCaretaker(PatientSignup signupRequest)
+       
+
+        #endregion
+
+
+        #region -> Public Methods
+
+        public OperationResult CreateAsPatient(PatientSignup signupRequest, string idRelatedPatient, Guid processId)
+        {
+            OperationResult responseObject = new OperationResult();
+
+            try
+            {
+                PatientSignup signupProperties = signupRequest;
+
+                if (signupProperties != null)
+                {
+                    DoseRecord[] dosesArray = null;
+                    string[] dosesCreated = null;
+
+                    /*Este request se deja por fuera del metodo que crea toda la estructura de
+                     * Contacto porque es un proceso individual de crear una entidad de Dosis,
+                     * la cual puede eventualmente fallar o no crearse correctamente, ademas se necesita
+                     * ligar el resultado de esta operacion al request que crea el contacto en el crm
+                     */
+
+                    #region -> Dose Retrieve
+
+                    if (signupProperties.medication != null)
+                    {
+                        int dosesLength = signupProperties.medication.products.Length;
+                        dosesArray = new DoseRecord[dosesLength];
+                        dosesCreated = new string[dosesLength];
+
+                        for (int i = 0; i < dosesLength; i++)
+                        {
+                            string frequency = "";
+                            if (!String.IsNullOrEmpty(signupProperties.medication.products[i].other))
+                                frequency = signupProperties.medication.products[i].other;
+                            else
+                                frequency = signupProperties.medication.products[i].frequency;
+
+                            dosesArray[i] = new DoseRecord { Dose = frequency, IdProduct = signupProperties.medication.products[i].productid };
+                        }
+
+                        if (dosesArray != null)
+                        {
+                            if (dosesArray.Length > 0)
+                            {
+                                try
+                                {
+                                    int length = dosesArray.Length;
+
+                                    for (int i = 0; i < length; i++)
+                                    {
+                                        OperationResult result = doseEntity.Create(new DoseRecord
+                                        {
+                                            Dose = dosesArray[i].Dose,
+                                            IdProduct = dosesArray[i].IdProduct
+                                        },processId);
+
+                                        if (result.IsSuccessful)
+                                        {
+                                            dosesCreated[i] = (string)result.Data;
+                                        }
+                                    }
+
+                                    if (dosesCreated.Length != dosesArray.Length)
+                                    {
+                                        throw (new Exception("Ha ocurrido un error creando las dosis del paciente " + signupProperties.personalinfo.id + " en el CRM"));
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                                    throw ex;
+                                }
+                            }
+                        }
+                    }
+
+                    #endregion -> Dose Retrieve
+
+                    JObject newContact = this.GetCreateContactJsonStructure(signupProperties,processId);
+
+                    #region -> Patient Related
+
+                    if (!String.IsNullOrEmpty(idRelatedPatient))
+                    {
+                        JArray patientsInChargeArray = new JArray();
+                        patientsInChargeArray.Add(new JValue($"/{this.EntityPluralName}({idRelatedPatient})"));
+                        newContact.Add($"{ContactFields.ContactxContactRelationship}@odata.bind", patientsInChargeArray);
+                    }
+
+                    #endregion -> Patient Related
+
+                    #region -> Doses Related
+
+                    if (dosesArray != null && dosesCreated != null)
+                    {
+                        if (dosesCreated.Length == dosesArray.Length)
+                        {
+                            JArray dosesToSave = new JArray();
+                            int length = dosesCreated.Length;
+                            for (int i = 0; i < length; i++)
+                            {
+                                dosesToSave.Add(new JValue($"/{doseEntity.EntityPluralName}({dosesCreated[i]})"));
+                            }
+
+                            newContact.Add($"{ContactFields.ContactxDoseRelationship}@odata.bind", dosesToSave);
+                        }
+                    }
+
+                    #endregion -> Doses Related
+
+                    responseObject = this.ContactCreateRequest(newContact, processId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                responseObject.Code = "";
+                responseObject.Message = ex.ToString();
+                responseObject.IsSuccessful = false;
+                responseObject.Data = null;
+            }
+
+            return responseObject;
+        }
+
+        public OperationResult CreateAsCaretaker(PatientSignup signupRequest,Guid processId)
         {
             OperationResult responseObject = new OperationResult();
 
@@ -883,7 +996,7 @@ namespace CrmAboxApi.Logic.Classes
                 JArray medicsArray = new JArray();
                 if (signupRequest != null)
                 {
-                    OperationResult responseFromPatientInChargeCreate = null;
+                    OperationResult responseFromPatientUnderCareCreate = null;
                     OperationResult responseFromOwnerCreate = null;
 
                     /*Crear primeramente el paciente a cargo, para así continuar con el encargado pues ya se tiene el ID del paciente creado en CRM
@@ -894,6 +1007,8 @@ namespace CrmAboxApi.Logic.Classes
                     PatientSignup signupPatientUnderCare = null;
                     signupPatientUnderCare = new PatientSignup
                     {
+                        patientid = signupPropertiesFromRequest.patientid,
+                        patientid_primary = null,
                         country = signupPropertiesFromRequest.country,
                         userType = "01",
                         medication = signupPropertiesFromRequest.medication,
@@ -933,9 +1048,9 @@ namespace CrmAboxApi.Logic.Classes
                         otherInterest = null,
                     };
 
-                    responseFromPatientInChargeCreate = this.CreateAsPatient(signupPatientUnderCare, null);
+                    responseFromPatientUnderCareCreate = this.CreateAsPatient(signupPatientUnderCare, null,processId);
 
-                    #endregion -> Crear paciente bajo cuido como contacto
+                    #endregion 
 
                     /*Se crea el paciente a cargo correctamente, ya existe en Dynamics y se procede a crear el dueño de la cuenta
                      *para poder relacionarlo.*/
@@ -943,14 +1058,14 @@ namespace CrmAboxApi.Logic.Classes
                     #region -> Crear Dueño de la cuenta como Contacto
 
                     PatientSignup signupPatientOwner = null;
-                    if (responseFromPatientInChargeCreate.IsSuccessful)
+                    if (responseFromPatientUnderCareCreate.IsSuccessful)
                     {
-                        string idUnderCarePatient = responseFromPatientInChargeCreate.Data.ToString();
+                        string idUnderCarePatient = responseFromPatientUnderCareCreate.Data.ToString();
                         signupPatientOwner = signupPropertiesFromRequest;
                         signupPatientOwner.medication = null;
                         signupPatientOwner.patientincharge = null;
 
-                        responseFromOwnerCreate = this.CreateAsPatient(signupPatientOwner, idUnderCarePatient);
+                        responseFromOwnerCreate = this.CreateAsPatient(signupPatientOwner, idUnderCarePatient,processId);
 
                         if (responseFromOwnerCreate.IsSuccessful)
                         {
@@ -961,9 +1076,12 @@ namespace CrmAboxApi.Logic.Classes
                         else
                         {
                             //TODO: Eliminar al contacto que se creo del paciente a cargo o quedara huerfano
+
+                            this.Delete(idUnderCarePatient,processId);
+
                             responseObject.IsSuccessful = false;
                             responseObject.Message = "Ocurrió un error al crear el dueño de la cuenta";
-                            responseObject.InternalError = responseFromPatientInChargeCreate.InternalError;
+                            responseObject.InternalError = responseFromPatientUnderCareCreate.InternalError;
                             responseObject.Code = "";
                         }
                     }
@@ -971,16 +1089,16 @@ namespace CrmAboxApi.Logic.Classes
                     {
                         responseObject.IsSuccessful = false;
                         responseObject.Message = "Ocurrió un error al crear el paciente a cargo";
-                        responseObject.InternalError = responseFromPatientInChargeCreate.InternalError;
+                        responseObject.InternalError = responseFromPatientUnderCareCreate.InternalError;
                         responseObject.Code = "";
                     }
 
-                    #endregion -> Crear Dueño de la cuenta como Contacto
+                    #endregion 
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 responseObject.IsSuccessful = false;
                 responseObject.Message = ex.Message;
                 responseObject.Code = "";
@@ -989,7 +1107,7 @@ namespace CrmAboxApi.Logic.Classes
             return responseObject;
         }
 
-        public OperationResult CreateAsTutor(PatientSignup signupRequest)
+        public OperationResult CreateAsTutor(PatientSignup signupRequest,Guid processId)
         {
             OperationResult responseObject = new OperationResult();
 
@@ -1012,6 +1130,7 @@ namespace CrmAboxApi.Logic.Classes
                     {
                         country = signupPropertiesFromRequest.country,
                         userType = "01",
+                        patientid = signupPropertiesFromRequest.patientid,
                         medication = signupPropertiesFromRequest.medication,
                         contactinfo = new PatientSignup.Contactinfo
                         {
@@ -1049,7 +1168,7 @@ namespace CrmAboxApi.Logic.Classes
                         otherInterest = null,
                     };
 
-                    responseFromPatientInChargeCreate = this.CreateAsPatient(signupPatientUnderCare, null);
+                    responseFromPatientInChargeCreate = this.CreateAsPatient(signupPatientUnderCare, null,processId);
 
                     #endregion -> Crear paciente bajo cuido como contacto
 
@@ -1066,7 +1185,7 @@ namespace CrmAboxApi.Logic.Classes
                         signupPatientOwner.medication = null;
                         signupPatientOwner.patientincharge = null;
 
-                        responseFromOwnerCreate = this.CreateAsPatient(signupPatientOwner, idUnderCarePatient);
+                        responseFromOwnerCreate = this.CreateAsPatient(signupPatientOwner, idUnderCarePatient,processId);
 
                         if (responseFromOwnerCreate.IsSuccessful)
                         {
@@ -1077,6 +1196,7 @@ namespace CrmAboxApi.Logic.Classes
                         else
                         {
                             //TODO: Eliminar al contacto que se creo del paciente a cargo o quedara huerfano
+                            this.Delete(idUnderCarePatient, processId);
                             responseObject.IsSuccessful = false;
                             responseObject.Message = "Ocurrió un error al crear el dueño de la cuenta";
                             responseObject.InternalError = responseFromPatientInChargeCreate.InternalError;
@@ -1096,7 +1216,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 responseObject.IsSuccessful = false;
                 responseObject.Message = ex.Message;
                 responseObject.Code = "";
@@ -1105,7 +1225,7 @@ namespace CrmAboxApi.Logic.Classes
             return responseObject;
         }
 
-        public OperationResult UpdateAccount(UpdateAccountRequest updateAccountRequest)
+        public OperationResult UpdateAccount(UpdateAccountRequest updateAccountRequest,Guid processId)
         {
             OperationResult result = null;
             try
@@ -1128,7 +1248,7 @@ namespace CrmAboxApi.Logic.Classes
                         bool dosesDeleted = false;
                         if (!String.IsNullOrEmpty(updateAccountRequest.patientId))
                         {
-                            dosesResult = this.GetDosesRelated(contactId);
+                            dosesResult = this.GetDosesRelated(contactId, processId);
                             if (dosesResult.IsSuccessful)
                             {
                                 contactRelatedDoses = (DoseRecord[])dosesResult.Data;
@@ -1144,7 +1264,7 @@ namespace CrmAboxApi.Logic.Classes
                                         {
                                             //if (!matchingDoses.Contains(contactRelatedDoses[i].DoseId))
                                             //{
-                                            OperationResult deleteResult = doseEntity.Delete(contactRelatedDoses[i].DoseId);
+                                            OperationResult deleteResult = doseEntity.Delete(contactRelatedDoses[i].DoseId,processId);
                                             if (deleteResult.IsSuccessful)
                                             {
                                                 deletedCount++;
@@ -1167,7 +1287,7 @@ namespace CrmAboxApi.Logic.Classes
 
                     }
 
-                    var contactStructure = this.GetUpdateAccountRequestStructure(updateAccountRequest);
+                    var contactStructure = this.GetUpdateAccountRequestStructure(updateAccountRequest,processId);
 
 
                     if ((updateAccountRequest.medication != null) && updateAccountRequest.TipoUsuario == "01")
@@ -1221,7 +1341,7 @@ namespace CrmAboxApi.Logic.Classes
                                             //});
                                             //if (!matchingDoses.Contains(dosesArray[i].IdProduct))
                                             //{
-                                            OperationResult doseCreateResult = doseEntity.Create(dosesArray[i]);
+                                            OperationResult doseCreateResult = doseEntity.Create(dosesArray[i],processId);
 
                                             if (doseCreateResult.IsSuccessful)
                                             {
@@ -1244,7 +1364,7 @@ namespace CrmAboxApi.Logic.Classes
                                     }
                                     catch (Exception ex)
                                     {
-                                        Logger.Error(ex.ToString());
+                                        Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                                         throw ex;
                                     }
                                 }
@@ -1263,7 +1383,7 @@ namespace CrmAboxApi.Logic.Classes
 
                         /*TODO: validar posibilidad de identificar cuantos medicamentos del request hacen match con los
                          que tiene ya el contacto para evitar tener que hacer desasociaciones*/
-                        doctorsResult = this.GetDoctorsRelated(contactId);
+                        doctorsResult = this.GetDoctorsRelated(contactId,processId);
 
                         bool contactsDisassociated = false;
                         if (doctorsResult.IsSuccessful)
@@ -1292,7 +1412,7 @@ namespace CrmAboxApi.Logic.Classes
                                                 TargetIdKeyToUse = ContactFields.IdAboxPatient,
                                                 RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship
                                             };
-                                            var disassociateResult = entityDisassociation.Disassociate(connectionString);
+                                            var disassociateResult = entityDisassociation.Disassociate(connectionString,processId);
 
                                             //if (disassociateResult.IsSuccessful)
                                             //{
@@ -1353,7 +1473,7 @@ namespace CrmAboxApi.Logic.Classes
                                             RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship
                                         };
 
-                                        var associationResult = entityAssociation.Associate(connectionString);
+                                        var associationResult = entityAssociation.Associate(connectionString,processId);
 
                                         if (!associationResult.IsSuccessful)
                                         {
@@ -1377,7 +1497,7 @@ namespace CrmAboxApi.Logic.Classes
                     }
 
 
-                    result = this.ContactUpdateRequest(contactStructure, updateAccountRequest.patientId);
+                    result = this.ContactUpdateRequest(contactStructure, updateAccountRequest.patientId,processId);
                 }
                 else
                 {
@@ -1391,7 +1511,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 result.IsSuccessful = false;
                 result.Message = ex.ToString();
                 result.InternalError = null;
@@ -1400,7 +1520,7 @@ namespace CrmAboxApi.Logic.Classes
             }
         }
 
-        public OperationResult UpdatePatient(UpdatePatientRequest updatePatientRequest)
+        public OperationResult UpdatePatient(UpdatePatientRequest updatePatientRequest,Guid processId)
         {
             OperationResult result = null;
             try
@@ -1419,7 +1539,7 @@ namespace CrmAboxApi.Logic.Classes
                     bool dosesDeleted = false;
                     if (!String.IsNullOrEmpty(updatePatientRequest.patientid))
                     {
-                        dosesResult = this.GetDosesRelated(contactId);
+                        dosesResult = this.GetDosesRelated(contactId,processId);
                         if (dosesResult.IsSuccessful)
                         {
                             contactRelatedDoses = (DoseRecord[])dosesResult.Data;
@@ -1435,7 +1555,7 @@ namespace CrmAboxApi.Logic.Classes
                                     {
                                         //if (!matchingDoses.Contains(contactRelatedDoses[i].DoseId))
                                         //{
-                                        OperationResult deleteResult = doseEntity.Delete(contactRelatedDoses[i].DoseId);
+                                        OperationResult deleteResult = doseEntity.Delete(contactRelatedDoses[i].DoseId,processId);
                                         if (deleteResult.IsSuccessful)
                                         {
                                             deletedCount++;
@@ -1473,7 +1593,7 @@ namespace CrmAboxApi.Logic.Classes
 
                     #endregion 
 
-                    var contactStructure = this.GetUpdatePatientJsonStructure(updatePatientRequest);
+                    var contactStructure = this.GetUpdatePatientJsonStructure(updatePatientRequest,processId);
 
                     /*Este request se deja por fuera del metodo que crea toda la estructura de
                 * Contacto porque es un proceso individual de crear una entidad de Dosis,
@@ -1524,7 +1644,7 @@ namespace CrmAboxApi.Logic.Classes
                                         //});
                                         //if (!matchingDoses.Contains(dosesArray[i].IdProduct))
                                         //{
-                                        OperationResult doseCreateResult = doseEntity.Create(dosesArray[i]);
+                                        OperationResult doseCreateResult = doseEntity.Create(dosesArray[i],processId);
 
                                         if (doseCreateResult.IsSuccessful)
                                         {
@@ -1547,7 +1667,7 @@ namespace CrmAboxApi.Logic.Classes
                                 }
                                 catch (Exception ex)
                                 {
-                                    Logger.Error(ex.ToString());
+                                    Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                                     throw ex;
                                 }
                             }
@@ -1564,7 +1684,7 @@ namespace CrmAboxApi.Logic.Classes
 
                     /*TODO: validar posibilidad de identificar cuantos medicamentos del request hacen match con los
                      que tiene ya el contacto para evitar tener que hacer desasociaciones*/
-                    doctorsResult = this.GetDoctorsRelated(contactId);
+                    doctorsResult = this.GetDoctorsRelated(contactId,processId);
 
                     bool contactsDisassociated = false;
                     if (doctorsResult.IsSuccessful)
@@ -1593,7 +1713,7 @@ namespace CrmAboxApi.Logic.Classes
                                             TargetIdKeyToUse = ContactFields.IdAboxPatient,
                                             RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship
                                         };
-                                        var disassociateResult = entityDisassociation.Disassociate(connectionString);
+                                        var disassociateResult = entityDisassociation.Disassociate(connectionString,processId);
 
                                         //if (disassociateResult.IsSuccessful)
                                         //{
@@ -1654,7 +1774,7 @@ namespace CrmAboxApi.Logic.Classes
                                         RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship
                                     };
 
-                                    var associationResult = entityAssociation.Associate(connectionString);
+                                    var associationResult = entityAssociation.Associate(connectionString,processId);
 
                                     if (!associationResult.IsSuccessful)
                                     {
@@ -1674,7 +1794,7 @@ namespace CrmAboxApi.Logic.Classes
 
                     #endregion Medics Associate
 
-                    result = this.ContactUpdateRequest(contactStructure, updatePatientRequest.patientid);
+                    result = this.ContactUpdateRequest(contactStructure, updatePatientRequest.patientid,processId);
                 }
                 else
                 {
@@ -1688,7 +1808,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 result.IsSuccessful = false;
                 result.Message = ex.ToString();
                 result.InternalError = null;
@@ -1697,16 +1817,16 @@ namespace CrmAboxApi.Logic.Classes
             }
         }
 
-        public OperationResult GetDosesRelated(int contactId)
+        public OperationResult GetDosesRelated(int contactId,Guid processId)
         {
             OperationResult result = null;
             try
             {
-                result = this.ContactRelatedDosesRequest(contactId);
+                result = this.ContactRelatedDosesRequest(contactId,processId);
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 result = new OperationResult
                 {
                     IsSuccessful = false,
@@ -1719,16 +1839,16 @@ namespace CrmAboxApi.Logic.Classes
             return result;
         }
 
-        public OperationResult GetDoctorsRelated(int contactId)
+        public OperationResult GetDoctorsRelated(int contactId,Guid processId)
         {
             OperationResult result = null;
             try
             {
-                result = this.ContactRelatedDoctorsRequest(contactId);
+                result = this.ContactRelatedDoctorsRequest(contactId,processId);
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 result = new OperationResult
                 {
                     IsSuccessful = false,
@@ -1740,5 +1860,29 @@ namespace CrmAboxApi.Logic.Classes
             }
             return result;
         }
+
+
+        public OperationResult Delete(string contactId, Guid processId)
+        {
+            OperationResult responseObject = new OperationResult();
+
+            try
+            {
+                responseObject = this.ContactDeleteRequest(contactId, processId);
+                return responseObject;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                responseObject.Code = "";
+                responseObject.Message = ex.ToString();
+                responseObject.IsSuccessful = false;
+                responseObject.Data = null;
+            }
+
+            return responseObject;
+        }
+
+        #endregion
     }
 }

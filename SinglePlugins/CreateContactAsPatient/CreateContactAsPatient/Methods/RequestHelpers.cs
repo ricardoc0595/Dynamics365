@@ -5,6 +5,7 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CreateContactAsPatient.Methods
 {
@@ -37,7 +38,7 @@ namespace CreateContactAsPatient.Methods
         /// <param name="contact"></param>
         /// <param name="service"></param>
         /// <returns></returns>
-        public UpdatePatientRequest.Request GetPatientUpdateStructure(Entity contact, IOrganizationService service)
+        public UpdatePatientRequest.Request GetPatientUpdateStructure(Entity contact, IOrganizationService service,ITracingService trace)
         {
             UpdatePatientRequest.Request requestStructure = new UpdatePatientRequest.Request();
 
@@ -248,6 +249,8 @@ namespace CreateContactAsPatient.Methods
             }
             catch (Exception ex)
             {
+                trace.Trace($"MethodName: {new StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: "+ex.ToString());
+
                 requestStructure = null;
                 return requestStructure;
             }
@@ -255,7 +258,7 @@ namespace CreateContactAsPatient.Methods
             return requestStructure;
         }
 
-        public UpdateAccountRequest.Request GetAccountUpdateStructure(Entity contact, IOrganizationService service)
+        public UpdateAccountRequest.Request GetAccountUpdateStructure(Entity contact, IOrganizationService service,ITracingService trace)
         {
             UpdateAccountRequest.Request requestStructure = new UpdateAccountRequest.Request();
 
@@ -272,7 +275,7 @@ namespace CreateContactAsPatient.Methods
 
                     if (contact.Attributes.Contains(ContactFields.Lastname))
                         requestStructure.Apellido1 = contact.GetAttributeValue<string>(ContactFields.Lastname);
-
+                    
                     if (contact.Attributes.Contains(ContactFields.SecondLastname))
                         requestStructure.Apellido2 = contact.GetAttributeValue<string>(ContactFields.SecondLastname);
 
@@ -300,10 +303,10 @@ namespace CreateContactAsPatient.Methods
                         provinceReference = (EntityReference)contact.Attributes[ContactFields.Province];
                         if (provinceReference != null)
                         {
-                            var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(provinceEntity.Fields.IdProvince));
-                            if (provinceRetrieved.Attributes.Contains(provinceEntity.Fields.IdProvince))
+                            var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(ProvinceFields.IdProvince));
+                            if (provinceRetrieved.Attributes.Contains(ProvinceFields.IdProvince))
                             {
-                                requestStructure.Provincia = provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince);
+                                requestStructure.Provincia = provinceRetrieved.GetAttributeValue<string>(ProvinceFields.IdProvince);
                             }
                         }
                     }
@@ -437,7 +440,9 @@ namespace CreateContactAsPatient.Methods
 
                                                 if (doseChild.Attributes.Contains(DoseFields.Dose))
                                                 {
-                                                    frequency = doseChild.GetAttributeValue<string>(DoseFields.Dose);
+                                                    int value = (doseChild.GetAttributeValue<OptionSetValue>(DoseFields.Dose)).Value;
+                                                    frequency = sharedMethods.GetDoseFrequencyValue(value);
+                                                  
                                                 }
 
                                                 requestStructure.medication.products[i] = new UpdateAccountRequest.Request.Product
@@ -524,6 +529,7 @@ namespace CreateContactAsPatient.Methods
             }
             catch (Exception ex)
             {
+                trace.Trace($"MethodName: {new StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
                 requestStructure = null;
                 return requestStructure;
             }
@@ -531,7 +537,7 @@ namespace CreateContactAsPatient.Methods
             return requestStructure;
         }
 
-        public QuickSignupRequest.Request GetQuickSignupRequestObject(Entity contact, IOrganizationService service)
+        public QuickSignupRequest.Request GetQuickSignupRequestObject(Entity contact, IOrganizationService service,ITracingService trace)
         {
             var request = new QuickSignupRequest.Request();
             try
@@ -647,14 +653,14 @@ namespace CreateContactAsPatient.Methods
                     provinceReference = (EntityReference)contact.Attributes[ContactFields.Province];
                     if (provinceReference != null)
                     {
-                        var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(provinceEntity.Fields.IdProvince));
-                        if (provinceRetrieved.Attributes.Contains(provinceEntity.Fields.IdProvince))
+                        var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(ProvinceFields.IdProvince));
+                        if (provinceRetrieved.Attributes.Contains(ProvinceFields.IdProvince))
                         {
-                            bool parsed = Int32.TryParse(provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince), out int aux);
+                            bool parsed = Int32.TryParse(provinceRetrieved.GetAttributeValue<string>(ProvinceFields.IdProvince), out int aux);
 
                             if (parsed)
                             {
-                                int parsedValue = Int32.Parse(provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince));
+                                int parsedValue = Int32.Parse(provinceRetrieved.GetAttributeValue<string>(ProvinceFields.IdProvince));
                                 request.contactinfo.province = parsedValue;
                             }
                         }
@@ -728,11 +734,12 @@ namespace CreateContactAsPatient.Methods
             }
             catch (Exception ex)
             {
+                trace.Trace($"MethodName: {new StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
                 throw ex;
             }
         }
 
-        public PatientSignupRequest.Request GetSignupPatientRequestObject(Entity contact, IOrganizationService service)
+        public PatientSignupRequest.Request GetSignupPatientRequestObject(Entity contact, IOrganizationService service,ITracingService trace)
         {
             var request = new PatientSignupRequest.Request();
             try
@@ -856,10 +863,10 @@ namespace CreateContactAsPatient.Methods
                     provinceReference = (EntityReference)contact.Attributes[ContactFields.Province];
                     if (provinceReference != null)
                     {
-                        var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(provinceEntity.Fields.IdProvince));
-                        if (provinceRetrieved.Attributes.Contains(provinceEntity.Fields.IdProvince))
+                        var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(ProvinceFields.IdProvince));
+                        if (provinceRetrieved.Attributes.Contains(ProvinceFields.IdProvince))
                         {
-                            string value = provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince);
+                            string value = provinceRetrieved.GetAttributeValue<string>(ProvinceFields.IdProvince);
 
                             if (!String.IsNullOrEmpty(value))
                             {
@@ -964,6 +971,7 @@ namespace CreateContactAsPatient.Methods
             }
             catch (Exception ex)
             {
+                trace.Trace($"MethodName: {new StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
                 throw ex;
             }
         }

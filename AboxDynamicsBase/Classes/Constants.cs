@@ -20,7 +20,7 @@
         public const string GeneralAboxServicesErrorMessage = "Ocurrió un error consultando los servicios de Abox Plan \n";
         public const string ErrorMessageCodeReturned = "Error en transacción, Código de respuesta servicio:";
         public const string ErrorMessageTransactionCodeReturned = "Ocurrió un error al guardar la información en Abox Plan:\n";
-
+        public const string GeneralPluginErrorMessage = "Ocurrió un error en la ejecución de un Plugin interno, por favor intenta nuevamente o comunícate con soporte.";
         //public enum S
         //{
         //    DA,

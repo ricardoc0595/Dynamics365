@@ -60,6 +60,7 @@ namespace AboxCrmPlugins.Methods
             }
             catch (Exception ex)
             {
+                trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
                 wrResponse.Data = null;
                 wrResponse.IsSuccessful = false;
                 wrResponse.ErrorMessage = ex.ToString();

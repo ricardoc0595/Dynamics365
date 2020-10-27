@@ -17,13 +17,13 @@ namespace CreateContactAsPatient
 
         public void Execute(IServiceProvider serviceProvider)
         {
+                ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
             try
             {
                 // Obtain the execution context from the service provider.
                 IPluginExecutionContext context = (IPluginExecutionContext)serviceProvider.GetService(typeof(IPluginExecutionContext));
                 IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
                 IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
-                ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
                 // The InputParameters collection contains all the data passed in the message request.
 
                 /*Esta validación previene la ejecución del Plugin de cualquier
@@ -47,7 +47,7 @@ namespace CreateContactAsPatient
                         sharedMethods = new MShared();
                         RequestHelpers reqHelpers = new RequestHelpers();
                         trace.Trace("Obtendo objeto para enviar a servicio Abox...");
-                        PatientSignupRequest.Request request = reqHelpers.GetSignupPatientRequestObject(contact, service);
+                        PatientSignupRequest.Request request = reqHelpers.GetSignupPatientRequestObject(contact, service,trace);
 
                         DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.Request));
                         MemoryStream memoryStream = new MemoryStream();
@@ -97,7 +97,8 @@ namespace CreateContactAsPatient
             }
             catch (Exception ex)
             {
-                throw new InvalidPluginExecutionException(ex.Message);
+                trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
                 //TODO: Crear Log
             }
         }

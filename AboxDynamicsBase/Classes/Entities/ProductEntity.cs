@@ -2,19 +2,19 @@
 {
     public class ProductEntity : EntityBase
     {
-        //public ProductFields Fields { get; set; }
-        public ProductSchemas Schemas { get; set; }
+        
+        
 
         public ProductEntity()
         {
             //this.Fields = new ProductFields();
-            this.Schemas = new ProductSchemas();
+            
             this.EntitySingularName = "product";
             this.EntityPluralName = "products";
         }
     }
 
-    public class ProductSchemas
+    public static class ProductSchemas
     {
     }
 

@@ -132,14 +132,14 @@ namespace CreateContactAsPatient
                     provinceReference = (EntityReference)contact.Attributes[ContactFields.Province];
                     if (provinceReference != null)
                     {
-                        var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(provinceEntity.Fields.IdProvince));
-                        if (provinceRetrieved.Attributes.Contains(provinceEntity.Fields.IdProvince))
+                        var provinceRetrieved = service.Retrieve(provinceEntity.EntitySingularName, provinceReference.Id, new ColumnSet(ProvinceFields.IdProvince));
+                        if (provinceRetrieved.Attributes.Contains(ProvinceFields.IdProvince))
                         {
-                            bool parsed = Int32.TryParse(provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince), out int aux);
+                            bool parsed = Int32.TryParse(provinceRetrieved.GetAttributeValue<string>(ProvinceFields.IdProvince), out int aux);
 
                             if (parsed)
                             {
-                                int parsedValue = Int32.Parse(provinceRetrieved.GetAttributeValue<string>(provinceEntity.Fields.IdProvince));
+                                int parsedValue = Int32.Parse(provinceRetrieved.GetAttributeValue<string>(ProvinceFields.IdProvince));
                                 request.contactinfo.province = parsedValue;
                             }
                         }
@@ -219,6 +219,7 @@ namespace CreateContactAsPatient
 
         public void Execute(IServiceProvider serviceProvider)
         {
+            ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
             try
             {
                 // Obtain the execution context from the service provider.
@@ -226,7 +227,6 @@ namespace CreateContactAsPatient
                 IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
                 IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
                 // The InputParameters collection contains all the data passed in the message request.
-                ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
                 /*Esta validación previene la ejecución del Plugin de cualquier
                 * transacción realizada a través del Web API desde Abox*/
                 if (context.InitiatingUserId == new Guid("7dbf49f3-8be8-ea11-a817-002248029f77"))
@@ -292,7 +292,9 @@ namespace CreateContactAsPatient
             }
             catch (Exception ex)
             {
-                throw new InvalidPluginExecutionException(ex.Message);
+                trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
+                
                 //TODO: Crear Log
             }
         }

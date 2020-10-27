@@ -3,6 +3,7 @@
     public class PatientSignup
     {
         public int? patientid { get; set; }
+        public int? patientid_primary { get; set; }
         public string country { get; set; }
         public string userType { get; set; }
         public Personalinfo personalinfo { get; set; }

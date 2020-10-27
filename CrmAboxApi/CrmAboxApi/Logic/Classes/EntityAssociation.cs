@@ -3,7 +3,9 @@ using Logic.CrmAboxApi.Classes.Helper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Diagnostics;
 using System.Net.Http;
+using System.Reflection;
 
 namespace CrmAboxApi.Logic.Classes
 {
@@ -19,7 +21,7 @@ namespace CrmAboxApi.Logic.Classes
 
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public OperationResult Disassociate(string connectionString)
+        public OperationResult Disassociate(string connectionString,Guid processId)
         {
             OperationResult operationResult = new OperationResult();
             try
@@ -33,7 +35,7 @@ namespace CrmAboxApi.Logic.Classes
                         client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                         //client.DefaultRequestHeaders.Add("Prefer", "return=representation");
 
-                        Logger.Debug($"Disassociation of Entities | ");
+                       
                         //HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
                         string targetQuery = "";
                         string relatedQuery = "";
@@ -48,7 +50,13 @@ namespace CrmAboxApi.Logic.Classes
                         else
                             relatedQuery = $"{this.RelationshipDefinitionName}({this.RelatedEntityIdKeyToUse}='{this.RelatedEntityId}')";
 
-                        var response = client.DeleteAsync($"{targetQuery}/{relatedQuery}/$ref").Result;
+
+                        string url = $"{targetQuery}/{relatedQuery}/$ref";
+
+                        MethodBase m = MethodBase.GetCurrentMethod();
+                        Logger.Debug("ProcessID: {processId} Action: {actionName} ", processId, m.Name);
+
+                        var response = client.DeleteAsync(url).Result;
                         if (response.IsSuccessStatusCode)
                         {
                             //Get the response content and parse it.
@@ -67,7 +75,8 @@ namespace CrmAboxApi.Logic.Classes
                             JObject result = JObject.Parse(body.ToString());
                             CrmWebAPIError err = result.ToObject<CrmWebAPIError>();
 
-                            Logger.Error("", response.RequestMessage);
+                            if (err != null)
+                                Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name, url, err.error.code, err.error.message, response.ReasonPhrase);
                             operationResult.Code = "Ocurrió un error desasociando las entidades";
                             operationResult.Message = response.ReasonPhrase;
                             operationResult.IsSuccessful = false;
@@ -78,7 +87,7 @@ namespace CrmAboxApi.Logic.Classes
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex.ToString());
+                    Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                     operationResult.Code = "";
                     operationResult.Message = ex.ToString();
                     operationResult.IsSuccessful = false;
@@ -89,7 +98,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;
@@ -98,7 +107,7 @@ namespace CrmAboxApi.Logic.Classes
             }
         }
 
-        public OperationResult Associate(string connectionString)
+        public OperationResult Associate(string connectionString,Guid processId)
         {
             OperationResult operationResult = new OperationResult();
             try
@@ -107,25 +116,25 @@ namespace CrmAboxApi.Logic.Classes
                 {
                     using (HttpClient client = ConnectionHelper.GetHttpClient(connectionString, ConnectionHelper.clientId, ConnectionHelper.redirectUrl))
                     {
-                        string url = ConnectionHelper.GetParameterValueFromConnectionString(connectionString, "Url");
-                        url += "/api/data/v9.1/";
+                        string uri = ConnectionHelper.GetParameterValueFromConnectionString(connectionString, "Url");
+                        uri += "/api/data/v9.1/";
                         client.DefaultRequestHeaders.Add("Accept", "application/json");
                         client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                         client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                         //client.DefaultRequestHeaders.Add("Prefer", "return=representation");
 
-                        Logger.Debug($"Association of Entities | ");
+                      
 
                         JObject jsonObject = new JObject();
                         if (String.IsNullOrEmpty(this.TargetIdKeyToUse))
                         {
                             //si no viene un Id key se esta usando el ID de la entidad como tal y no un Key alternativo (los de Abox por ejemplo)
-                            jsonObject.Add($"@odata.id", $"{url}{this.RelatedEntityName}({this.RelatedEntityId})");
+                            jsonObject.Add($"@odata.id", $"{uri}{this.RelatedEntityName}({this.RelatedEntityId})");
                         }
                         else
                         {
                             //Se usa el Key alternativo (los de Abox por ejemplo)
-                            jsonObject.Add($"@odata.id", $"{url}{this.RelatedEntityName}({this.RelatedEntityIdKeyToUse}='{this.RelatedEntityId}')");
+                            jsonObject.Add($"@odata.id", $"{uri}{this.RelatedEntityName}({this.RelatedEntityIdKeyToUse}='{this.RelatedEntityId}')");
                         }
 
                         string targetQuery = "";
@@ -136,7 +145,12 @@ namespace CrmAboxApi.Logic.Classes
                             targetQuery = $"{this.TargetEntityName}({this.TargetIdKeyToUse}={this.TargetEntityId})";
 
                         HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), System.Text.Encoding.UTF8, "application/json");
-                        var response = client.PostAsync($"{targetQuery}/{this.RelationshipDefinitionName}/$ref", c).Result;
+
+                        MethodBase m = MethodBase.GetCurrentMethod();
+                        string url = $"{targetQuery}/{this.RelationshipDefinitionName}/$ref";
+                        Logger.Debug("ProcessID: {processId} Action: {actionName} Data:{requestData}", processId, m.Name, jsonObject.ToString(Formatting.None));
+
+                        var response = client.PostAsync(url, c).Result;
 
                         if (response.IsSuccessStatusCode)
                         {
@@ -156,7 +170,8 @@ namespace CrmAboxApi.Logic.Classes
                             JObject result = JObject.Parse(body.ToString());
                             CrmWebAPIError err = result.ToObject<CrmWebAPIError>();
 
-                            Logger.Error("", response.RequestMessage);
+                            if (err != null)
+                                Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name, url, err.error.code, err.error.message, response.ReasonPhrase);
                             operationResult.Code = "Ocurrió un error asociando las entidades";
                             operationResult.Message = response.ReasonPhrase;
                             operationResult.IsSuccessful = false;
@@ -167,7 +182,7 @@ namespace CrmAboxApi.Logic.Classes
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex.ToString());
+                    Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                     operationResult.Code = "";
                     operationResult.Message = ex.ToString();
                     operationResult.IsSuccessful = false;
@@ -178,7 +193,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;

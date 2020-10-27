@@ -2,38 +2,28 @@
 {
     public class ContactEntity : EntityBase
     {
-        //public ContactFields Fields { get; set; }
-        public ContactSchemas Schemas { get; set; }
+       
 
         public ContactEntity()
         {
-            //this.Fields = new ContactFields();
-            this.Schemas = new ContactSchemas();
+            
+           
             this.EntityPluralName = "contacts";
             this.EntitySingularName = "contact";
         }
     }
 
-    public class ContactSchemas
+    public static class ContactSchemas
     {
-        public ContactSchemas()
-        {
-            UserType = "new_UserType";
-            ContactxDoseRelationship = "";
-            Country = "new_CountryId";
-            Province = "new_CityId";
-            Canton = "new_Canton";
-            District = "new_Distrit";
-        }
-
-        //TODO: Crear un Objeto que lleve los valores de FIelds y de Schemas, para centralizarlo de mejor forma
-        public string UserType { get; set; }
-
-        public string ContactxDoseRelationship { get; set; }
-        public string Country { get; set; }
-        public string Province { get; set; }
-        public string Canton { get; set; }
-        public string District { get; set; }
+       
+            public const string UserType = "new_UserType";
+            public const string ContactxDoseRelationship = "";
+            public const string Country = "new_CountryId";
+            public const string Province = "new_CityId";
+            public const string Canton = "new_Canton";
+            public const string District = "new_Distrit";
+        
+      
     }
 
     public static class ContactFields

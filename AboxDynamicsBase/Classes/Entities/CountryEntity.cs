@@ -2,13 +2,13 @@
 {
     public class CountryEntity : EntityBase
     {
-        //public CountryFields Fields { get; set; }
-        public CountrySchemas Schemas { get; set; }
+        
+        
 
         public CountryEntity()
         {
-            //this.Fields = new CountryFields();
-            this.Schemas = new CountrySchemas();
+            
+            
             this.EntityPluralName = "new_countries";
             this.EntitySingularName = "new_country";
         }
@@ -21,10 +21,8 @@
         public const string Name = "new_name";
     }
 
-    public class CountrySchemas
+    public static class CountrySchemas
     {
-        public CountrySchemas()
-        {
-        }
+       
     }
 }

@@ -8,7 +8,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Configuration;
+using System.Diagnostics;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 
 namespace CrmAboxApi.Logic.Classes
@@ -25,7 +27,7 @@ namespace CrmAboxApi.Logic.Classes
             connectionString = ConfigurationManager.AppSettings["ConnectionString"].ToString();
         }
 
-        private JObject GetCreateDoseJsonStructure(DoseRecord doseRecord)
+        private JObject GetCreateDoseJsonStructure(DoseRecord doseRecord,Guid processId)
         {
             OperationResult result = new OperationResult();
             JObject jObject = new JObject();
@@ -34,12 +36,12 @@ namespace CrmAboxApi.Logic.Classes
             {
                 if (!String.IsNullOrEmpty(doseRecord.IdProduct))
                 {
-                    jObject.Add($"{this.Schemas.DosexProduct}@odata.bind", new JValue($"/{productEntity.EntityPluralName}({ProductFields.ProductNumber}='{doseRecord.IdProduct}')"));
+                    jObject.Add($"{DoseSchemas.DosexProduct}@odata.bind", new JValue($"/{productEntity.EntityPluralName}({ProductFields.ProductNumber}='{doseRecord.IdProduct}')"));
                 }
 
                 if (!String.IsNullOrEmpty(doseRecord.ContactBinding))
                 {
-                    jObject.Add($"{this.Schemas.ContactxDose}@odata.bind", new JValue($"/{doseRecord.ContactBinding}"));
+                    jObject.Add($"{DoseSchemas.ContactxDose}@odata.bind", new JValue($"/{doseRecord.ContactBinding}"));
                 }
 
                 if (!(String.IsNullOrEmpty(doseRecord.Dose)))
@@ -51,13 +53,13 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 jObject = null;
                 return jObject;
             }
         }
 
-        private OperationResult DoseCreateRequest(JObject jsonObject)
+        private OperationResult DoseCreateRequest(JObject jsonObject,Guid processId)
         {
             OperationResult operationResult = new OperationResult();
             try
@@ -72,9 +74,11 @@ namespace CrmAboxApi.Logic.Classes
                             client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                             client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                             client.DefaultRequestHeaders.Add("Prefer", "return=representation");
-
+                            MethodBase m = MethodBase.GetCurrentMethod();
+                            string url = $"{this.EntityPluralName}?$select={DoseFields.EntityId}";
                             HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
-                            var response = client.PostAsync($"{this.EntityPluralName}?$select={DoseFields.EntityId}", c).Result;
+                            Logger.Debug("ProcessID: {processId} Url:{url} Action: {actionName} Data:{requestData}", processId, url, m.Name, jsonObject.ToString(Formatting.None));
+                            var response = client.PostAsync(url, c).Result;
                             if (response.IsSuccessStatusCode)
                             {
                                 //Get the response content and parse it.
@@ -93,7 +97,8 @@ namespace CrmAboxApi.Logic.Classes
                                 JObject userId = JObject.Parse(body.ToString());
                                 CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
 
-                                Logger.Error("", response.RequestMessage);
+                                if (err != null)
+                                    Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name, url, err.error.code, err.error.message, response.ReasonPhrase);
                                 operationResult.Code = "Error al crear la relación Producto-Dosis en el CRM";
                                 operationResult.Message = response.ReasonPhrase;
                                 operationResult.IsSuccessful = false;
@@ -104,7 +109,7 @@ namespace CrmAboxApi.Logic.Classes
                     }
                     catch (Exception ex)
                     {
-                        Logger.Error(ex.ToString());
+                        Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                         operationResult.Code = "";
                         operationResult.Message = ex.ToString();
                         operationResult.IsSuccessful = false;
@@ -116,7 +121,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;
@@ -125,7 +130,7 @@ namespace CrmAboxApi.Logic.Classes
             }
         }
 
-        private OperationResult DoseDeleteRequest(string doseId)
+        private OperationResult DoseDeleteRequest(string doseId,Guid processId)
         {
             OperationResult operationResult = new OperationResult();
             try
@@ -139,10 +144,12 @@ namespace CrmAboxApi.Logic.Classes
                             client.DefaultRequestHeaders.Add("Accept", "application/json");
                             client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                             client.DefaultRequestHeaders.Add("OData-Version", "4.0");
+                            MethodBase m = MethodBase.GetCurrentMethod();
                             //client.DefaultRequestHeaders.Add("Prefer", "return=representation");
-
+                            string url = $"{this.EntityPluralName}({doseId})";
+                            Logger.Debug("ProcessID: {processId} Url:{url} Action: {actionName} ", processId, url, m.Name);
                             //HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
-                            var response = client.DeleteAsync($"{this.EntityPluralName}({doseId})").Result;
+                            var response = client.DeleteAsync(url).Result;
                             if (response.IsSuccessStatusCode)
                             {
                                 //Get the response content and parse it.
@@ -161,7 +168,8 @@ namespace CrmAboxApi.Logic.Classes
                                 JObject userId = JObject.Parse(body.ToString());
                                 CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
 
-                                Logger.Error("", response.RequestMessage);
+                                if (err != null)
+                                    Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name, url, err.error.code, err.error.message, response.ReasonPhrase);
                                 operationResult.Code = "Error al eliminar la dosis del CRM";
                                 operationResult.Message = response.ReasonPhrase;
                                 operationResult.IsSuccessful = false;
@@ -172,7 +180,7 @@ namespace CrmAboxApi.Logic.Classes
                     }
                     catch (Exception ex)
                     {
-                        Logger.Error(ex.ToString());
+                        Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                         operationResult.Code = "";
                         operationResult.Message = ex.ToString();
                         operationResult.IsSuccessful = false;
@@ -184,7 +192,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;
@@ -193,20 +201,20 @@ namespace CrmAboxApi.Logic.Classes
             }
         }
 
-        public OperationResult Create(DoseRecord doseRecord)
+        public OperationResult Create(DoseRecord doseRecord,Guid processId)
         {
             OperationResult responseObject = new OperationResult();
 
             try
             {
-                var newDose = this.GetCreateDoseJsonStructure(doseRecord);
+                var newDose = this.GetCreateDoseJsonStructure(doseRecord,processId);
 
-                responseObject = this.DoseCreateRequest(newDose);
+                responseObject = this.DoseCreateRequest(newDose,processId);
                 return responseObject;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 responseObject.Code = "";
                 responseObject.Message = ex.ToString();
                 responseObject.IsSuccessful = false;
@@ -216,18 +224,18 @@ namespace CrmAboxApi.Logic.Classes
             return responseObject;
         }
 
-        public OperationResult Delete(string doseId)
+        public OperationResult Delete(string doseId,Guid processId)
         {
             OperationResult responseObject = new OperationResult();
 
             try
             {
-                responseObject = this.DoseDeleteRequest(doseId);
+                responseObject = this.DoseDeleteRequest(doseId,processId);
                 return responseObject;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.ToString());
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 responseObject.Code = "";
                 responseObject.Message = ex.ToString();
                 responseObject.IsSuccessful = false;

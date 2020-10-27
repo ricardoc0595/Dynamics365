@@ -12,7 +12,7 @@ namespace CrmAboxApi.Logic.Methods
         /// <returns>Product ID from Abox Plan Database</returns>
         public string getProductEntityID(string productId)
         {
-            //TODO: As a performance best practice, you must always use the $select system query option to limit the properties returned while retrieving data.
+            
             return "";
         }
 

@@ -111,7 +111,7 @@ namespace CreateContactAsPatient
                         {
                             RequestHelpers helperMethods = new RequestHelpers();
 
-                            updatePatientRequest = helperMethods.GetPatientUpdateStructure(contact, service);
+                            updatePatientRequest = helperMethods.GetPatientUpdateStructure(contact, service,trace);
                         }
 
                         #endregion -> Related Contact
@@ -141,7 +141,7 @@ namespace CreateContactAsPatient
 
                                             if (doseInput.Attributes.Contains(DoseFields.Dose))
                                             {
-                                                //frequency = doseInput.GetAttributeValue<string>(DoseFields.Dose);
+                                                
                                                 int value = (doseInput.GetAttributeValue<OptionSetValue>(DoseFields.Dose)).Value;
                                                 frequency = sharedMethods.GetDoseFrequencyValue(value);
                                             }
@@ -340,8 +340,8 @@ namespace CreateContactAsPatient
             }
             catch (Exception ex)
             {
-                trace.Trace(ex.ToString());
-                throw new InvalidPluginExecutionException(ex.Message);
+                trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
                 //TODO: Crear Log
             }
         }

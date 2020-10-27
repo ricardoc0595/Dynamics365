@@ -2,21 +2,19 @@
 {
     public class DoctorEntity : EntityBase
     {
-        //public DoctorFields Fields { get; set; }
-        public DoctorSchemas Schemas { get; set; }
+        
+        
 
         public DoctorEntity()
         {
-            //this.Fields = new DoctorFields();
-            this.Schemas = new DoctorSchemas();
             this.EntityPluralName = "new_doctors";
             this.EntitySingularName = "new_doctor";
         }
     }
 
-    public class DoctorSchemas
+    public static class DoctorSchemas
     {
-        //TODO: Crear un Objeto que lleve los valores de FIelds y de Schemas, para centralizarlo de mejor forma
+        
     }
 
     public static class DoctorFields

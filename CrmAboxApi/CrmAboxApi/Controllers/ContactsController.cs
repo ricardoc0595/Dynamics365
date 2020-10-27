@@ -1,6 +1,7 @@
 ﻿using CrmAboxApi.Logic.Classes;
 using CrmAboxApi.Logic.Classes.Deserializing;
 using Logic.CrmAboxApi.Classes.Helper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -23,7 +24,7 @@ namespace CrmAboxApi.Controllers
         {
             EContact doctorProcess = new EContact();
 
-            var responseAllDoctors = doctorProcess.GetDosesRelated(id);
+            //var responseAllDoctors = doctorProcess.GetDosesRelated(id,processId);
             return null;
             //if (responseAllDoctors.IsSuccessful)
             //{
@@ -96,6 +97,8 @@ namespace CrmAboxApi.Controllers
 
         public IHttpActionResult Post([FromBody] PatientSignup signupRequest)
         {
+            Guid processId = Guid.NewGuid();
+            Logger.Debug("ProcessID: {processId} Request hacia {requestUrl} con el JSON:**START** {jsonObject} **END**", processId, Request.RequestUri, JsonConvert.SerializeObject(signupRequest));
             EContact contactProcedures = new EContact();
             OperationResult response = null;
             try
@@ -107,15 +110,15 @@ namespace CrmAboxApi.Controllers
                         switch (signupRequest.userType.ToLower())
                         {
                             case "01":
-                                response = contactProcedures.CreateAsPatient(signupRequest, null);
+                                response = contactProcedures.CreateAsPatient(signupRequest, null,processId);
                                 break;
 
                             case "02":
-                                response = contactProcedures.CreateAsCaretaker(signupRequest);
+                                response = contactProcedures.CreateAsCaretaker(signupRequest,processId);
                                 break;
 
                             case "03":
-                                response = contactProcedures.CreateAsTutor(signupRequest);
+                                response = contactProcedures.CreateAsTutor(signupRequest,processId);
                                 break;
                         }
                     }
@@ -142,7 +145,7 @@ namespace CrmAboxApi.Controllers
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                Logger.Error(ex, "ProcessID: {processId} Request hacia {requestUrl} con el JSON:**START** {jsonObject} **END**", processId, Request.RequestUri, JsonConvert.SerializeObject(signupRequest));
                 return Content(HttpStatusCode.InternalServerError, new OperationResult
                 {
                     IsSuccessful = false,
@@ -156,14 +159,16 @@ namespace CrmAboxApi.Controllers
         [HttpPut]
         public IHttpActionResult AccountUpdate([FromBody] UpdateAccountRequest updateRequest)
         {
+            Guid processId = Guid.NewGuid();
+            Logger.Debug("ProcessID: {processId} Request hacia {requestUrl} con el JSON:**START** {jsonObject} **END**", processId, Request.RequestUri, JsonConvert.SerializeObject(updateRequest));
             EContact contactProcedures = new EContact();
             OperationResult response = null;
             try
             {
                 if (updateRequest != null)
                 {
-                    OperationResult updateResult = contactProcedures.UpdateAccount(updateRequest);
-
+                    OperationResult updateResult = contactProcedures.UpdateAccount(updateRequest,processId);
+                    
                     if (updateResult.IsSuccessful)
                     {
                         return Ok(updateResult);
@@ -186,7 +191,7 @@ namespace CrmAboxApi.Controllers
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                Logger.Error(ex, "ProcessID: {processId} Request hacia {requestUrl} con el JSON:**START** {jsonObject} **END**", processId, Request.RequestUri, JsonConvert.SerializeObject(updateRequest));
                 return Content(HttpStatusCode.InternalServerError, new OperationResult
                 {
                     IsSuccessful = false,
@@ -200,13 +205,15 @@ namespace CrmAboxApi.Controllers
         [HttpPut]
         public IHttpActionResult UpdatePatient([FromBody] UpdatePatientRequest updateRequest)
         {
+            Guid processId = Guid.NewGuid();
+            Logger.Debug("ProcessID: {processId} Request hacia {requestUrl} con el JSON:**START** {jsonObject} **END**", processId, Request.RequestUri, JsonConvert.SerializeObject(updateRequest));
             EContact contactProcedures = new EContact();
             OperationResult response = null;
             try
             {
                 if (updateRequest != null)
                 {
-                    OperationResult updateResult = contactProcedures.UpdatePatient(updateRequest);
+                    OperationResult updateResult = contactProcedures.UpdatePatient(updateRequest,processId);
 
                     if (updateResult.IsSuccessful)
                     {
@@ -230,7 +237,7 @@ namespace CrmAboxApi.Controllers
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                Logger.Error(ex, "ProcessID: {processId} Request hacia {requestUrl} con el JSON:**START** {jsonObject} **END**", processId, Request.RequestUri, JsonConvert.SerializeObject(updateRequest));
                 return Content(HttpStatusCode.InternalServerError, new OperationResult
                 {
                     IsSuccessful = false,
