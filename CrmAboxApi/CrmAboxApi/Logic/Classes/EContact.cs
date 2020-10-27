@@ -124,10 +124,14 @@ namespace CrmAboxApi.Logic.Classes
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.id)))
                             jObject.Add(ContactFields.Id, signupProperties.personalinfo.id);
 
-                        string idType = sharedMethods.GetIdTypeId(signupProperties.personalinfo.idtype);
+                        
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.idtype)))
+                        {
+                            string idType = sharedMethods.GetIdTypeId(signupProperties.personalinfo.idtype);
                             jObject.Add(ContactFields.IdType, idType);
+
+                        }
 
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.gender)))
                             jObject.Add(ContactFields.Gender, sharedMethods.GetGenderValue(signupProperties.personalinfo.gender));
@@ -146,7 +150,7 @@ namespace CrmAboxApi.Logic.Classes
                         if (!(String.IsNullOrEmpty(signupProperties.contactinfo.phone)))
                             jObject.Add(ContactFields.Phone, signupProperties.contactinfo.phone);
 
-                        if (!(String.IsNullOrEmpty(signupProperties.contactinfo.mobilephone)))
+                        if (!String.IsNullOrEmpty(signupProperties.contactinfo.mobilephone))
                             jObject.Add(ContactFields.SecondaryPhone, signupProperties.contactinfo.mobilephone);
                     }
 
@@ -713,6 +717,9 @@ namespace CrmAboxApi.Logic.Classes
                             client.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
                             client.DefaultRequestHeaders.Add("OData-Version", "4.0");
                             //client.DefaultRequestHeaders.Add("Prefer", "return=representation");
+
+                            //Este Header previene un Upsert (Que inserte el contacto si no existe)
+                            client.DefaultRequestHeaders.Add("If-Match", "*");
                             MethodBase m = MethodBase.GetCurrentMethod();
 
                             string url = $"contacts({ContactFields.IdAboxPatient}={idToUpdate})";
@@ -916,12 +923,16 @@ namespace CrmAboxApi.Logic.Classes
                                         {
                                             dosesCreated[i] = (string)result.Data;
                                         }
+                                        else
+                                        {
+                                            Logger.Error("Message:{message} ProductId: {productId} Method:{methodName}",result.Message, dosesArray[i].IdProduct,MethodBase.GetCurrentMethod().Name);
+                                        }
                                     }
 
-                                    if (dosesCreated.Length != dosesArray.Length)
-                                    {
-                                        throw (new Exception("Ha ocurrido un error creando las dosis del paciente " + signupProperties.personalinfo.id + " en el CRM"));
-                                    }
+                                    //if (dosesCreated.Length != dosesArray.Length)
+                                    //{
+                                    //    throw (new Exception("Ha ocurrido un error creando las dosis del paciente " + signupProperties.personalinfo.id + " en el CRM"));
+                                    //}
                                 }
                                 catch (Exception ex)
                                 {
@@ -957,7 +968,9 @@ namespace CrmAboxApi.Logic.Classes
                             int length = dosesCreated.Length;
                             for (int i = 0; i < length; i++)
                             {
-                                dosesToSave.Add(new JValue($"/{doseEntity.EntityPluralName}({dosesCreated[i]})"));
+                                if (dosesCreated[i] != null)
+                                    dosesToSave.Add(new JValue($"/{doseEntity.EntityPluralName}({dosesCreated[i]})"));
+
                             }
 
                             newContact.Add($"{ContactFields.ContactxDoseRelationship}@odata.bind", dosesToSave);
@@ -984,7 +997,7 @@ namespace CrmAboxApi.Logic.Classes
         public OperationResult CreateAsCaretaker(PatientSignup signupRequest,Guid processId)
         {
             OperationResult responseObject = new OperationResult();
-
+            
             try
             {
                 string connectionString = ConfigurationManager.AppSettings["ConnectionString"].ToString();
@@ -1002,6 +1015,7 @@ namespace CrmAboxApi.Logic.Classes
                     /*Crear primeramente el paciente a cargo, para así continuar con el encargado pues ya se tiene el ID del paciente creado en CRM
                     para poder relacionarlo.*/
 
+                    //TODO: Validar si son varios bajo cuido
                     #region -> Crear paciente bajo cuido como contacto
 
                     PatientSignup signupPatientUnderCare = null;
@@ -1075,8 +1089,7 @@ namespace CrmAboxApi.Logic.Classes
                         }
                         else
                         {
-                            //TODO: Eliminar al contacto que se creo del paciente a cargo o quedara huerfano
-
+                            
                             this.Delete(idUnderCarePatient,processId);
 
                             responseObject.IsSuccessful = false;

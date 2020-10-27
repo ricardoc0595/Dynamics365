@@ -99,8 +99,8 @@ namespace CrmAboxApi.Logic.Classes
 
                                 if (err != null)
                                     Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name, url, err.error.code, err.error.message, response.ReasonPhrase);
-                                operationResult.Code = "Error al crear la relación Producto-Dosis en el CRM";
-                                operationResult.Message = response.ReasonPhrase;
+                                operationResult.Code = "";
+                                operationResult.Message = "Error al crear la relación Producto-Dosis en el CRM";
                                 operationResult.IsSuccessful = false;
                                 operationResult.Data = null;
                                 operationResult.InternalError = err;
