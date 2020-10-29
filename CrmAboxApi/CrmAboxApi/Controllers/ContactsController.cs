@@ -95,7 +95,8 @@ namespace CrmAboxApi.Controllers
             return Ok(token);
         }
 
-        public IHttpActionResult Post([FromBody] PatientSignup signupRequest)
+        [HttpPost]
+        public IHttpActionResult PatientSignup([FromBody] PatientSignup signupRequest)
         {
             Guid processId = Guid.NewGuid();
             Logger.Debug("ProcessID: {processId} Request hacia {requestUrl} con el JSON:**START** {jsonObject} **END**", processId, Request.RequestUri, JsonConvert.SerializeObject(signupRequest));
@@ -119,6 +120,9 @@ namespace CrmAboxApi.Controllers
 
                             case "03":
                                 response = contactProcedures.CreateAsTutor(signupRequest,processId);
+                                break;
+                            case "05":
+                                response = contactProcedures.CreateAsConsumer(signupRequest, processId);
                                 break;
                         }
                     }
@@ -157,7 +161,7 @@ namespace CrmAboxApi.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPost]
         public IHttpActionResult AccountUpdate([FromBody] UpdateAccountRequest updateRequest)
         {
             Guid processId = Guid.NewGuid();
@@ -203,7 +207,7 @@ namespace CrmAboxApi.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPost]
         public IHttpActionResult UpdatePatient([FromBody] UpdatePatientRequest updateRequest)
         {
             Guid processId = Guid.NewGuid();
