@@ -374,7 +374,12 @@ namespace CreateContactAsPatient.Methods
 
                         for (int i = 0; i < interests.Count; i++)
                         {
-                            string value = interests[i].Value.ToString();
+                            string value = "";
+                            if (interests[i].Value < 10)
+                            {
+                                value += "0";
+                            }
+                            value += interests[i].Value.ToString();
 
                             if (!String.IsNullOrEmpty(value))
                             {
@@ -833,6 +838,11 @@ namespace CreateContactAsPatient.Methods
                     request.contactinfo.phone = contact.Attributes[ContactFields.Phone].ToString();
                 }
 
+                if (contact.Attributes.Contains(ContactFields.SecondaryPhone))
+                {
+                    request.contactinfo.mobilephone = contact.Attributes[ContactFields.SecondaryPhone].ToString();
+                }
+
                 if (contact.Attributes.Contains(ContactFields.Email))
                 {
                     request.contactinfo.email = contact.Attributes[ContactFields.Email].ToString();
@@ -921,7 +931,12 @@ namespace CreateContactAsPatient.Methods
 
                     for (int i = 0; i < interests.Count; i++)
                     {
-                        string value = interests[i].Value.ToString();
+                        string value = "";
+                        if (interests[i].Value<10)
+                        {
+                            value += "0";
+                        }
+                         value += interests[i].Value.ToString();
 
                         if (!String.IsNullOrEmpty(value))
                         {

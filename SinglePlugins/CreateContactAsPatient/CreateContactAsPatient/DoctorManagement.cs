@@ -25,6 +25,7 @@ namespace CreateContactAsPatient
         public void Execute(IServiceProvider serviceProvider)
         {
             ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
+            sharedMethods = new MShared();
             try
             {
                 // Obtain the execution context from the service provider.
@@ -58,7 +59,7 @@ namespace CreateContactAsPatient
                 if (context.MessageName.ToLower() == "associate" || context.MessageName.ToLower() == "disassociate")
                 {
                     contactEntity = new ContactEntity();
-                    sharedMethods = new MShared();
+                    
                     // Get the “Relationship” Key from context
 
                     if (context.InputParameters.Contains("Relationship"))
@@ -215,7 +216,7 @@ namespace CreateContactAsPatient
                         ///Request service POST
                         ///
 
-                        sharedMethods = new MShared();
+                        
 
                         DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.Request));
                         MemoryStream memoryStream = new MemoryStream();
@@ -265,6 +266,24 @@ namespace CreateContactAsPatient
             catch (Exception ex)
             {
                 trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+
+                try
+                {
+                    sharedMethods.LogPluginFeedback(new LogClass
+                    {
+                        Exception = ex.ToString(),
+                        Level = "error",
+                        ClassName = this.GetType().ToString(),
+                        MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                        Message = "Excepción en plugin",
+                        ProcessId = ""
+                    }, trace);
+                }
+                catch (Exception e)
+                {
+                    trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + e.ToString());
+                }
+
                 throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
                 //TODO: Crear Log
             }

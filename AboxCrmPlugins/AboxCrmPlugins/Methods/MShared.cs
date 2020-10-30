@@ -3,6 +3,8 @@ using AboxDynamicsBase.Classes;
 using System;
 using System.IO;
 using System.Net;
+using System.Runtime.Serialization.Json;
+using System.Text;
 
 namespace AboxCrmPlugins.Methods
 {
@@ -67,6 +69,30 @@ namespace AboxCrmPlugins.Methods
             }
 
             return wrResponse;
+        }
+
+        public void LogPluginFeedback(LogClass log, Microsoft.Xrm.Sdk.ITracingService trace)
+        {
+            try
+            {
+                WebRequestData wrData = new WebRequestData();
+                MemoryStream memoryStream = new MemoryStream();
+                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(LogClass));
+                serializer.WriteObject(memoryStream, log);
+                var jsonObject = Encoding.Default.GetString(memoryStream.ToArray());
+                memoryStream.Dispose();
+                wrData.InputData = jsonObject;
+                wrData.ContentType = "application/json";
+                // wrData.Authorization = "Bearer " + Constants.TokenForAboxServices;
+                wrData.Url = AboxServices.CrmWebAPILog;
+                this.DoPostRequest(wrData, trace);
+            }
+            catch (Exception ex)
+            {
+                trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw;
+            }
+            
         }
 
         public string GetCountryValueForService(int dynamicsCountryValue)
@@ -202,7 +228,7 @@ namespace AboxCrmPlugins.Methods
                         break;
 
                     case Constants.DoseFrequencyOther:
-                        result = "Otro";
+                        result = "other";
                         break;
 
                     default:

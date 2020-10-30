@@ -24,6 +24,7 @@ namespace CreateContactAsPatient
         public void Execute(IServiceProvider serviceProvider)
         {
             ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
+            sharedMethods = new MShared();
             try
             {
                 // Obtain the execution context from the service provider.
@@ -81,7 +82,7 @@ namespace CreateContactAsPatient
                     }
                     else
                     {
-                        sharedMethods = new MShared();
+                        
 
                         //Cast as Entity the dose being created
 
@@ -291,7 +292,7 @@ namespace CreateContactAsPatient
                         ///Request service POST
                         ///
 
-                        sharedMethods = new MShared();
+                        
 
                         DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.Request));
                         MemoryStream memoryStream = new MemoryStream();

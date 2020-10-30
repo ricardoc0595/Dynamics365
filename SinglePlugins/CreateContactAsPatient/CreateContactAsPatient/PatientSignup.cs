@@ -18,6 +18,7 @@ namespace CreateContactAsPatient
         public void Execute(IServiceProvider serviceProvider)
         {
                 ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
+            sharedMethods = new MShared();
             try
             {
                 // Obtain the execution context from the service provider.
@@ -44,7 +45,7 @@ namespace CreateContactAsPatient
                     }
                     else
                     {
-                        sharedMethods = new MShared();
+                        
                         RequestHelpers reqHelpers = new RequestHelpers();
                         trace.Trace("Obtendo objeto para enviar a servicio Abox...");
                         PatientSignupRequest.Request request = reqHelpers.GetSignupPatientRequestObject(contact, service,trace);

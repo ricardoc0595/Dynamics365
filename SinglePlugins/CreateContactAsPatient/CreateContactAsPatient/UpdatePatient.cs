@@ -25,6 +25,7 @@ namespace CreateContactAsPatient
         public void Execute(IServiceProvider serviceProvider)
         {
             ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
+            sharedMethods = new MShared();
             try
             {
                 IPluginExecutionContext context = (IPluginExecutionContext)serviceProvider.GetService(typeof(IPluginExecutionContext));
@@ -37,7 +38,7 @@ namespace CreateContactAsPatient
                 {
                     return;
                 }
-
+                
                 Entity contactUpdated = null;
                 UpdatePatientRequest.Request updatePatientRequest = null;
                 UpdateAccountRequest.Request updateAccountRequest = null;
@@ -53,7 +54,7 @@ namespace CreateContactAsPatient
                     }
                     else
                     {
-                        sharedMethods = new MShared();
+                        
                         if (contactUpdated != null)
                         {
                             helperMethods = new RequestHelpers();
@@ -194,6 +195,24 @@ namespace CreateContactAsPatient
             catch (Exception ex)
             {
                 trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+
+                try
+                {
+                    sharedMethods.LogPluginFeedback(new LogClass
+                    {
+                        Exception = ex.ToString(),
+                        Level = "error",
+                        ClassName = this.GetType().ToString(),
+                        MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                        Message = "Excepción en plugin",
+                        ProcessId = ""
+                    }, trace);
+                }
+                catch (Exception e)
+                {
+                    trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + e.ToString());
+                }
+
                 throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
 
                 //TODO: Crear Log

@@ -1,7 +1,9 @@
-﻿using CrmAboxApi.Logic.Classes;
+﻿using AboxDynamicsBase.Classes;
+using CrmAboxApi.Logic.Classes;
 using CrmAboxApi.Logic.Classes.Deserializing;
 using Logic.CrmAboxApi.Classes.Helper;
 using Newtonsoft.Json;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -85,15 +87,52 @@ namespace CrmAboxApi.Controllers
             return Ok(token);
         }
 
+
+
         [HttpGet]
         public IHttpActionResult WhoAmI()
         {
+            //LogEventInfo s = new LogEventInfo(LogLevel.Trace, Logger.Name,new Log);
+           
+            //s.Properties["AppID"] = "PLUGIN";
+            //Logger.Log(s);
+           //Logger.Trace(new TestLayout { Caps = false, Config1 = "ss", Config2 = "22" });
             string token = "";
             CrmAboxApi.Logic.Methods.MDynamicsWebApiFunctions webAPiFunctions = new Logic.Methods.MDynamicsWebApiFunctions();
 
             token = webAPiFunctions.whoAmIFunction();
             return Ok(token);
         }
+
+        [HttpPost]
+        public IHttpActionResult LogPluginFeedback([FromBody] LogClass log)
+        {
+            LogLevel level = null;
+            switch (log.Level.ToLower())
+            {
+                case "info":
+                    level = LogLevel.Info;
+                    break;
+                case "error":
+                    level = LogLevel.Error;
+                    break;
+                case "trace":
+                    level = LogLevel.Trace;
+                    break;
+                case "debug":
+                    level = LogLevel.Debug;
+                    break;
+                default:
+                    break;
+            }
+            LogEventInfo s = new LogEventInfo(level, log.ClassName,$"** PLUGIN ERROR ** Method:{log.MethodName} ProcessID:{log.ProcessId} Message:{log.Message} Exception:{log.Exception}");
+        
+            Logger.Log(s);
+           
+          
+            return Ok();
+        }
+
 
         [HttpPost]
         public IHttpActionResult PatientSignup([FromBody] PatientSignup signupRequest)
