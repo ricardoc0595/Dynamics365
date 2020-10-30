@@ -75,6 +75,11 @@ namespace CrmAboxApi.Logic.Classes
                         jObject.Add($"{ContactSchemas.District}@odata.bind", $"/{districtEntity.EntityPluralName}({DistrictFields.IdDistrict}='{signupProperties.contactinfo.district}')");
                     }
 
+                    if (!(String.IsNullOrEmpty(signupProperties.otherInterest)))
+                    {
+                        jObject.Add($"{ContactFields.OtherInterest}", signupProperties.otherInterest);
+                    }
+
 
 
 
@@ -181,7 +186,11 @@ namespace CrmAboxApi.Logic.Classes
 
                         if (medicsArray != null)
                         {
-                            jObject.Add($"{ContactFields.ContactxDoctorRelationship}@odata.bind", medicsArray);
+                            if (medicsArray.Count>0)
+                            {
+                                jObject.Add($"{ContactFields.ContactxDoctorRelationship}@odata.bind", medicsArray);
+
+                            }
                         }
                     }
 
@@ -204,6 +213,7 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
+                
                 Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
                 jObject = null;
                 return jObject;
@@ -972,8 +982,11 @@ namespace CrmAboxApi.Logic.Classes
                                     dosesToSave.Add(new JValue($"/{doseEntity.EntityPluralName}({dosesCreated[i]})"));
 
                             }
+                            if (dosesToSave.Count > 0)
+                            {
+                                newContact.Add($"{ContactFields.ContactxDoseRelationship}@odata.bind", dosesToSave);
 
-                            newContact.Add($"{ContactFields.ContactxDoseRelationship}@odata.bind", dosesToSave);
+                            }
                         }
                     }
 
@@ -993,6 +1006,33 @@ namespace CrmAboxApi.Logic.Classes
 
             return responseObject;
         }
+
+        public OperationResult CreateAsConsumer(PatientSignup signupRequest, Guid processId)
+        {
+            OperationResult responseObject = new OperationResult();
+
+            try
+            {
+                PatientSignup signupProperties = signupRequest;
+
+                if (signupProperties != null)
+                {
+                    JObject newContact = this.GetCreateContactJsonStructure(signupProperties, processId);
+                    responseObject = this.ContactCreateRequest(newContact, processId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                responseObject.Code = "";
+                responseObject.Message = ex.ToString();
+                responseObject.IsSuccessful = false;
+                responseObject.Data = null;
+            }
+
+            return responseObject;
+        }
+
 
         public OperationResult CreateAsCaretaker(PatientSignup signupRequest,Guid processId)
         {

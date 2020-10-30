@@ -99,6 +99,24 @@ namespace CreateContactAsPatient
             catch (Exception ex)
             {
                 trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+
+                try
+                {
+                    sharedMethods.LogPluginFeedback(new LogClass
+                    {
+                        Exception = ex.ToString(),
+                        Level = "error",
+                        ClassName = this.GetType().ToString(),
+                        MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                        Message = "Excepción en plugin",
+                        ProcessId = ""
+                    }, trace);
+                }
+                catch (Exception e)
+                {
+                    trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + e.ToString());
+                }
+
                 throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
                 //TODO: Crear Log
             }
