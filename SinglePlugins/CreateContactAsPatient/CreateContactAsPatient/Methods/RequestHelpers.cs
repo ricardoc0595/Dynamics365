@@ -755,6 +755,10 @@ namespace CreateContactAsPatient.Methods
                 ProvinceEntity provinceEntity = new ProvinceEntity();
                 CountryEntity countryEntity = new CountryEntity();
 
+                bool addPatientInChargeInfo = false;
+
+
+
                 if (contact.Attributes.Contains(ContactFields.UserType))
                 {
                     EntityReference userTypeReference = null;
@@ -763,41 +767,54 @@ namespace CreateContactAsPatient.Methods
                     {
                         request.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
                     }
+
+                    if (request.userType == "01"||request.userType=="05")
+                    {
+                        addPatientInChargeInfo = true;
+                    }
+
                 }
 
                 request.personalinfo = new PatientSignupRequest.Request.Personalinfo();
                 request.patientincharge = new PatientSignupRequest.Request.Patientincharge();
+
+
 
                 #region Personal Info
 
                 if (contact.Attributes.Contains(ContactFields.IdType))
                 {
                     request.personalinfo.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
-                    request.patientincharge.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
+                    if (addPatientInChargeInfo)
+                        request.patientincharge.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Id))
                 {
                     request.personalinfo.id = contact.Attributes[ContactFields.Id].ToString();
-                    request.patientincharge.id = contact.Attributes[ContactFields.Id].ToString();
+                    if (addPatientInChargeInfo)
+                        request.patientincharge.id = contact.Attributes[ContactFields.Id].ToString();
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Firstname))
                 {
                     request.personalinfo.name = contact.Attributes[ContactFields.Firstname].ToString();
-                    request.patientincharge.name = contact.Attributes[ContactFields.Firstname].ToString();
+                    if (addPatientInChargeInfo)
+                        request.patientincharge.name = contact.Attributes[ContactFields.Firstname].ToString();
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Lastname))
                 {
                     request.personalinfo.lastname = contact.Attributes[ContactFields.Lastname].ToString();
-                    request.patientincharge.lastname = contact.Attributes[ContactFields.Lastname].ToString();
+                    if (addPatientInChargeInfo)
+                        request.patientincharge.lastname = contact.Attributes[ContactFields.Lastname].ToString();
                 }
 
                 if (contact.Attributes.Contains(ContactFields.SecondLastname))
                 {
                     request.personalinfo.secondlastname = contact.Attributes[ContactFields.SecondLastname].ToString();
-                    request.patientincharge.secondlastname = contact.Attributes[ContactFields.SecondLastname].ToString();
+                    if (addPatientInChargeInfo)
+                        request.patientincharge.secondlastname = contact.Attributes[ContactFields.SecondLastname].ToString();
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Password))
@@ -812,7 +829,8 @@ namespace CreateContactAsPatient.Methods
                     if (!String.IsNullOrEmpty(gender))
                     {
                         request.personalinfo.gender = gender;
-                        request.patientincharge.gender = gender;
+                        if (addPatientInChargeInfo)
+                            request.patientincharge.gender = gender;
                     }
                 }
 
@@ -823,11 +841,15 @@ namespace CreateContactAsPatient.Methods
                     if (birthdate != null)
                     {
                         request.personalinfo.dateofbirth = birthdate.ToString("yyyy-MM-dd");
-                        request.patientincharge.dateofbirth = birthdate.ToString("yyyy-MM-dd");
+                        if (addPatientInChargeInfo)
+                            request.patientincharge.dateofbirth = birthdate.ToString("yyyy-MM-dd");
                     }
                 }
 
                 #endregion Personal Info
+
+
+
 
                 #region ContactInfo
 
@@ -990,5 +1012,10 @@ namespace CreateContactAsPatient.Methods
                 throw ex;
             }
         }
+
+
+      
+
+
     }
 }

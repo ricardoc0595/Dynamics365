@@ -61,10 +61,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\Entities\DoctorEntity.cs" />
-    <Compile Include="Classes\Entities\ContactEntity.cs" />
-    <Compile Include="Classes\Entities\EntityBase.cs" />
-    <Compile Include="Classes\Entities\ProductEntity.cs" />
     <Compile Include="Classes\WebRequestData.cs" />
     <Compile Include="Classes\WebRequestResponse.cs" />
     <Compile Include="Methods\MShared.cs" />
@@ -80,5 +76,6 @@
       <Name>AboxDynamicsBase</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

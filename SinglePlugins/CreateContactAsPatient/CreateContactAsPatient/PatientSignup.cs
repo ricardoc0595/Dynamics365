@@ -1,6 +1,7 @@
 ﻿using AboxCrmPlugins.Classes;
 using AboxCrmPlugins.Methods;
 using AboxDynamicsBase.Classes;
+using AboxDynamicsBase.Classes.Entities;
 using CreateContactAsPatient.Classes;
 using CreateContactAsPatient.Methods;
 using Microsoft.Xrm.Sdk;
@@ -47,8 +48,12 @@ namespace CreateContactAsPatient
                     {
                         
                         RequestHelpers reqHelpers = new RequestHelpers();
-                        trace.Trace("Obtendo objeto para enviar a servicio Abox...");
+
+                        
+
                         PatientSignupRequest.Request request = reqHelpers.GetSignupPatientRequestObject(contact, service,trace);
+
+
 
                         DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.Request));
                         MemoryStream memoryStream = new MemoryStream();
@@ -65,6 +70,7 @@ namespace CreateContactAsPatient
                         wrData.Url = AboxServices.PatientSignup;
                         trace.Trace("Url:" + wrData.Url);
 
+                       
                         var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
                         PatientSignupRequest.ServiceResponse serviceResponseProperties = null;
                         if (serviceResponse.IsSuccessful)
@@ -80,6 +86,28 @@ namespace CreateContactAsPatient
                             if (serviceResponseProperties.response.code != "MEMEX-0002")
                             {
                                 trace.Trace(Constants.ErrorMessageCodeReturned + serviceResponseProperties.response.code);
+
+                                #region debug log
+
+                                try
+                                {
+                                    sharedMethods.LogPluginFeedback(new LogClass
+                                    {
+                                        Exception = "",
+                                        Level = "debug",
+                                        ClassName = this.GetType().ToString(),
+                                        MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                                        Message = $"Url:{wrData.Url} ResponseCode:{serviceResponseProperties.response.code}",
+                                        ProcessId = ""
+                                    }, trace);
+                                }
+                                catch (Exception e)
+                                {
+
+                                }
+
+                                #endregion
+
                                 throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
                             }
                             else

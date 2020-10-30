@@ -49,7 +49,7 @@
         public const string ContactxProductRelationship = "new_product_contact";
         public const string ContactxContactRelationship = "new_contact_contact";
         public const string ContactxDoseRelationship = "new_contact_new_dose";
-        public const string OtherInterest = "new_otrointeres";
+        public const string OtherInterest = "new_otherinterest";
         public const string Canton = "new_canton";
         public const string District = "new_distrit";
         public const string Province = "new_cityid";

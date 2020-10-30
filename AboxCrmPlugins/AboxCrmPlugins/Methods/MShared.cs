@@ -12,6 +12,29 @@ namespace AboxCrmPlugins.Methods
     {
         public WebRequestResponse DoPostRequest(WebRequestData requestData, Microsoft.Xrm.Sdk.ITracingService trace)
         {
+            try
+            {
+                #region debug log
+
+
+                this.LogPluginFeedback(new LogClass
+                {
+                    Exception = "",
+                    Level = "debug",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"POSTing Url:{requestData.Url} Json:{requestData.InputData}",
+                    ProcessId = ""
+                }, trace);
+
+
+                #endregion
+            }
+            catch (Exception)
+            {
+                
+            }
+
             WebRequestResponse wrResponse = new WebRequestResponse();
             try
             {
@@ -52,6 +75,32 @@ namespace AboxCrmPlugins.Methods
                             }
                         }
                     }
+
+                    
+                    try
+                    {
+                        #region debug log
+
+
+                        this.LogPluginFeedback(new LogClass
+                        {
+                            Exception = wex.ToString(),
+                            Level = "error",
+                            ClassName = this.GetType().ToString(),
+                            MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                            Message = $"Error Request Url:{requestData.Url} Json:{requestData.InputData} WebResponse:{error}",
+                            ProcessId = ""
+                        }, trace);
+
+
+                        #endregion
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+
+
                     trace.Trace("Url:" + requestData.Url + " | Data:" + requestData.InputData);
                     trace.Trace(error);
                     wrResponse.Data = null;
