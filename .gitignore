@@ -61,3 +61,11 @@ obj/
 /CrmAboxApi/.vs/CrmAboxApi/v16/.suo
 /CrmAboxApi/CrmAboxApi.sln
 *.log
+/requestsAboxJson/
+/Aboxplan - CRM Dynamics - Signup/
+/CrmAboxApi/CrmAboxApi/Properties/PublishProfiles/FolderProfile.pubxml.user
+*.epgz
+/CrmAboxApi/CrmAboxApi.sln.DotSettings.user
+/AboxCrmPlugins/plugin que se creo para asociar dosis, no sirvio porque el subgrid no permite detener la creacion.txt
+/Aboxplan - CRM Dynamics - Signup.zip
+/AboxCrmPlugins/Manual Plugins.docx

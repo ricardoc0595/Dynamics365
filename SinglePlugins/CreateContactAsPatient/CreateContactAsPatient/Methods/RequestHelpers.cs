@@ -38,7 +38,7 @@ namespace CreateContactAsPatient.Methods
         /// <param name="contact"></param>
         /// <param name="service"></param>
         /// <returns></returns>
-        public UpdatePatientRequest.Request GetPatientUpdateStructure(Entity contact, IOrganizationService service,ITracingService trace)
+        public UpdatePatientRequest.Request GetPatientUpdateStructure(Entity contact, IOrganizationService service, ITracingService trace)
         {
             UpdatePatientRequest.Request requestStructure = new UpdatePatientRequest.Request();
 
@@ -249,7 +249,7 @@ namespace CreateContactAsPatient.Methods
             }
             catch (Exception ex)
             {
-                trace.Trace($"MethodName: {new StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: "+ex.ToString());
+                trace.Trace($"MethodName: {new StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
 
                 requestStructure = null;
                 return requestStructure;
@@ -258,7 +258,7 @@ namespace CreateContactAsPatient.Methods
             return requestStructure;
         }
 
-        public UpdateAccountRequest.Request GetAccountUpdateStructure(Entity contact, IOrganizationService service,ITracingService trace)
+        public UpdateAccountRequest.Request GetAccountUpdateStructure(Entity contact, IOrganizationService service, ITracingService trace)
         {
             UpdateAccountRequest.Request requestStructure = new UpdateAccountRequest.Request();
 
@@ -275,7 +275,7 @@ namespace CreateContactAsPatient.Methods
 
                     if (contact.Attributes.Contains(ContactFields.Lastname))
                         requestStructure.Apellido1 = contact.GetAttributeValue<string>(ContactFields.Lastname);
-                    
+
                     if (contact.Attributes.Contains(ContactFields.SecondLastname))
                         requestStructure.Apellido2 = contact.GetAttributeValue<string>(ContactFields.SecondLastname);
 
@@ -447,7 +447,7 @@ namespace CreateContactAsPatient.Methods
                                                 {
                                                     int value = (doseChild.GetAttributeValue<OptionSetValue>(DoseFields.Dose)).Value;
                                                     frequency = sharedMethods.GetDoseFrequencyValue(value);
-                                                  
+
                                                 }
 
                                                 requestStructure.medication.products[i] = new UpdateAccountRequest.Request.Product
@@ -542,7 +542,7 @@ namespace CreateContactAsPatient.Methods
             return requestStructure;
         }
 
-        public QuickSignupRequest.Request GetQuickSignupRequestObject(Entity contact, IOrganizationService service,ITracingService trace)
+        public QuickSignupRequest.Request GetQuickSignupRequestObject(Entity contact, IOrganizationService service, ITracingService trace)
         {
             var request = new QuickSignupRequest.Request();
             try
@@ -744,7 +744,7 @@ namespace CreateContactAsPatient.Methods
             }
         }
 
-        public PatientSignupRequest.Request GetSignupPatientRequestObject(Entity contact, IOrganizationService service,ITracingService trace)
+        public PatientSignupRequest.Request GetSignupPatientRequestObject(Entity contact, IOrganizationService service, ITracingService trace)
         {
             var request = new PatientSignupRequest.Request();
             try
@@ -768,7 +768,7 @@ namespace CreateContactAsPatient.Methods
                         request.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
                     }
 
-                    if (request.userType == "01"||request.userType=="05")
+                    if (request.userType == "01" || request.userType == "05")
                     {
                         addPatientInChargeInfo = true;
                     }
@@ -954,11 +954,11 @@ namespace CreateContactAsPatient.Methods
                     for (int i = 0; i < interests.Count; i++)
                     {
                         string value = "";
-                        if (interests[i].Value<10)
+                        if (interests[i].Value < 10)
                         {
                             value += "0";
                         }
-                         value += interests[i].Value.ToString();
+                        value += interests[i].Value.ToString();
 
                         if (!String.IsNullOrEmpty(value))
                         {
@@ -1014,7 +1014,147 @@ namespace CreateContactAsPatient.Methods
         }
 
 
-      
+
+        public PatientSignupRequest.Request GetSignupPatientUnderCareRequestObject(Entity contact, IOrganizationService service, ITracingService trace)
+        {
+            var request = new PatientSignupRequest.Request();
+            try
+            {
+               
+                CountryEntity countryEntity = new CountryEntity();
+
+                bool addPatientInChargeInfo = false;
+
+
+
+                if (contact.Attributes.Contains(ContactFields.Country))
+                {
+                    EntityReference countryReference = null;
+                    countryReference = (EntityReference)contact.Attributes[ContactFields.Country];
+                    if (countryReference != null)
+                    {
+                        var countryRetrieved = service.Retrieve(countryEntity.EntitySingularName, countryReference.Id, new ColumnSet(CountryFields.IdCountry));
+                        if (countryRetrieved.Attributes.Contains(CountryFields.IdCountry))
+                        {
+                            string country = countryRetrieved.GetAttributeValue<string>(CountryFields.IdCountry);
+
+                            if (!String.IsNullOrEmpty(country))
+                            {
+                                request.country = country;
+                            }
+                        }
+                    }
+                }
+
+                if (contact.Attributes.Contains(ContactFields.UserType))
+                {
+                    EntityReference userTypeReference = null;
+                    userTypeReference = (EntityReference)contact.Attributes[ContactFields.UserType];
+                    if (userTypeReference != null)
+                    {
+                        request.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
+                    }
+
+                }
+
+                request.personalinfo = new PatientSignupRequest.Request.Personalinfo();
+                request.patientincharge = new PatientSignupRequest.Request.Patientincharge();
+
+
+
+                #region Personal Info
+
+
+
+                if (contact.Attributes.Contains(ContactFields.Id))
+                {
+                    request.personalinfo.id = contact.Attributes[ContactFields.Id].ToString();
+                    if (addPatientInChargeInfo)
+                        request.patientincharge.id = contact.Attributes[ContactFields.Id].ToString();
+                }
+
+                #region Patient In Charge
+
+                if (contact.Attributes.Contains(ContactFields.IdType))
+                {
+
+                    request.patientincharge.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Firstname))
+                {
+
+                    request.patientincharge.name = contact.Attributes[ContactFields.Firstname].ToString();
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Lastname))
+                {
+
+                    request.patientincharge.lastname = contact.Attributes[ContactFields.Lastname].ToString();
+                }
+
+
+                if (contact.Attributes.Contains(ContactFields.SecondLastname))
+                {
+                    request.patientincharge.secondlastname = contact.Attributes[ContactFields.SecondLastname].ToString();
+                }
+
+
+                if (contact.Attributes.Contains(ContactFields.Gender))
+                {
+                    int val = (contact.GetAttributeValue<OptionSetValue>(ContactFields.Gender)).Value;
+                    string gender = sharedMethods.GetGenderValue(val);
+                    if (!String.IsNullOrEmpty(gender))
+                    {
+
+                        request.patientincharge.gender = gender;
+                    }
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Birthdate))
+                {
+                    DateTime birthdate = new DateTime();
+                    birthdate = contact.GetAttributeValue<DateTime>(ContactFields.Birthdate);
+                    if (birthdate != null)
+                    {
+
+                        request.patientincharge.dateofbirth = birthdate.ToString("yyyy-MM-dd");
+                    }
+                }
+
+
+                #endregion
+
+
+                #endregion Personal Info
+
+
+
+
+                #region ContactInfo
+
+                request.contactinfo = new PatientSignupRequest.Request.Contactinfo();
+
+
+
+                #endregion ContactInfo
+
+                #region Medication
+
+
+
+                #endregion Medication
+
+                return request;
+            }
+            catch (Exception ex)
+            {
+                trace.Trace($"MethodName: {new StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw ex;
+            }
+        }
+
+
 
 
     }
