@@ -55,5 +55,6 @@
         public const string Province = "new_cityid";
         public const string Interests = "new_clientinterest";
         public const string ContactxContactLookup = "new_contactcontactid";
+        public const string IsChildContact = "new_ischildcontact";
     }
 }

@@ -16,7 +16,7 @@ namespace AboxCrmPlugins.Methods
             {
                 #region debug log
 
-
+               
                 this.LogPluginFeedback(new LogClass
                 {
                     Exception = "",
@@ -30,7 +30,7 @@ namespace AboxCrmPlugins.Methods
 
                 #endregion
             }
-            catch (Exception)
+            catch (Exception exc)
             {
                 
             }
@@ -76,33 +76,21 @@ namespace AboxCrmPlugins.Methods
                         }
                     }
 
+                    #region error log
+
                     
-                    try
+                    this.LogPluginFeedback(new LogClass
                     {
-                        #region debug log
+                        Exception = wex.ToString(),
+                        Level = "error",
+                        ClassName = this.GetType().ToString(),
+                        MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                        Message = $"{error}",
+                        ProcessId = ""
+                    }, trace);
 
 
-                        this.LogPluginFeedback(new LogClass
-                        {
-                            Exception = wex.ToString(),
-                            Level = "error",
-                            ClassName = this.GetType().ToString(),
-                            MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
-                            Message = $"Error Request Url:{requestData.Url} Json:{requestData.InputData} WebResponse:{error}",
-                            ProcessId = ""
-                        }, trace);
-
-
-                        #endregion
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-
-
-                    trace.Trace("Url:" + requestData.Url + " | Data:" + requestData.InputData);
-                    trace.Trace(error);
+                    #endregion
                     wrResponse.Data = null;
                     wrResponse.ErrorMessage = wex.ToString();
                     wrResponse.IsSuccessful = false;
@@ -111,6 +99,17 @@ namespace AboxCrmPlugins.Methods
             }
             catch (Exception ex)
             {
+
+                this.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"Excepción realizando el POST request",
+                    ProcessId = ""
+                }, trace);
+
                 trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
                 wrResponse.Data = null;
                 wrResponse.IsSuccessful = false;
@@ -122,6 +121,7 @@ namespace AboxCrmPlugins.Methods
 
         public void LogPluginFeedback(LogClass log, Microsoft.Xrm.Sdk.ITracingService trace)
         {
+            
             try
             {
                 WebRequestData wrData = new WebRequestData();
@@ -134,7 +134,47 @@ namespace AboxCrmPlugins.Methods
                 wrData.ContentType = "application/json";
                 // wrData.Authorization = "Bearer " + Constants.TokenForAboxServices;
                 wrData.Url = AboxServices.CrmWebAPILog;
-                this.DoPostRequest(wrData, trace);
+           
+                try
+                {
+                    using (WebClient client = new WebClient())
+                    {
+                        var webClient = new WebClient();
+                        if (wrData.ContentType != "")
+                            webClient.Headers[HttpRequestHeader.ContentType] = wrData.ContentType;
+                        if (wrData.Authorization != "")
+                            webClient.Headers[HttpRequestHeader.Authorization] = wrData.Authorization;
+
+                        // var code = "key";
+                        string serviceUrl = wrData.Url;
+                        webClient.UploadString(serviceUrl, wrData.InputData);
+
+                        trace.Trace("Url:" + wrData.Url + " | Data:" + wrData.InputData);
+                       
+                       
+                    }
+                }
+                catch (WebException wex)
+                {
+                    string error = "";
+                    string statusCode = "";
+                    if (wex.Response != null)
+                    {
+                        using (var errorResponse = (HttpWebResponse)wex.Response)
+                        {
+                            using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                            {
+                                error = reader.ReadToEnd();
+
+                                //TODO: use JSON.net to parse this string and look at the error message
+                            }
+                        }
+                    }
+
+                }
+
+
+
             }
             catch (Exception ex)
             {

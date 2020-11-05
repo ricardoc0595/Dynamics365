@@ -1015,7 +1015,7 @@ namespace CreateContactAsPatient.Methods
 
 
 
-        public PatientSignupRequest.Request GetSignupPatientUnderCareRequestObject(Entity contact, IOrganizationService service, ITracingService trace)
+        public PatientSignupRequest.Request GetSignupPatientUnderCareRequestObject(Entity childContact,Entity parentContact, IOrganizationService service, ITracingService trace)
         {
             var request = new PatientSignupRequest.Request();
             try
@@ -1025,12 +1025,28 @@ namespace CreateContactAsPatient.Methods
 
                 bool addPatientInChargeInfo = false;
 
+                //Agregar al request la informacion del usuario a cargo
+                if (parentContact.Attributes.Contains(ContactFields.Id))
+                {
+                    string parentId = parentContact.GetAttributeValue<string>(ContactFields.Id);
+                    request.personalinfo.id = parentId;
+                }
 
+                if (parentContact.Attributes.Contains(ContactFields.UserType))
+                {
+                    EntityReference userTypeReference = null;
+                    userTypeReference = (EntityReference)parentContact.Attributes[ContactFields.UserType];
+                    if (userTypeReference != null)
+                    {
+                        request.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
+                    }
 
-                if (contact.Attributes.Contains(ContactFields.Country))
+                }
+
+                if (parentContact.Attributes.Contains(ContactFields.Country))
                 {
                     EntityReference countryReference = null;
-                    countryReference = (EntityReference)contact.Attributes[ContactFields.Country];
+                    countryReference = (EntityReference)parentContact.Attributes[ContactFields.Country];
                     if (countryReference != null)
                     {
                         var countryRetrieved = service.Retrieve(countryEntity.EntitySingularName, countryReference.Id, new ColumnSet(CountryFields.IdCountry));
@@ -1046,16 +1062,16 @@ namespace CreateContactAsPatient.Methods
                     }
                 }
 
-                if (contact.Attributes.Contains(ContactFields.UserType))
-                {
-                    EntityReference userTypeReference = null;
-                    userTypeReference = (EntityReference)contact.Attributes[ContactFields.UserType];
-                    if (userTypeReference != null)
-                    {
-                        request.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
-                    }
+                //if (childContact.Attributes.Contains(ContactFields.UserType))
+                //{
+                //    EntityReference userTypeReference = null;
+                //    userTypeReference = (EntityReference)childContact.Attributes[ContactFields.UserType];
+                //    if (userTypeReference != null)
+                //    {
+                //        request.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
+                //    }
 
-                }
+                //}
 
                 request.personalinfo = new PatientSignupRequest.Request.Personalinfo();
                 request.patientincharge = new PatientSignupRequest.Request.Patientincharge();
@@ -1066,43 +1082,47 @@ namespace CreateContactAsPatient.Methods
 
 
 
-                if (contact.Attributes.Contains(ContactFields.Id))
+                if (childContact.Attributes.Contains(ContactFields.Id))
                 {
-                    request.personalinfo.id = contact.Attributes[ContactFields.Id].ToString();
+                    request.personalinfo.id = childContact.Attributes[ContactFields.Id].ToString();
                     if (addPatientInChargeInfo)
-                        request.patientincharge.id = contact.Attributes[ContactFields.Id].ToString();
+                        request.patientincharge.id = childContact.Attributes[ContactFields.Id].ToString();
                 }
 
                 #region Patient In Charge
 
-                if (contact.Attributes.Contains(ContactFields.IdType))
+                if (childContact.Attributes.Contains(ContactFields.IdType))
                 {
 
-                    request.patientincharge.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
+                    request.patientincharge.idtype = "0" + (childContact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
                 }
 
-                if (contact.Attributes.Contains(ContactFields.Firstname))
+                //TODO: Tomar en cuenta pacientes menores de edad
+                if (childContact.Attributes.Contains(ContactFields.Id))
+                    request.patientincharge.id = childContact.GetAttributeValue<string>(ContactFields.Id);
+
+                if (childContact.Attributes.Contains(ContactFields.Firstname))
                 {
 
-                    request.patientincharge.name = contact.Attributes[ContactFields.Firstname].ToString();
+                    request.patientincharge.name = childContact.Attributes[ContactFields.Firstname].ToString();
                 }
 
-                if (contact.Attributes.Contains(ContactFields.Lastname))
+                if (childContact.Attributes.Contains(ContactFields.Lastname))
                 {
 
-                    request.patientincharge.lastname = contact.Attributes[ContactFields.Lastname].ToString();
+                    request.patientincharge.lastname = childContact.Attributes[ContactFields.Lastname].ToString();
                 }
 
 
-                if (contact.Attributes.Contains(ContactFields.SecondLastname))
+                if (childContact.Attributes.Contains(ContactFields.SecondLastname))
                 {
-                    request.patientincharge.secondlastname = contact.Attributes[ContactFields.SecondLastname].ToString();
+                    request.patientincharge.secondlastname = childContact.Attributes[ContactFields.SecondLastname].ToString();
                 }
 
 
-                if (contact.Attributes.Contains(ContactFields.Gender))
+                if (childContact.Attributes.Contains(ContactFields.Gender))
                 {
-                    int val = (contact.GetAttributeValue<OptionSetValue>(ContactFields.Gender)).Value;
+                    int val = (childContact.GetAttributeValue<OptionSetValue>(ContactFields.Gender)).Value;
                     string gender = sharedMethods.GetGenderValue(val);
                     if (!String.IsNullOrEmpty(gender))
                     {
@@ -1111,10 +1131,10 @@ namespace CreateContactAsPatient.Methods
                     }
                 }
 
-                if (contact.Attributes.Contains(ContactFields.Birthdate))
+                if (childContact.Attributes.Contains(ContactFields.Birthdate))
                 {
                     DateTime birthdate = new DateTime();
-                    birthdate = contact.GetAttributeValue<DateTime>(ContactFields.Birthdate);
+                    birthdate = childContact.GetAttributeValue<DateTime>(ContactFields.Birthdate);
                     if (birthdate != null)
                     {
 

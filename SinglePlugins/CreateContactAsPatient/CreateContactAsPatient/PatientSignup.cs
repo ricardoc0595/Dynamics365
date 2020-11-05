@@ -49,7 +49,14 @@ namespace CreateContactAsPatient
                         
                         RequestHelpers reqHelpers = new RequestHelpers();
 
-                        
+                        /*TODO: Cuando se esta creando un paciente que va a ser un paciente bajo cuido de un tutor/cuidador,
+                        Se tiene que identificar este escenario para no hacer ningun request aca, la creacion del paciente se hace
+                        desde el associate*/
+
+                        if (contact.GetAttributeValue<bool>(ContactFields.IsChildContact))
+                        {
+                            return;
+                        }
 
                         PatientSignupRequest.Request request = reqHelpers.GetSignupPatientRequestObject(contact, service,trace);
 
@@ -66,8 +73,18 @@ namespace CreateContactAsPatient
                         wrData.InputData = jsonObject;
                         trace.Trace("Objeto Json:" + jsonObject);
                         wrData.ContentType = "application/json";
+                        
+                        if (request.userType=="02"||request.userType=="03")
+                        {
+                            wrData.Url = AboxServices.MainPatientForTutorOrCaretakerService;
+                            wrData.Authorization = Constants.TokenForAboxServices;
+                        }
+                        else
+                        {
+                            wrData.Url = AboxServices.PatientSignup;
+                        }
 
-                        wrData.Url = AboxServices.PatientSignup;
+
                         trace.Trace("Url:" + wrData.Url);
 
                        

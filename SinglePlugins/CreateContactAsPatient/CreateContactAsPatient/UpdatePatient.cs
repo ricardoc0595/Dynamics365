@@ -32,6 +32,10 @@ namespace CreateContactAsPatient
                 IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
                 IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
 
+
+                //TODO: Limitar ejecucion del PLugin cuando el ID ABOX PATIENT de Dynamics está vacío.
+
+
                 /*Esta validación previene la ejecución del Plugin de cualquier
                  * transacción realizada a través del Web API desde Abox*/
                 if (context.InitiatingUserId == new Guid("7dbf49f3-8be8-ea11-a817-002248029f77"))

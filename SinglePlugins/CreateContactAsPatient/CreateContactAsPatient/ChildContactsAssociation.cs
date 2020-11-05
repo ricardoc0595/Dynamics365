@@ -88,7 +88,7 @@ namespace CreateContactAsPatient
                             helperMethods = new RequestHelpers();
                             targetEntity = (EntityReference)context.InputParameters["Target"];
 
-                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.UserType };
+                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.UserType,ContactFields.Id,ContactFields.Country };
                             var columnSet = new ColumnSet(columnsToGet);
                             contact = service.Retrieve(contactEntity.EntitySingularName, targetEntity.Id, columnSet);
 
@@ -122,7 +122,7 @@ namespace CreateContactAsPatient
                             if (relatedEntities.Count > 0)
                             {
                                 RequestHelpers reqHelpers = new RequestHelpers();
-                                //Hacer constante configurable de cantidad de bajo cuido permitidos
+                                //TODO:Hacer constante configurable de cantidad de bajo cuido permitidos
                                 if (relatedEntities.Count >= 2)
                                 {
                                     throw new InvalidPluginExecutionException("Solo puede asociarse un paciente a un usuario tutor o cuidador");
@@ -135,7 +135,21 @@ namespace CreateContactAsPatient
                                 {
                                     EntityReference r = relatedEntities[i];
                                     Entity childContactToAssociate = service.Retrieve(contactEntity.EntitySingularName, r.Id, columnSet);
-                                    PatientSignupRequest.Request request = reqHelpers.GetSignupPatientUnderCareRequestObject(childContactToAssociate, service, trace);
+                                    PatientSignupRequest.Request request = reqHelpers.GetSignupPatientUnderCareRequestObject(childContactToAssociate,contact, service, trace);
+
+
+                                    //Agregar al request la informacion del usuario a cargo
+                                    if (contact.Attributes.Contains(ContactFields.Id))
+                                    {
+                                        string parentId = contact.GetAttributeValue<string>(ContactFields.Id);
+                                        request.personalinfo.id = parentId;
+                                    }
+
+                                    if (contact.Attributes.Contains(ContactFields.Country))
+                                    {
+                                        string parentId = contact.GetAttributeValue<string>(ContactFields.Id);
+                                        request.personalinfo.id = parentId;
+                                    }
 
 
                                     DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.Request));
@@ -147,9 +161,9 @@ namespace CreateContactAsPatient
                                     //Valores necesarios para hacer el Post Request
                                     WebRequestData wrData = new WebRequestData();
                                     wrData.InputData = jsonObject;
-                                    trace.Trace("Objeto Json:" + jsonObject);
+                                    
                                     wrData.ContentType = "application/json";
-
+                                    wrData.Authorization= Constants.TokenForAboxServices; 
 
                                     if (userType == "02")
                                         wrData.Url = AboxServices.CaretakerChildService;
@@ -157,8 +171,6 @@ namespace CreateContactAsPatient
                                         wrData.Url = AboxServices.TutorChildService;
 
 
-
-                                    trace.Trace("Url:" + wrData.Url);
 
 
                                     var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
