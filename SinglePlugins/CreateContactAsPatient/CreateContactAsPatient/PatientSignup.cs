@@ -49,13 +49,21 @@ namespace CreateContactAsPatient
                         
                         RequestHelpers reqHelpers = new RequestHelpers();
 
-                        /*TODO: Cuando se esta creando un paciente que va a ser un paciente bajo cuido de un tutor/cuidador,
+                        /* Cuando se esta creando un paciente que va a ser un paciente bajo cuido de un tutor/cuidador,
                         Se tiene que identificar este escenario para no hacer ningun request aca, la creacion del paciente se hace
                         desde el associate*/
 
                         if (contact.GetAttributeValue<bool>(ContactFields.IsChildContact))
                         {
                             return;
+                        }
+
+
+                        if (contact.Attributes.Contains(ContactFields.IdAboxPatient))
+                        {
+                            Exception ex = new Exception($"Este contacto ya posee un Id Paciente de Abox registrado.({Convert.ToString(contact.GetAttributeValue<int>(ContactFields.IdAboxPatient))})");
+                            ex.Data["HasFeedbackMessage"] = true;
+                            throw ex;
                         }
 
                         PatientSignupRequest.Request request = reqHelpers.GetSignupPatientRequestObject(contact, service,trace);
@@ -124,23 +132,41 @@ namespace CreateContactAsPatient
                                 }
 
                                 #endregion
-
-                                throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
+                                Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
+                                serviceEx.Data["HasFeedbackMessage"] = true;
+                                throw serviceEx;
                             }
                             else
                             {
-                                contact.Attributes.Add("new_idaboxpatient", serviceResponseProperties.response.details.idPaciente);
+                                contact.Attributes.Add(ContactFields.IdAboxPatient, serviceResponseProperties.response.details.idPaciente);
                             }
                         }
                         else
                         {
-                            trace.Trace(Constants.GeneralAboxServicesErrorMessage);
-                            throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
+                            
+                            DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.ServiceResponse));
+
+                            using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponse.Data)))
+                            {
+                                deserializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.ServiceResponse));
+                                serviceResponseProperties = (PatientSignupRequest.ServiceResponse)deserializer.ReadObject(ms);
+                            }
+
+                            if (serviceResponseProperties != null && !String.IsNullOrEmpty(serviceResponseProperties.response.message))
+                            {
+                                Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
+                                serviceEx.Data["HasFeedbackMessage"] = true;
+                                throw serviceEx;
+                            }  
+                            else
+                                throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage);
+
                         }
                         //TODO: Capturar excepción con servicios de Abox Plan y hacer un Logging
                     }
                 }
             }
+
             catch (Exception ex)
             {
                 trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
@@ -161,8 +187,17 @@ namespace CreateContactAsPatient
                 {
                     trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + e.ToString());
                 }
+                
+                if (ex.Data["HasFeedbackMessage"]!=null)
+                {
+                    throw new InvalidPluginExecutionException(ex.Message);
+                }
+                else
+                {
+                    throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
+                }
 
-                throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
+               
                 //TODO: Crear Log
             }
         }

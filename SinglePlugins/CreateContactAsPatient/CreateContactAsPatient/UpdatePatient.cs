@@ -58,9 +58,27 @@ namespace CreateContactAsPatient
                     }
                     else
                     {
-                        
+
+
+
                         if (contactUpdated != null)
                         {
+                            /*Desde otros plugins, cuando se cambia un valor de un field a nivel de código o se crea una realcion,
+                                * automáticamente llama la ejecución de este plugin. Esta validación se hace porque desde el plugin de ChildContactsAssociation,
+                                luego de realizar el registro de tutor y el hijo en la BD mediante los servicios, se hace una asociación en Dynamics,
+                               y por lo tanto este plugin se ejecuta para actualizar el valor del lookup del contacto hijo referenciando al contacto padre*/
+                            if (contactUpdated.Attributes.Keys.Contains(ContactFields.ContactxContactLookup))
+                            {
+                                return;
+                            }
+
+                            if (contactUpdated.Attributes.Keys.Contains(ContactFields.IdAboxPatient))
+                            {
+                                return;
+                            }
+
+                          
+
                             helperMethods = new RequestHelpers();
 
                             #region -> Set request data based on Contact
@@ -70,6 +88,16 @@ namespace CreateContactAsPatient
                             string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.Province, ContactFields.Canton, ContactFields.District, ContactFields.Interests, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate, ContactFields.ContactxContactLookup, ContactFields.Phone, ContactFields.SecondaryPhone, ContactFields.Email };
                             var columnSet = new ColumnSet(columnsToGet);
                             Entity contactData = service.Retrieve(contactEntity.EntitySingularName, contactUpdated.Id, columnSet);
+
+
+                            if (!contactData.Attributes.Contains(ContactFields.IdAboxPatient))
+                            {
+                                Exception ex = new Exception($"Este contacto no posee un ID de paciente Abox registrado. Por favor contacte al administrador.");
+                                ex.Data["HasFeedbackMessage"] = true;
+                                throw ex;
+                            }
+
+
 
                             string userType = "";
 
@@ -99,7 +127,7 @@ namespace CreateContactAsPatient
                             {
                                 /*Validar si es un usuario tipo Paciente y no tiene un cuidador o tutor, se utilizara el servicio
                                  *de update patient*/
-                                if (userType == "01" && contactData.Attributes.Contains(ContactFields.ContactxContactLookup))
+                                if (userType == "01" || (contactData.Attributes.Contains(ContactFields.ContactxContactLookup)))
                                 {
                                     updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service,trace);
                                 }
@@ -108,6 +136,26 @@ namespace CreateContactAsPatient
                                     //Si es cuidador, tutor, o paciente que no está a cargo de nadie se usa el update account
                                     updateAccountRequest = helperMethods.GetAccountUpdateStructure(contactData, service,trace);
                                 }
+                            }else if (contactData.Attributes.Contains(ContactFields.ContactxContactLookup))
+                            {
+                                updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service, trace);
+                            }
+                            else
+                            {
+                                string contactName = "";
+
+                                if (contactData.Attributes.Contains(ContactFields.Firstname))
+                                    contactName += contactData.GetAttributeValue<string>(ContactFields.Firstname);
+
+                                if (contactData.Attributes.Contains(ContactFields.Lastname))
+                                    contactName += " "+contactData.GetAttributeValue<string>(ContactFields.Lastname);
+
+                                if (contactData.Attributes.Contains(ContactFields.SecondLastname))
+                                    contactName += " "+contactData.GetAttributeValue<string>(ContactFields.SecondLastname);
+
+                                Exception ex = new Exception($"Ocurrió un problema identificando el tipo de usuario del contacto.{(!String.IsNullOrEmpty(contactName)?"("+contactName+")":"")}");
+                                ex.Data["HasFeedbackMessage"] = true;
+                                throw ex;
                             }
 
                             #endregion -> Set request data based on Contact
@@ -217,7 +265,14 @@ namespace CreateContactAsPatient
                     trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + e.ToString());
                 }
 
-                throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
+                if (ex.Data["HasFeedbackMessage"] != null)
+                {
+                    throw new InvalidPluginExecutionException(ex.Message);
+                }
+                else
+                {
+                    throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
+                }
 
                 //TODO: Crear Log
             }

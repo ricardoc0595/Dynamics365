@@ -1022,15 +1022,7 @@ namespace CreateContactAsPatient.Methods
             {
                
                 CountryEntity countryEntity = new CountryEntity();
-
-                bool addPatientInChargeInfo = false;
-
-                //Agregar al request la informacion del usuario a cargo
-                if (parentContact.Attributes.Contains(ContactFields.Id))
-                {
-                    string parentId = parentContact.GetAttributeValue<string>(ContactFields.Id);
-                    request.personalinfo.id = parentId;
-                }
+                
 
                 if (parentContact.Attributes.Contains(ContactFields.UserType))
                 {
@@ -1062,16 +1054,6 @@ namespace CreateContactAsPatient.Methods
                     }
                 }
 
-                //if (childContact.Attributes.Contains(ContactFields.UserType))
-                //{
-                //    EntityReference userTypeReference = null;
-                //    userTypeReference = (EntityReference)childContact.Attributes[ContactFields.UserType];
-                //    if (userTypeReference != null)
-                //    {
-                //        request.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
-                //    }
-
-                //}
 
                 request.personalinfo = new PatientSignupRequest.Request.Personalinfo();
                 request.patientincharge = new PatientSignupRequest.Request.Patientincharge();
@@ -1081,15 +1063,18 @@ namespace CreateContactAsPatient.Methods
                 #region Personal Info
 
 
-
-                if (childContact.Attributes.Contains(ContactFields.Id))
+                //Agregar al request la informacion del usuario a cargo
+                if (parentContact.Attributes.Contains(ContactFields.Id))
                 {
-                    request.personalinfo.id = childContact.Attributes[ContactFields.Id].ToString();
-                    if (addPatientInChargeInfo)
-                        request.patientincharge.id = childContact.Attributes[ContactFields.Id].ToString();
+                    string parentId = parentContact.GetAttributeValue<string>(ContactFields.Id);
+                    request.personalinfo.id = parentId;
                 }
 
+
+                #endregion
+
                 #region Patient In Charge
+
 
                 if (childContact.Attributes.Contains(ContactFields.IdType))
                 {
@@ -1146,10 +1131,6 @@ namespace CreateContactAsPatient.Methods
                 #endregion
 
 
-                #endregion Personal Info
-
-
-
 
                 #region ContactInfo
 
@@ -1159,11 +1140,7 @@ namespace CreateContactAsPatient.Methods
 
                 #endregion ContactInfo
 
-                #region Medication
-
-
-
-                #endregion Medication
+                
 
                 return request;
             }
@@ -1175,7 +1152,92 @@ namespace CreateContactAsPatient.Methods
         }
 
 
+        public PatientSignupRequest.Request GetWelcomeMailRequestForTutorsAndCaretakers(Entity parentContact, IOrganizationService service, ITracingService trace)
+        {
+            var request = new PatientSignupRequest.Request();
+            try
+            {
 
+                CountryEntity countryEntity = new CountryEntity();
+
+                if (parentContact.Attributes.Contains(ContactFields.UserType))
+                {
+                    EntityReference userTypeReference = null;
+                    userTypeReference = (EntityReference)parentContact.Attributes[ContactFields.UserType];
+                    if (userTypeReference != null)
+                    {
+                        request.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
+                    }
+
+                }
+
+                if (parentContact.Attributes.Contains(ContactFields.Country))
+                {
+                    EntityReference countryReference = null;
+                    countryReference = (EntityReference)parentContact.Attributes[ContactFields.Country];
+                    if (countryReference != null)
+                    {
+                        var countryRetrieved = service.Retrieve(countryEntity.EntitySingularName, countryReference.Id, new ColumnSet(CountryFields.IdCountry));
+                        if (countryRetrieved.Attributes.Contains(CountryFields.IdCountry))
+                        {
+                            string country = countryRetrieved.GetAttributeValue<string>(CountryFields.IdCountry);
+
+                            if (!String.IsNullOrEmpty(country))
+                            {
+                                request.country = country;
+                            }
+                        }
+                    }
+                }
+
+
+                request.personalinfo = new PatientSignupRequest.Request.Personalinfo();
+                request.patientincharge = new PatientSignupRequest.Request.Patientincharge();
+
+
+
+
+                //Agregar al request la informacion del usuario a cargo
+                if (parentContact.Attributes.Contains(ContactFields.Id))
+                {
+                    string parentId = parentContact.GetAttributeValue<string>(ContactFields.Id);
+                    request.personalinfo.id = parentId;
+                }
+
+
+                if (parentContact.Attributes.Contains(ContactFields.Firstname))
+                    request.personalinfo.name = parentContact.GetAttributeValue<string>(ContactFields.Firstname);
+
+                if (parentContact.Attributes.Contains(ContactFields.Lastname))
+                    request.personalinfo.lastname = parentContact.GetAttributeValue<string>(ContactFields.Lastname);
+
+                if (parentContact.Attributes.Contains(ContactFields.SecondLastname))
+                    request.personalinfo.secondlastname = parentContact.GetAttributeValue<string>(ContactFields.SecondLastname);
+
+                if (parentContact.Attributes.Contains(ContactFields.Password))
+                    request.personalinfo.password = parentContact.GetAttributeValue<string>(ContactFields.Password);
+
+
+                #region ContactInfo
+
+                request.contactinfo = new PatientSignupRequest.Request.Contactinfo();
+
+                if (parentContact.Attributes.Contains(ContactFields.Email))
+                    request.contactinfo.email = parentContact.GetAttributeValue<string>(ContactFields.Email);
+
+
+                #endregion
+
+
+
+                return request;
+            }
+            catch (Exception ex)
+            {
+                trace.Trace($"MethodName: {new StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw ex;
+            }
+        }
 
     }
 }

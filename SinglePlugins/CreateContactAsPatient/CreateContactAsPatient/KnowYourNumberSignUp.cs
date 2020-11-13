@@ -284,7 +284,7 @@ namespace CreateContactAsPatient
                         }
                         else
                         {
-                            throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
+                            throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage);
                         }
                         //TODO: Capturar excepción con servicios de Abox Plan y hacer un Logging
                     }

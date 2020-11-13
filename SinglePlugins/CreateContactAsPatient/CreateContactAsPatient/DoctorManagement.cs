@@ -256,7 +256,7 @@ namespace CreateContactAsPatient
                         }
                         else
                         {
-                            throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
+                            throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage);
                         }
                     }
                 }

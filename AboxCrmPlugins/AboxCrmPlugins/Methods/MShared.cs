@@ -53,10 +53,31 @@ namespace AboxCrmPlugins.Methods
                         string serviceUrl = requestData.Url;
                         wrResponse.Data = webClient.UploadString(serviceUrl, requestData.InputData);
 
-                        trace.Trace("Url:" + requestData.Url + " | Data:" + requestData.InputData);
-                        trace.Trace("Respuesta request Servicios Abox:" + wrResponse.Data);
+
                         if (wrResponse.Data != "")
+                        {
                             wrResponse.IsSuccessful = true;
+
+                            //TODO:ELiminar para Produccion
+                            try
+                            {
+                                this.LogPluginFeedback(new LogClass
+                                {
+                                    Exception = "",
+                                    Level = "debug",
+                                    ClassName = this.GetType().ToString(),
+                                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                                    Message = $"Url:{requestData.Url} ResponseFromRequest:{wrResponse.Data}",
+                                    ProcessId = ""
+                                }, trace);
+                            }
+                            catch (Exception e)
+                            {
+
+                            }
+
+
+                        }
                     }
                 }
                 catch (WebException wex)

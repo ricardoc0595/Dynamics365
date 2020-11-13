@@ -50,7 +50,7 @@ namespace CreateContactAsPatient
 
                 EntityReference doctorRelated = null;
 
-                Entity contact = null;
+                Entity parentContact = null;
 
                 UpdatePatientRequest.Request updatePatientRequest = null;
 
@@ -88,13 +88,11 @@ namespace CreateContactAsPatient
                             helperMethods = new RequestHelpers();
                             targetEntity = (EntityReference)context.InputParameters["Target"];
 
-                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.UserType,ContactFields.Id,ContactFields.Country };
+                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.UserType, ContactFields.Id, ContactFields.Country, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname };
                             var columnSet = new ColumnSet(columnsToGet);
-                            contact = service.Retrieve(contactEntity.EntitySingularName, targetEntity.Id, columnSet);
+                            parentContact = service.Retrieve(contactEntity.EntitySingularName, targetEntity.Id, columnSet);
 
-                            //updatePatientRequest.personalinfo = new UpdatePatientRequest.Request.Personalinfo();
-
-                            //updatePatientRequest = helperMethods.GetPatientUpdateStructure(contact, service, trace);
+                          
                         }
 
                         #endregion -> Target
@@ -105,10 +103,10 @@ namespace CreateContactAsPatient
                         relatedEntities = context.InputParameters["RelatedEntities"] as EntityReferenceCollection;
 
                         string userType = "";
-                        if (contact.Attributes.Contains(ContactFields.UserType))
+                        if (parentContact.Attributes.Contains(ContactFields.UserType))
                         {
                             EntityReference userTypeReference = null;
-                            userTypeReference = (EntityReference)contact.Attributes[ContactFields.UserType];
+                            userTypeReference = (EntityReference)parentContact.Attributes[ContactFields.UserType];
                             if (userTypeReference != null)
                             {
                                 userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
@@ -128,28 +126,14 @@ namespace CreateContactAsPatient
                                     throw new InvalidPluginExecutionException("Solo puede asociarse un paciente a un usuario tutor o cuidador");
                                 }
 
-                                string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate };
+                                string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate,ContactFields.Email };
                                 var columnSet = new ColumnSet(columnsToGet);
 
                                 for (int i = 0; i < relatedEntities.Count; i++)
                                 {
                                     EntityReference r = relatedEntities[i];
                                     Entity childContactToAssociate = service.Retrieve(contactEntity.EntitySingularName, r.Id, columnSet);
-                                    PatientSignupRequest.Request request = reqHelpers.GetSignupPatientUnderCareRequestObject(childContactToAssociate,contact, service, trace);
-
-
-                                    //Agregar al request la informacion del usuario a cargo
-                                    if (contact.Attributes.Contains(ContactFields.Id))
-                                    {
-                                        string parentId = contact.GetAttributeValue<string>(ContactFields.Id);
-                                        request.personalinfo.id = parentId;
-                                    }
-
-                                    if (contact.Attributes.Contains(ContactFields.Country))
-                                    {
-                                        string parentId = contact.GetAttributeValue<string>(ContactFields.Id);
-                                        request.personalinfo.id = parentId;
-                                    }
+                                    PatientSignupRequest.Request request = reqHelpers.GetSignupPatientUnderCareRequestObject(childContactToAssociate, parentContact, service, trace);
 
 
                                     DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.Request));
@@ -161,16 +145,14 @@ namespace CreateContactAsPatient
                                     //Valores necesarios para hacer el Post Request
                                     WebRequestData wrData = new WebRequestData();
                                     wrData.InputData = jsonObject;
-                                    
+
                                     wrData.ContentType = "application/json";
-                                    wrData.Authorization= Constants.TokenForAboxServices; 
+                                    wrData.Authorization = Constants.TokenForAboxServices;
 
                                     if (userType == "02")
                                         wrData.Url = AboxServices.CaretakerChildService;
                                     else if (userType == "03")
                                         wrData.Url = AboxServices.TutorChildService;
-
-
 
 
                                     var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
@@ -181,6 +163,7 @@ namespace CreateContactAsPatient
 
                                         using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponse.Data)))
                                         {
+                                            
                                             deserializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.ServiceResponse));
                                             serviceResponseProperties = (PatientSignupRequest.ServiceResponse)deserializer.ReadObject(ms);
                                         }
@@ -210,14 +193,141 @@ namespace CreateContactAsPatient
 
                                             #endregion
 
-                                            throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
+                                            //TODO: No se esta respetando este throw y el plugin se esta ejecutando de todas formas
+                                            Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
+                                            serviceEx.Data["HasFeedbackMessage"] = true;
+                                            throw serviceEx;
                                         }
                                         else
                                         {
-                                            contact.Attributes.Add("new_idaboxpatient", serviceResponseProperties.response.details.idPaciente);
+
+                                            //Esta linea automaticamente llama al plugin de Update y se esta llamando sin intención
+                                            //childContactToAssociate.Attributes.Add(ContactFields.IdAboxPatient, serviceResponseProperties.response.details.idPaciente);
+
+                                            try
+                                            {
+                                                childContactToAssociate[ContactFields.IdAboxPatient] = serviceResponseProperties.response.details.idPaciente;
+                                                service.Update(childContactToAssociate);
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                #region log
+                                                try
+                                                {
+                                                    sharedMethods.LogPluginFeedback(new LogClass
+                                                    {
+                                                        Exception = ex.ToString(),
+                                                        Level = "debug",
+                                                        ClassName = this.GetType().ToString(),
+                                                        MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                                                        Message = $"Error actualizando la entidad",
+                                                        ProcessId = ""
+                                                    }, trace);
+                                                }
+                                                catch (Exception e)
+                                                {
+
+                                                }
+                                                #endregion
+                                            }
+                                           
+
+                                            try
+                                            {
+                                                sharedMethods.LogPluginFeedback(new LogClass
+                                                {
+                                                    Exception = "",
+                                                    Level = "debug",
+                                                    ClassName = this.GetType().ToString(),
+                                                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                                                    Message = $"Valor de field de idaboxpatient {Convert.ToString(childContactToAssociate.GetAttributeValue<int>(ContactFields.IdAboxPatient))}, Valor devuelto por el servicio:{serviceResponseProperties.response.details.idPaciente}",
+                                                    ProcessId = ""
+                                                }, trace);
+                                            }
+                                            catch (Exception e)
+                                            {
+
+                                            }
 
                                             //TODO: Llamar servicio de enviar correo
 
+                                            PatientSignupRequest.ServiceResponse welcomeServiceResponseProperties = null;
+                                            PatientSignupRequest.Request requestForWelcome = reqHelpers.GetWelcomeMailRequestForTutorsAndCaretakers(parentContact, service, trace);
+
+                                            
+
+                                            serializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.Request));
+                                            memoryStream = new MemoryStream();
+                                            serializer.WriteObject(memoryStream, requestForWelcome);
+                                            var jsonObjectForWelcomeMail = Encoding.Default.GetString(memoryStream.ToArray());
+                                            memoryStream.Dispose();
+
+                                            WebRequestData wrDataWelcomeMail = new WebRequestData();
+                                            wrDataWelcomeMail.InputData = jsonObjectForWelcomeMail;
+                                            wrDataWelcomeMail.ContentType = "application/json";
+                                            wrDataWelcomeMail.Authorization = Constants.TokenForAboxServices;
+                                            wrDataWelcomeMail.Url = AboxServices.WelcomeSendMailService;
+
+                                           
+
+                                            var serviceResponseWelcome = sharedMethods.DoPostRequest(wrDataWelcomeMail, trace);
+
+
+                                            if (serviceResponseWelcome.IsSuccessful)
+                                            {
+
+                                                DataContractJsonSerializer deserializerWelcomeResponse = new DataContractJsonSerializer(typeof(PatientSignupRequest.ServiceResponse));
+
+                                                using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponseWelcome.Data)))
+                                                {
+                                                    deserializerWelcomeResponse = new DataContractJsonSerializer(typeof(PatientSignupRequest.ServiceResponse));
+                                                    welcomeServiceResponseProperties = (PatientSignupRequest.ServiceResponse)deserializerWelcomeResponse.ReadObject(ms);
+                                                }
+
+                                                if (welcomeServiceResponseProperties.response.code != "0")
+                                                {
+                                                    trace.Trace(Constants.ErrorMessageCodeReturned + welcomeServiceResponseProperties.response.code);
+
+                                                    #region debug log
+
+                                                    try
+                                                    {
+                                                        sharedMethods.LogPluginFeedback(new LogClass
+                                                        {
+                                                            Exception = "",
+                                                            Level = "debug",
+                                                            ClassName = this.GetType().ToString(),
+                                                            MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                                                            Message = $"Url:{wrDataWelcomeMail.Url} ResponseCode:{welcomeServiceResponseProperties.response.code}",
+                                                            ProcessId = ""
+                                                        }, trace);
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+
+                                                    }
+
+                                                    #endregion
+
+                                                    Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
+                                                    serviceEx.Data["HasFeedbackMessage"] = true;
+                                                    throw serviceEx;
+                                                }
+                                                else
+                                                {
+
+                                                }
+
+
+                                            }
+                                            else
+                                            {
+                                                trace.Trace(Constants.GeneralAboxServicesErrorMessage);
+                                                //validar mensaje de respuesta
+                                                throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage);
+                                            }
+
+                                            //var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
 
 
                                         }
@@ -263,7 +373,15 @@ namespace CreateContactAsPatient
                     trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + e.ToString());
                 }
 
-                throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
+                if (ex.Data["HasFeedbackMessage"] != null)
+                {
+                    throw new InvalidPluginExecutionException(ex.Message);
+                    
+                }
+                else
+                {
+                    throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
+                }
                 //TODO: Crear Log
             }
         }
