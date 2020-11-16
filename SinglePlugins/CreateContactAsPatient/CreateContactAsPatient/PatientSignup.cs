@@ -18,7 +18,7 @@ namespace CreateContactAsPatient
 
         public void Execute(IServiceProvider serviceProvider)
         {
-                ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
+            ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
             sharedMethods = new MShared();
             try
             {
@@ -46,7 +46,6 @@ namespace CreateContactAsPatient
                     }
                     else
                     {
-                        
                         RequestHelpers reqHelpers = new RequestHelpers();
 
                         /* Cuando se esta creando un paciente que va a ser un paciente bajo cuido de un tutor/cuidador,
@@ -58,7 +57,6 @@ namespace CreateContactAsPatient
                             return;
                         }
 
-
                         if (contact.Attributes.Contains(ContactFields.IdAboxPatient))
                         {
                             Exception ex = new Exception($"Este contacto ya posee un Id Paciente de Abox registrado.({Convert.ToString(contact.GetAttributeValue<int>(ContactFields.IdAboxPatient))})");
@@ -66,9 +64,7 @@ namespace CreateContactAsPatient
                             throw ex;
                         }
 
-                        PatientSignupRequest.Request request = reqHelpers.GetSignupPatientRequestObject(contact, service,trace);
-
-
+                        PatientSignupRequest.Request request = reqHelpers.GetSignupPatientRequestObject(contact, service, trace);
 
                         DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.Request));
                         MemoryStream memoryStream = new MemoryStream();
@@ -81,8 +77,8 @@ namespace CreateContactAsPatient
                         wrData.InputData = jsonObject;
                         trace.Trace("Objeto Json:" + jsonObject);
                         wrData.ContentType = "application/json";
-                        
-                        if (request.userType=="02"||request.userType=="03")
+
+                        if (request.userType == "02" || request.userType == "03")
                         {
                             wrData.Url = AboxServices.MainPatientForTutorOrCaretakerService;
                             wrData.Authorization = Constants.TokenForAboxServices;
@@ -92,10 +88,8 @@ namespace CreateContactAsPatient
                             wrData.Url = AboxServices.PatientSignup;
                         }
 
-
                         trace.Trace("Url:" + wrData.Url);
 
-                       
                         var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
                         PatientSignupRequest.ServiceResponse serviceResponseProperties = null;
                         if (serviceResponse.IsSuccessful)
@@ -128,10 +122,10 @@ namespace CreateContactAsPatient
                                 }
                                 catch (Exception e)
                                 {
-
                                 }
 
-                                #endregion
+                                #endregion debug log
+
                                 Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
                                 serviceEx.Data["HasFeedbackMessage"] = true;
                                 throw serviceEx;
@@ -143,7 +137,6 @@ namespace CreateContactAsPatient
                         }
                         else
                         {
-                            
                             DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.ServiceResponse));
 
                             using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponse.Data)))
@@ -157,16 +150,17 @@ namespace CreateContactAsPatient
                                 Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
                                 serviceEx.Data["HasFeedbackMessage"] = true;
                                 throw serviceEx;
-                            }  
+                            }
                             else
-                                throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage);
-
+                            {
+                                Exception ex = new Exception(Constants.GeneralAboxServicesErrorMessage);
+                                ex.Data["HasFeedbackMessage"] = true;
+                                throw ex;
+                            }
                         }
-                        //TODO: Capturar excepción con servicios de Abox Plan y hacer un Logging
                     }
                 }
             }
-
             catch (Exception ex)
             {
                 trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
@@ -187,8 +181,8 @@ namespace CreateContactAsPatient
                 {
                     trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + e.ToString());
                 }
-                
-                if (ex.Data["HasFeedbackMessage"]!=null)
+
+                if (ex.Data["HasFeedbackMessage"] != null)
                 {
                     throw new InvalidPluginExecutionException(ex.Message);
                 }
@@ -196,9 +190,6 @@ namespace CreateContactAsPatient
                 {
                     throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
                 }
-
-               
-                //TODO: Crear Log
             }
         }
     }

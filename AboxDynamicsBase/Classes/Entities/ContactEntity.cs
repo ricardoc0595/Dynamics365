@@ -2,12 +2,8 @@
 {
     public class ContactEntity : EntityBase
     {
-       
-
         public ContactEntity()
         {
-            
-           
             this.EntityPluralName = "contacts";
             this.EntitySingularName = "contact";
         }
@@ -15,15 +11,12 @@
 
     public static class ContactSchemas
     {
-       
-            public const string UserType = "new_UserType";
-            public const string ContactxDoseRelationship = "";
-            public const string Country = "new_CountryId";
-            public const string Province = "new_CityId";
-            public const string Canton = "new_Canton";
-            public const string District = "new_Distrit";
-        
-      
+        public const string UserType = "new_UserType";
+        public const string ContactxDoseRelationship = "";
+        public const string Country = "new_CountryId";
+        public const string Province = "new_CityId";
+        public const string Canton = "new_Canton";
+        public const string District = "new_Distrit";
     }
 
     public static class ContactFields

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AboxDynamicsBase.Classes
+﻿namespace AboxDynamicsBase.Classes
 {
-   public class LogClass
+    public class LogClass
     {
         public string ProcessId { get; set; }
         public string Message { get; set; }
@@ -14,6 +8,5 @@ namespace AboxDynamicsBase.Classes
         public string Level { get; set; }
         public string ClassName { get; set; }
         public string Exception { get; set; }
-       
     }
 }

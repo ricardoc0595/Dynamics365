@@ -2,13 +2,8 @@
 {
     public class DoseEntity : EntityBase
     {
-        
-        
-
         public DoseEntity()
         {
-            
-            
             this.EntityPluralName = "new_doses";
             this.EntitySingularName = "new_dose";
         }
@@ -27,13 +22,7 @@
 
     public class DoseSchemas
     {
-        
-            public const string DosexProduct = "new_ProductDose";
-            public const string ContactxDose = "new_ContactDoseId";
-        
-
-        
-        
-        
+        public const string DosexProduct = "new_ProductDose";
+        public const string ContactxDose = "new_ContactDoseId";
     }
 }

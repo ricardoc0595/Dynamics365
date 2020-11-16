@@ -16,7 +16,6 @@ namespace AboxCrmPlugins.Methods
             {
                 #region debug log
 
-               
                 this.LogPluginFeedback(new LogClass
                 {
                     Exception = "",
@@ -27,12 +26,10 @@ namespace AboxCrmPlugins.Methods
                     ProcessId = ""
                 }, trace);
 
-
-                #endregion
+                #endregion debug log
             }
             catch (Exception exc)
             {
-                
             }
 
             WebRequestResponse wrResponse = new WebRequestResponse();
@@ -53,7 +50,6 @@ namespace AboxCrmPlugins.Methods
                         string serviceUrl = requestData.Url;
                         wrResponse.Data = webClient.UploadString(serviceUrl, requestData.InputData);
 
-
                         if (wrResponse.Data != "")
                         {
                             wrResponse.IsSuccessful = true;
@@ -73,10 +69,7 @@ namespace AboxCrmPlugins.Methods
                             }
                             catch (Exception e)
                             {
-
                             }
-
-
                         }
                     }
                 }
@@ -91,15 +84,12 @@ namespace AboxCrmPlugins.Methods
                             using (var reader = new StreamReader(errorResponse.GetResponseStream()))
                             {
                                 error = reader.ReadToEnd();
-
-                                //TODO: use JSON.net to parse this string and look at the error message
                             }
                         }
                     }
 
                     #region error log
 
-                    
                     this.LogPluginFeedback(new LogClass
                     {
                         Exception = wex.ToString(),
@@ -110,17 +100,15 @@ namespace AboxCrmPlugins.Methods
                         ProcessId = ""
                     }, trace);
 
+                    #endregion error log
 
-                    #endregion
                     wrResponse.Data = null;
                     wrResponse.ErrorMessage = wex.ToString();
                     wrResponse.IsSuccessful = false;
-                    //TODO: Capturar excepción con servicios de Abox Plan y hacer un Logging
                 }
             }
             catch (Exception ex)
             {
-
                 this.LogPluginFeedback(new LogClass
                 {
                     Exception = ex.ToString(),
@@ -142,7 +130,6 @@ namespace AboxCrmPlugins.Methods
 
         public void LogPluginFeedback(LogClass log, Microsoft.Xrm.Sdk.ITracingService trace)
         {
-            
             try
             {
                 WebRequestData wrData = new WebRequestData();
@@ -155,7 +142,7 @@ namespace AboxCrmPlugins.Methods
                 wrData.ContentType = "application/json";
                 // wrData.Authorization = "Bearer " + Constants.TokenForAboxServices;
                 wrData.Url = AboxServices.CrmWebAPILog;
-           
+
                 try
                 {
                     using (WebClient client = new WebClient())
@@ -171,8 +158,6 @@ namespace AboxCrmPlugins.Methods
                         webClient.UploadString(serviceUrl, wrData.InputData);
 
                         trace.Trace("Url:" + wrData.Url + " | Data:" + wrData.InputData);
-                       
-                       
                     }
                 }
                 catch (WebException wex)
@@ -186,23 +171,16 @@ namespace AboxCrmPlugins.Methods
                             using (var reader = new StreamReader(errorResponse.GetResponseStream()))
                             {
                                 error = reader.ReadToEnd();
-
-                                //TODO: use JSON.net to parse this string and look at the error message
                             }
                         }
                     }
-
                 }
-
-
-
             }
             catch (Exception ex)
             {
                 trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
                 throw;
             }
-            
         }
 
         public string GetCountryValueForService(int dynamicsCountryValue)

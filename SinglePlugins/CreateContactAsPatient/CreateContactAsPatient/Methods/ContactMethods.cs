@@ -1,4 +1,7 @@
-﻿using Microsoft.Xrm.Sdk;
+﻿using AboxDynamicsBase.Classes.Entities;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using System;
 
 namespace CreateContactAsPatient.Methods
 {
@@ -13,6 +16,29 @@ namespace CreateContactAsPatient.Methods
         public Entity GetFullUpdatedContactData(Entity updatedContact, Entity fullContact)
         {
             return null;
+        }
+
+        public EntityCollection GetContactChildContacts(Entity contact, IOrganizationService service)
+        {
+            ContactEntity contactEntity = new ContactEntity();
+            try
+            {
+                //Obtener los productos y dosis que ya tiene actualmente asignados el contacto
+                string[] columnsToGet = new string[] { ContactFields.IdAboxPatient };
+                var contactColumnSet = new ColumnSet(columnsToGet);
+                Guid parentId = contact.Id;
+                var query = new QueryExpression(contactEntity.EntitySingularName);
+                query.Criteria.AddCondition(new ConditionExpression(ContactFields.ContactxContactLookup, ConditionOperator.Equal, parentId));
+                query.ColumnSet = contactColumnSet;
+                EntityCollection contactChildrenRecords = service.RetrieveMultiple(query);
+
+                return contactChildrenRecords;
+            }
+            catch (Exception ex)
+            {
+                return null;
+                throw;
+            }
         }
     }
 }

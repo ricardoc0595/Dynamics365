@@ -59,7 +59,7 @@ namespace CreateContactAsPatient
                 if (context.MessageName.ToLower() == "associate" || context.MessageName.ToLower() == "disassociate")
                 {
                     contactEntity = new ContactEntity();
-                    
+
                     // Get the “Relationship” Key from context
 
                     if (context.InputParameters.Contains("Relationship"))
@@ -93,7 +93,7 @@ namespace CreateContactAsPatient
 
                             //updatePatientRequest.personalinfo = new UpdatePatientRequest.Request.Personalinfo();
 
-                            updatePatientRequest = helperMethods.GetPatientUpdateStructure(contact, service,trace);
+                            updatePatientRequest = helperMethods.GetPatientUpdateStructure(contact, service, trace);
                         }
 
                         #endregion -> Target
@@ -216,8 +216,6 @@ namespace CreateContactAsPatient
                         ///Request service POST
                         ///
 
-                        
-
                         DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.Request));
                         MemoryStream memoryStream = new MemoryStream();
                         serializer.WriteObject(memoryStream, updatePatientRequest);
@@ -284,8 +282,14 @@ namespace CreateContactAsPatient
                     trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + e.ToString());
                 }
 
-                throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
-                //TODO: Crear Log
+                if (ex.Data["HasFeedbackMessage"] != null)
+                {
+                    throw new InvalidPluginExecutionException(ex.Message);
+                }
+                else
+                {
+                    throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
+                }
             }
         }
     }

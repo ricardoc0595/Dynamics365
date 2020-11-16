@@ -32,17 +32,13 @@ namespace CreateContactAsPatient
                 IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
                 IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
 
-
-                //TODO: Limitar ejecucion del PLugin cuando el ID ABOX PATIENT de Dynamics está vacío.
-
-
                 /*Esta validación previene la ejecución del Plugin de cualquier
                  * transacción realizada a través del Web API desde Abox*/
                 if (context.InitiatingUserId == new Guid("7dbf49f3-8be8-ea11-a817-002248029f77"))
                 {
                     return;
                 }
-                
+
                 Entity contactUpdated = null;
                 UpdatePatientRequest.Request updatePatientRequest = null;
                 UpdateAccountRequest.Request updateAccountRequest = null;
@@ -58,9 +54,6 @@ namespace CreateContactAsPatient
                     }
                     else
                     {
-
-
-
                         if (contactUpdated != null)
                         {
                             /*Desde otros plugins, cuando se cambia un valor de un field a nivel de código o se crea una realcion,
@@ -77,8 +70,6 @@ namespace CreateContactAsPatient
                                 return;
                             }
 
-                          
-
                             helperMethods = new RequestHelpers();
 
                             #region -> Set request data based on Contact
@@ -89,15 +80,13 @@ namespace CreateContactAsPatient
                             var columnSet = new ColumnSet(columnsToGet);
                             Entity contactData = service.Retrieve(contactEntity.EntitySingularName, contactUpdated.Id, columnSet);
 
-
+                            //Limitar ejecucion del Plugin cuando el ID ABOX PATIENT de Dynamics está vacío.
                             if (!contactData.Attributes.Contains(ContactFields.IdAboxPatient))
                             {
                                 Exception ex = new Exception($"Este contacto no posee un ID de paciente Abox registrado. Por favor contacte al administrador.");
                                 ex.Data["HasFeedbackMessage"] = true;
                                 throw ex;
                             }
-
-
 
                             string userType = "";
 
@@ -129,14 +118,15 @@ namespace CreateContactAsPatient
                                  *de update patient*/
                                 if (userType == "01" || (contactData.Attributes.Contains(ContactFields.ContactxContactLookup)))
                                 {
-                                    updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service,trace);
+                                    updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service, trace);
                                 }
                                 else
                                 {
                                     //Si es cuidador, tutor, o paciente que no está a cargo de nadie se usa el update account
-                                    updateAccountRequest = helperMethods.GetAccountUpdateStructure(contactData, service,trace);
+                                    updateAccountRequest = helperMethods.GetAccountUpdateStructure(contactData, service, trace);
                                 }
-                            }else if (contactData.Attributes.Contains(ContactFields.ContactxContactLookup))
+                            }
+                            else if (contactData.Attributes.Contains(ContactFields.ContactxContactLookup))
                             {
                                 updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service, trace);
                             }
@@ -148,12 +138,12 @@ namespace CreateContactAsPatient
                                     contactName += contactData.GetAttributeValue<string>(ContactFields.Firstname);
 
                                 if (contactData.Attributes.Contains(ContactFields.Lastname))
-                                    contactName += " "+contactData.GetAttributeValue<string>(ContactFields.Lastname);
+                                    contactName += " " + contactData.GetAttributeValue<string>(ContactFields.Lastname);
 
                                 if (contactData.Attributes.Contains(ContactFields.SecondLastname))
-                                    contactName += " "+contactData.GetAttributeValue<string>(ContactFields.SecondLastname);
+                                    contactName += " " + contactData.GetAttributeValue<string>(ContactFields.SecondLastname);
 
-                                Exception ex = new Exception($"Ocurrió un problema identificando el tipo de usuario del contacto.{(!String.IsNullOrEmpty(contactName)?"("+contactName+")":"")}");
+                                Exception ex = new Exception($"Ocurrió un problema identificando el tipo de usuario del contacto. {(!String.IsNullOrEmpty(contactName) ? "(" + contactName + ")" : "")}");
                                 ex.Data["HasFeedbackMessage"] = true;
                                 throw ex;
                             }
@@ -237,8 +227,9 @@ namespace CreateContactAsPatient
                             }
                             else
                             {
-                                //TODO: Manejar error, esta llegando null cuando hay un error de protocolo
-                                throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage);
+                                Exception ex = new Exception(Constants.GeneralAboxServicesErrorMessage);
+                                ex.Data["HasFeedbackMessage"] = true;
+                                throw ex;
                             }
                         }
                     }
@@ -273,8 +264,6 @@ namespace CreateContactAsPatient
                 {
                     throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
                 }
-
-                //TODO: Crear Log
             }
         }
     }

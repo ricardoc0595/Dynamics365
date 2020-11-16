@@ -8,7 +8,6 @@
 
         public class BaseFields
         {
-            
             public string CreatedFromWebAPI { get; set; }
 
             public string EntityId { get; set; }

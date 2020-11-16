@@ -2,9 +2,6 @@
 {
     public class DoctorEntity : EntityBase
     {
-        
-        
-
         public DoctorEntity()
         {
             this.EntityPluralName = "new_doctors";
@@ -14,7 +11,6 @@
 
     public static class DoctorSchemas
     {
-        
     }
 
     public static class DoctorFields

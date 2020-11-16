@@ -107,30 +107,44 @@ namespace CrmAboxApi.Controllers
         [HttpPost]
         public IHttpActionResult LogPluginFeedback([FromBody] LogClass log)
         {
-            LogLevel level = null;
-            switch (log.Level.ToLower())
+            try
             {
-                case "info":
-                    level = LogLevel.Info;
-                    break;
-                case "error":
-                    level = LogLevel.Error;
-                    break;
-                case "trace":
-                    level = LogLevel.Trace;
-                    break;
-                case "debug":
-                    level = LogLevel.Debug;
-                    break;
-                default:
-                    break;
+                LogLevel level = null;
+                switch (log.Level.ToLower())
+                {
+                    case "info":
+                        level = LogLevel.Info;
+                        break;
+                    case "error":
+                        level = LogLevel.Error;
+                        break;
+                    case "trace":
+                        level = LogLevel.Trace;
+                        break;
+                    case "debug":
+                        level = LogLevel.Debug;
+                        break;
+                    default:
+                        break;
+                }
+                LogEventInfo s = new LogEventInfo(level, log.ClassName, $"** PLUGIN LOG ** Method:{log.MethodName} ProcessID:{log.ProcessId} Message:{log.Message} Exception:{log.Exception}");
+
+                Logger.Log(s);
+
+                return Ok();
             }
-            LogEventInfo s = new LogEventInfo(level, log.ClassName,$"** PLUGIN ERROR ** Method:{log.MethodName} ProcessID:{log.ProcessId} Message:{log.Message} Exception:{log.Exception}");
-        
-            Logger.Log(s);
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new OperationResult
+                {
+                    IsSuccessful = false,
+                    Data = null,
+                    Message = ex.ToString(),
+                    Code = ""
+                });
+
+            }
            
-          
-            return Ok();
         }
 
 

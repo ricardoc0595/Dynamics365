@@ -2,13 +2,10 @@
 {
     public class ProductEntity : EntityBase
     {
-        
-        
-
         public ProductEntity()
         {
             //this.Fields = new ProductFields();
-            
+
             this.EntitySingularName = "product";
             this.EntityPluralName = "products";
         }

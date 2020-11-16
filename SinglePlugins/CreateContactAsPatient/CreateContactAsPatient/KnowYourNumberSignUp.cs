@@ -284,18 +284,42 @@ namespace CreateContactAsPatient
                         }
                         else
                         {
-                            throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage);
+                            Exception ex = new Exception(Constants.GeneralAboxServicesErrorMessage);
+                            ex.Data["HasFeedbackMessage"] = true;
+                            throw ex;
                         }
-                        //TODO: Capturar excepción con servicios de Abox Plan y hacer un Logging
                     }
                 }
             }
             catch (Exception ex)
             {
                 trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
-                throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
-                
-                //TODO: Crear Log
+
+                try
+                {
+                    sharedMethods.LogPluginFeedback(new LogClass
+                    {
+                        Exception = ex.ToString(),
+                        Level = "error",
+                        ClassName = this.GetType().ToString(),
+                        MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                        Message = "Excepción en plugin",
+                        ProcessId = ""
+                    }, trace);
+                }
+                catch (Exception e)
+                {
+                    trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + e.ToString());
+                }
+
+                if (ex.Data["HasFeedbackMessage"] != null)
+                {
+                    throw new InvalidPluginExecutionException(ex.Message);
+                }
+                else
+                {
+                    throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
+                }
             }
         }
     }

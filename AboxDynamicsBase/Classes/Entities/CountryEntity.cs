@@ -2,13 +2,8 @@
 {
     public class CountryEntity : EntityBase
     {
-        
-        
-
         public CountryEntity()
         {
-            
-            
             this.EntityPluralName = "new_countries";
             this.EntitySingularName = "new_country";
         }
@@ -23,6 +18,5 @@
 
     public static class CountrySchemas
     {
-       
     }
 }

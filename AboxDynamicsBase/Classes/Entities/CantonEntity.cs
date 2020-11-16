@@ -4,11 +4,8 @@
     {
         //public CantonFields Fields { get; set; }
 
-
         public CantonEntity()
         {
-
-
             this.EntityPluralName = "new_cantons";
             this.EntitySingularName = "new_canton";
         }
@@ -25,8 +22,5 @@
     public static class CantonSchemas
     {
         public const string ProvincexCanton = "new_ProvinciaCanton";
-
-
-
     }
 }

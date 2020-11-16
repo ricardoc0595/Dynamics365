@@ -1,5 +1,6 @@
-﻿using AboxCrmPlugins.Methods;
-using AboxCrmPlugins.Classes;
+﻿using AboxCrmPlugins.Classes;
+using AboxCrmPlugins.Methods;
+using AboxDynamicsBase.Classes;
 using AboxDynamicsBase.Classes.Entities;
 using CreateContactAsPatient.Classes;
 using CreateContactAsPatient.Methods;
@@ -9,13 +10,11 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using AboxDynamicsBase.Classes;
 
 namespace CreateContactAsPatient
 {
     public class ChildContactsAssociation : IPlugin
     {
-
         private MShared sharedMethods = null;
 
         private ContactEntity contactEntity = null;
@@ -91,14 +90,11 @@ namespace CreateContactAsPatient
                             string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.UserType, ContactFields.Id, ContactFields.Country, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname };
                             var columnSet = new ColumnSet(columnsToGet);
                             parentContact = service.Retrieve(contactEntity.EntitySingularName, targetEntity.Id, columnSet);
-
-                          
                         }
 
                         #endregion -> Target
 
                         #region -> Related
-
 
                         relatedEntities = context.InputParameters["RelatedEntities"] as EntityReferenceCollection;
 
@@ -113,20 +109,29 @@ namespace CreateContactAsPatient
                             }
                         }
 
-
                         if (userType == "02" || userType == "03")
                         {
-
                             if (relatedEntities.Count > 0)
                             {
                                 RequestHelpers reqHelpers = new RequestHelpers();
-                                //TODO:Hacer constante configurable de cantidad de bajo cuido permitidos
-                                if (relatedEntities.Count >= 2)
+
+                                ContactMethods contactMethods = new ContactMethods();
+
+                                var contactsRelated = contactMethods.GetContactChildContacts(parentContact, service);
+
+                                if (contactsRelated != null)
                                 {
-                                    throw new InvalidPluginExecutionException("Solo puede asociarse un paciente a un usuario tutor o cuidador");
+                                    if (contactsRelated.Entities.Count + relatedEntities.Count > 1 || relatedEntities.Count > 1)
+                                    {
+                                        //TODO:Hacer constante configurable de cantidad de bajo cuido permitidos
+
+                                        Exception ex = new Exception("No es posible asignar más de un contacto bajo cuido.");
+                                        ex.Data["HasFeedbackMessage"] = true;
+                                        throw ex;
+                                    }
                                 }
 
-                                string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate,ContactFields.Email };
+                                string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate, ContactFields.Email };
                                 var columnSet = new ColumnSet(columnsToGet);
 
                                 for (int i = 0; i < relatedEntities.Count; i++)
@@ -134,7 +139,6 @@ namespace CreateContactAsPatient
                                     EntityReference r = relatedEntities[i];
                                     Entity childContactToAssociate = service.Retrieve(contactEntity.EntitySingularName, r.Id, columnSet);
                                     PatientSignupRequest.Request request = reqHelpers.GetSignupPatientUnderCareRequestObject(childContactToAssociate, parentContact, service, trace);
-
 
                                     DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.Request));
                                     MemoryStream memoryStream = new MemoryStream();
@@ -154,7 +158,6 @@ namespace CreateContactAsPatient
                                     else if (userType == "03")
                                         wrData.Url = AboxServices.TutorChildService;
 
-
                                     var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
                                     PatientSignupRequest.ServiceResponse serviceResponseProperties = null;
                                     if (serviceResponse.IsSuccessful)
@@ -163,7 +166,6 @@ namespace CreateContactAsPatient
 
                                         using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponse.Data)))
                                         {
-                                            
                                             deserializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.ServiceResponse));
                                             serviceResponseProperties = (PatientSignupRequest.ServiceResponse)deserializer.ReadObject(ms);
                                         }
@@ -188,10 +190,9 @@ namespace CreateContactAsPatient
                                             }
                                             catch (Exception e)
                                             {
-
                                             }
 
-                                            #endregion
+                                            #endregion debug log
 
                                             //TODO: No se esta respetando este throw y el plugin se esta ejecutando de todas formas
                                             Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
@@ -200,7 +201,6 @@ namespace CreateContactAsPatient
                                         }
                                         else
                                         {
-
                                             //Esta linea automaticamente llama al plugin de Update y se esta llamando sin intención
                                             //childContactToAssociate.Attributes.Add(ContactFields.IdAboxPatient, serviceResponseProperties.response.details.idPaciente);
 
@@ -212,6 +212,7 @@ namespace CreateContactAsPatient
                                             catch (Exception ex)
                                             {
                                                 #region log
+
                                                 try
                                                 {
                                                     sharedMethods.LogPluginFeedback(new LogClass
@@ -226,11 +227,10 @@ namespace CreateContactAsPatient
                                                 }
                                                 catch (Exception e)
                                                 {
-
                                                 }
-                                                #endregion
+
+                                                #endregion log
                                             }
-                                           
 
                                             try
                                             {
@@ -246,15 +246,10 @@ namespace CreateContactAsPatient
                                             }
                                             catch (Exception e)
                                             {
-
                                             }
-
-                                            //TODO: Llamar servicio de enviar correo
 
                                             PatientSignupRequest.ServiceResponse welcomeServiceResponseProperties = null;
                                             PatientSignupRequest.Request requestForWelcome = reqHelpers.GetWelcomeMailRequestForTutorsAndCaretakers(parentContact, service, trace);
-
-                                            
 
                                             serializer = new DataContractJsonSerializer(typeof(PatientSignupRequest.Request));
                                             memoryStream = new MemoryStream();
@@ -268,14 +263,10 @@ namespace CreateContactAsPatient
                                             wrDataWelcomeMail.Authorization = Constants.TokenForAboxServices;
                                             wrDataWelcomeMail.Url = AboxServices.WelcomeSendMailService;
 
-                                           
-
                                             var serviceResponseWelcome = sharedMethods.DoPostRequest(wrDataWelcomeMail, trace);
-
 
                                             if (serviceResponseWelcome.IsSuccessful)
                                             {
-
                                                 DataContractJsonSerializer deserializerWelcomeResponse = new DataContractJsonSerializer(typeof(PatientSignupRequest.ServiceResponse));
 
                                                 using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponseWelcome.Data)))
@@ -304,10 +295,9 @@ namespace CreateContactAsPatient
                                                     }
                                                     catch (Exception e)
                                                     {
-
                                                     }
 
-                                                    #endregion
+                                                    #endregion debug log
 
                                                     Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
                                                     serviceEx.Data["HasFeedbackMessage"] = true;
@@ -315,10 +305,7 @@ namespace CreateContactAsPatient
                                                 }
                                                 else
                                                 {
-
                                                 }
-
-
                                             }
                                             else
                                             {
@@ -328,8 +315,6 @@ namespace CreateContactAsPatient
                                             }
 
                                             //var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
-
-
                                         }
                                     }
                                     else
@@ -337,21 +322,18 @@ namespace CreateContactAsPatient
                                         trace.Trace(Constants.GeneralAboxServicesErrorMessage);
                                         throw new InvalidPluginExecutionException(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
                                     }
-
-
                                 }
-
                             }
-
                         }
 
-                        #endregion
-
+                        #endregion -> Related
                     }
                 }
 
-                #endregion Associate 
+                #endregion Associate & Disassociate
+
             }
+
             catch (Exception ex)
             {
                 trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
@@ -376,17 +358,12 @@ namespace CreateContactAsPatient
                 if (ex.Data["HasFeedbackMessage"] != null)
                 {
                     throw new InvalidPluginExecutionException(ex.Message);
-                    
                 }
                 else
                 {
                     throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
                 }
-                //TODO: Crear Log
             }
         }
     }
-
-
 }
-

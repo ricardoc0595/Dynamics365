@@ -82,8 +82,6 @@ namespace CreateContactAsPatient
                     }
                     else
                     {
-                        
-
                         //Cast as Entity the dose being created
 
                         #region -> Related Contact
@@ -112,7 +110,7 @@ namespace CreateContactAsPatient
                         {
                             RequestHelpers helperMethods = new RequestHelpers();
 
-                            updatePatientRequest = helperMethods.GetPatientUpdateStructure(contact, service,trace);
+                            updatePatientRequest = helperMethods.GetPatientUpdateStructure(contact, service, trace);
                         }
 
                         #endregion -> Related Contact
@@ -142,7 +140,6 @@ namespace CreateContactAsPatient
 
                                             if (doseInput.Attributes.Contains(DoseFields.Dose))
                                             {
-                                                
                                                 int value = (doseInput.GetAttributeValue<OptionSetValue>(DoseFields.Dose)).Value;
                                                 frequency = sharedMethods.GetDoseFrequencyValue(value);
                                             }
@@ -292,8 +289,6 @@ namespace CreateContactAsPatient
                         ///Request service POST
                         ///
 
-                        
-
                         DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.Request));
                         MemoryStream memoryStream = new MemoryStream();
                         serializer.WriteObject(memoryStream, updatePatientRequest);
@@ -361,7 +356,6 @@ namespace CreateContactAsPatient
                 }
 
                 throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
-                //TODO: Crear Log
             }
         }
     }

@@ -447,7 +447,6 @@ namespace CreateContactAsPatient.Methods
                                                 {
                                                     int value = (doseChild.GetAttributeValue<OptionSetValue>(DoseFields.Dose)).Value;
                                                     frequency = sharedMethods.GetDoseFrequencyValue(value);
-
                                                 }
 
                                                 requestStructure.medication.products[i] = new UpdateAccountRequest.Request.Product
@@ -757,8 +756,6 @@ namespace CreateContactAsPatient.Methods
 
                 bool addPatientInChargeInfo = false;
 
-
-
                 if (contact.Attributes.Contains(ContactFields.UserType))
                 {
                     EntityReference userTypeReference = null;
@@ -772,13 +769,10 @@ namespace CreateContactAsPatient.Methods
                     {
                         addPatientInChargeInfo = true;
                     }
-
                 }
 
                 request.personalinfo = new PatientSignupRequest.Request.Personalinfo();
                 request.patientincharge = new PatientSignupRequest.Request.Patientincharge();
-
-
 
                 #region Personal Info
 
@@ -847,9 +841,6 @@ namespace CreateContactAsPatient.Methods
                 }
 
                 #endregion Personal Info
-
-
-
 
                 #region ContactInfo
 
@@ -1013,16 +1004,12 @@ namespace CreateContactAsPatient.Methods
             }
         }
 
-
-
-        public PatientSignupRequest.Request GetSignupPatientUnderCareRequestObject(Entity childContact,Entity parentContact, IOrganizationService service, ITracingService trace)
+        public PatientSignupRequest.Request GetSignupPatientUnderCareRequestObject(Entity childContact, Entity parentContact, IOrganizationService service, ITracingService trace)
         {
             var request = new PatientSignupRequest.Request();
             try
             {
-               
                 CountryEntity countryEntity = new CountryEntity();
-                
 
                 if (parentContact.Attributes.Contains(ContactFields.UserType))
                 {
@@ -1032,7 +1019,6 @@ namespace CreateContactAsPatient.Methods
                     {
                         request.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
                     }
-
                 }
 
                 if (parentContact.Attributes.Contains(ContactFields.Country))
@@ -1054,14 +1040,10 @@ namespace CreateContactAsPatient.Methods
                     }
                 }
 
-
                 request.personalinfo = new PatientSignupRequest.Request.Personalinfo();
                 request.patientincharge = new PatientSignupRequest.Request.Patientincharge();
 
-
-
                 #region Personal Info
-
 
                 //Agregar al request la informacion del usuario a cargo
                 if (parentContact.Attributes.Contains(ContactFields.Id))
@@ -1070,15 +1052,12 @@ namespace CreateContactAsPatient.Methods
                     request.personalinfo.id = parentId;
                 }
 
-
-                #endregion
+                #endregion Personal Info
 
                 #region Patient In Charge
 
-
                 if (childContact.Attributes.Contains(ContactFields.IdType))
                 {
-
                     request.patientincharge.idtype = "0" + (childContact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
                 }
 
@@ -1088,22 +1067,18 @@ namespace CreateContactAsPatient.Methods
 
                 if (childContact.Attributes.Contains(ContactFields.Firstname))
                 {
-
                     request.patientincharge.name = childContact.Attributes[ContactFields.Firstname].ToString();
                 }
 
                 if (childContact.Attributes.Contains(ContactFields.Lastname))
                 {
-
                     request.patientincharge.lastname = childContact.Attributes[ContactFields.Lastname].ToString();
                 }
-
 
                 if (childContact.Attributes.Contains(ContactFields.SecondLastname))
                 {
                     request.patientincharge.secondlastname = childContact.Attributes[ContactFields.SecondLastname].ToString();
                 }
-
 
                 if (childContact.Attributes.Contains(ContactFields.Gender))
                 {
@@ -1111,7 +1086,6 @@ namespace CreateContactAsPatient.Methods
                     string gender = sharedMethods.GetGenderValue(val);
                     if (!String.IsNullOrEmpty(gender))
                     {
-
                         request.patientincharge.gender = gender;
                     }
                 }
@@ -1122,25 +1096,17 @@ namespace CreateContactAsPatient.Methods
                     birthdate = childContact.GetAttributeValue<DateTime>(ContactFields.Birthdate);
                     if (birthdate != null)
                     {
-
                         request.patientincharge.dateofbirth = birthdate.ToString("yyyy-MM-dd");
                     }
                 }
 
-
-                #endregion
-
-
+                #endregion Patient In Charge
 
                 #region ContactInfo
 
                 request.contactinfo = new PatientSignupRequest.Request.Contactinfo();
 
-
-
                 #endregion ContactInfo
-
-                
 
                 return request;
             }
@@ -1151,13 +1117,11 @@ namespace CreateContactAsPatient.Methods
             }
         }
 
-
         public PatientSignupRequest.Request GetWelcomeMailRequestForTutorsAndCaretakers(Entity parentContact, IOrganizationService service, ITracingService trace)
         {
             var request = new PatientSignupRequest.Request();
             try
             {
-
                 CountryEntity countryEntity = new CountryEntity();
 
                 if (parentContact.Attributes.Contains(ContactFields.UserType))
@@ -1168,7 +1132,6 @@ namespace CreateContactAsPatient.Methods
                     {
                         request.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
                     }
-
                 }
 
                 if (parentContact.Attributes.Contains(ContactFields.Country))
@@ -1190,12 +1153,8 @@ namespace CreateContactAsPatient.Methods
                     }
                 }
 
-
                 request.personalinfo = new PatientSignupRequest.Request.Personalinfo();
                 request.patientincharge = new PatientSignupRequest.Request.Patientincharge();
-
-
-
 
                 //Agregar al request la informacion del usuario a cargo
                 if (parentContact.Attributes.Contains(ContactFields.Id))
@@ -1203,7 +1162,6 @@ namespace CreateContactAsPatient.Methods
                     string parentId = parentContact.GetAttributeValue<string>(ContactFields.Id);
                     request.personalinfo.id = parentId;
                 }
-
 
                 if (parentContact.Attributes.Contains(ContactFields.Firstname))
                     request.personalinfo.name = parentContact.GetAttributeValue<string>(ContactFields.Firstname);
@@ -1217,7 +1175,6 @@ namespace CreateContactAsPatient.Methods
                 if (parentContact.Attributes.Contains(ContactFields.Password))
                     request.personalinfo.password = parentContact.GetAttributeValue<string>(ContactFields.Password);
 
-
                 #region ContactInfo
 
                 request.contactinfo = new PatientSignupRequest.Request.Contactinfo();
@@ -1225,10 +1182,7 @@ namespace CreateContactAsPatient.Methods
                 if (parentContact.Attributes.Contains(ContactFields.Email))
                     request.contactinfo.email = parentContact.GetAttributeValue<string>(ContactFields.Email);
 
-
-                #endregion
-
-
+                #endregion ContactInfo
 
                 return request;
             }
@@ -1238,6 +1192,5 @@ namespace CreateContactAsPatient.Methods
                 throw ex;
             }
         }
-
     }
 }

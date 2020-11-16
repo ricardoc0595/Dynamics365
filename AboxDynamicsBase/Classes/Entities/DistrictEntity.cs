@@ -2,13 +2,10 @@
 {
     public class DistrictEntity : EntityBase
     {
-        
-        
-
         public DistrictEntity()
         {
             //this.Fields = new DistrictFields();
-            
+
             this.EntityPluralName = "new_distrits";
             this.EntitySingularName = "new_distrit";
         }
@@ -24,11 +21,6 @@
 
     public static class DistrictSchemas
     {
-        
-        
-            public const string CantonxDistrict = "new_DistritCity";
-        
-
-        
+        public const string CantonxDistrict = "new_DistritCity";
     }
 }
