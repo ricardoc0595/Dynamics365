@@ -78,7 +78,13 @@ namespace CreateContactAsPatient
                         trace.Trace("Objeto Json:" + jsonObject);
                         wrData.ContentType = "application/json";
 
-                        if (request.userType == "02" || request.userType == "03")
+
+                        EntityReference userTypeReference = null;
+                        userTypeReference = (EntityReference)contact.Attributes[ContactFields.UserType];
+                        string userTypeFromContactBeingCreated = userTypeReference.Id.ToString();
+                        // sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
+
+                        if (userTypeFromContactBeingCreated == Constants.CareTakerIdType || userTypeFromContactBeingCreated == Constants.TutorIdType)
                         {
                             wrData.Url = AboxServices.MainPatientForTutorOrCaretakerService;
                             wrData.Authorization = Constants.TokenForAboxServices;
@@ -87,6 +93,8 @@ namespace CreateContactAsPatient
                         {
                             wrData.Url = AboxServices.PatientSignup;
                         }
+
+
 
                         trace.Trace("Url:" + wrData.Url);
 

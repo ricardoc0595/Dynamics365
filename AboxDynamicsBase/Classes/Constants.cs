@@ -21,6 +21,8 @@
         public const string ErrorMessageCodeReturned = "Error en transacción, Código de respuesta servicio:";
         public const string ErrorMessageTransactionCodeReturned = "Ocurrió un error al guardar la información en Abox Plan:\n";
         public const string GeneralPluginErrorMessage = "Ocurrió un error en la ejecución de un Plugin interno, por favor intenta nuevamente o comunícate con soporte.";
+        public const string ApplicationIdWebAPI = "WEBAPI";
+        public const string ApplicationIdPlugin = "PLUGIN";
         //public enum S
         //{
         //    DA,

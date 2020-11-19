@@ -1,4 +1,5 @@
 ﻿using AboxCrmPlugins.Methods;
+using AboxDynamicsBase.Classes;
 using AboxDynamicsBase.Classes.Entities;
 using CreateContactAsPatient.Classes;
 using Microsoft.Xrm.Sdk;
@@ -760,14 +761,20 @@ namespace CreateContactAsPatient.Methods
                 {
                     EntityReference userTypeReference = null;
                     userTypeReference = (EntityReference)contact.Attributes[ContactFields.UserType];
-                    if (userTypeReference != null)
-                    {
-                        request.userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
-                    }
+                    string userTypeFromContactBeingCreated = userTypeReference.Id.ToString();
+                       // sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
 
-                    if (request.userType == "01" || request.userType == "05")
+                    if (userTypeFromContactBeingCreated== Constants.CareTakerIdType || userTypeFromContactBeingCreated == Constants.TutorIdType)
                     {
-                        addPatientInChargeInfo = true;
+                        //Un usuario tutor o cuidador, en aboxplan se guarda como user type 01, el que está bajo cuido si se registra como 02 o 03
+                        request.userType = "01";
+                    }
+                    else
+                    {
+                        request.userType = sharedMethods.GetUserTypeId(userTypeFromContactBeingCreated);
+
+                        if (request.userType == "01" || request.userType == "05")
+                            addPatientInChargeInfo = true;
                     }
                 }
 

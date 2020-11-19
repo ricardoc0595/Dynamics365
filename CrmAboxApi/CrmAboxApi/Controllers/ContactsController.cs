@@ -92,11 +92,11 @@ namespace CrmAboxApi.Controllers
         [HttpGet]
         public IHttpActionResult WhoAmI()
         {
-            //LogEventInfo s = new LogEventInfo(LogLevel.Trace, Logger.Name,new Log);
-           
-            //s.Properties["AppID"] = "PLUGIN";
-            //Logger.Log(s);
-           //Logger.Trace(new TestLayout { Caps = false, Config1 = "ss", Config2 = "22" });
+            LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, $"Message");
+            log.Properties["ProcessID"] = "sssadad";
+            log.Properties["AppID"] = "PLUGIN";
+            log.Properties["MethodName"] = "TestMethod";
+            Logger.Log(log);
             string token = "";
             CrmAboxApi.Logic.Methods.MDynamicsWebApiFunctions webAPiFunctions = new Logic.Methods.MDynamicsWebApiFunctions();
 
@@ -127,9 +127,14 @@ namespace CrmAboxApi.Controllers
                     default:
                         break;
                 }
-                LogEventInfo s = new LogEventInfo(level, log.ClassName, $"** PLUGIN LOG ** Method:{log.MethodName} ProcessID:{log.ProcessId} Message:{log.Message} Exception:{log.Exception}");
-
+                LogEventInfo s = new LogEventInfo(level, log.ClassName, $"Message:{log.Message} Exception:{log.Exception}");
+                
+                s.Properties["ProcessID"] = log.ProcessId;
+                s.Properties["AppID"] = "PLUGIN";
+                s.Properties["MethodName"] = log.MethodName;
                 Logger.Log(s);
+
+              
 
                 return Ok();
             }
@@ -152,7 +157,13 @@ namespace CrmAboxApi.Controllers
         public IHttpActionResult PatientSignup([FromBody] PatientSignup signupRequest)
         {
             Guid processId = Guid.NewGuid();
-            Logger.Debug("ProcessID: {processId} Request hacia {requestUrl} con el JSON:**START** {jsonObject} **END**", processId, Request.RequestUri, JsonConvert.SerializeObject(signupRequest));
+            
+            LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"ProcessID: {processId} Request hacia {Request.RequestUri} con el JSON:**START** {JsonConvert.SerializeObject(signupRequest)} **END**");
+            log.Properties["ProcessID"] = processId;
+            log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+            log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            Logger.Log(log);
+
             EContact contactProcedures = new EContact();
             OperationResult response = null;
             try
@@ -203,7 +214,13 @@ namespace CrmAboxApi.Controllers
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Request hacia {requestUrl} con el JSON:**START** {jsonObject} **END**", processId, Request.RequestUri, JsonConvert.SerializeObject(signupRequest));
+               
+                LogEventInfo logEx = new LogEventInfo(LogLevel.Error, Logger.Name,null, $"Request hacia {Request.RequestUri} con el JSON:**START** {JsonConvert.SerializeObject(signupRequest)} **END**",null,new Exception(ex.ToString()));
+                logEx.Properties["ProcessID"] = processId;
+                logEx.Properties["AppID"] = Constants.ApplicationIdWebAPI;
+                logEx.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(logEx);
+
                 return Content(HttpStatusCode.InternalServerError, new OperationResult
                 {
                     IsSuccessful = false,
@@ -218,7 +235,14 @@ namespace CrmAboxApi.Controllers
         public IHttpActionResult AccountUpdate([FromBody] UpdateAccountRequest updateRequest)
         {
             Guid processId = Guid.NewGuid();
-            Logger.Debug("ProcessID: {processId} Request hacia {requestUrl} con el JSON:**START** {jsonObject} **END**", processId, Request.RequestUri, JsonConvert.SerializeObject(updateRequest));
+        
+            LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"Request hacia {Request.RequestUri} con el JSON:**START** {JsonConvert.SerializeObject(updateRequest)} **END**");
+            log.Properties["ProcessID"] = processId;
+            log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+            log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            Logger.Log(log);
+
+
             EContact contactProcedures = new EContact();
             OperationResult response = null;
             try
@@ -249,7 +273,12 @@ namespace CrmAboxApi.Controllers
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Request hacia {requestUrl} con el JSON:**START** {jsonObject} **END**", processId, Request.RequestUri, JsonConvert.SerializeObject(updateRequest));
+                LogEventInfo logEx = new LogEventInfo(LogLevel.Error, Logger.Name,null, $"Request hacia {Request.RequestUri} con el JSON:**START** {JsonConvert.SerializeObject(updateRequest)} **END**",null,new Exception(ex.ToString()));
+                logEx.Properties["ProcessID"] = processId;
+                logEx.Properties["AppID"] = Constants.ApplicationIdWebAPI;
+                logEx.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(logEx);
+
                 return Content(HttpStatusCode.InternalServerError, new OperationResult
                 {
                     IsSuccessful = false,
@@ -264,7 +293,14 @@ namespace CrmAboxApi.Controllers
         public IHttpActionResult UpdatePatient([FromBody] UpdatePatientRequest updateRequest)
         {
             Guid processId = Guid.NewGuid();
-            Logger.Debug("ProcessID: {processId} Request hacia {requestUrl} con el JSON:**START** {jsonObject} **END**", processId, Request.RequestUri, JsonConvert.SerializeObject(updateRequest));
+            
+
+            LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"Request hacia {Request.RequestUri} con el JSON:**START** {JsonConvert.SerializeObject(updateRequest)} **END**");
+            log.Properties["ProcessID"] = processId;
+            log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+            log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            Logger.Log(log);
+
             EContact contactProcedures = new EContact();
             OperationResult response = null;
             try
@@ -272,7 +308,6 @@ namespace CrmAboxApi.Controllers
                 if (updateRequest != null)
                 {
                     OperationResult updateResult = contactProcedures.UpdatePatient(updateRequest,processId);
-
                     if (updateResult.IsSuccessful)
                     {
                         return Ok(updateResult);
@@ -295,7 +330,11 @@ namespace CrmAboxApi.Controllers
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Request hacia {requestUrl} con el JSON:**START** {jsonObject} **END**", processId, Request.RequestUri, JsonConvert.SerializeObject(updateRequest));
+                LogEventInfo logEx = new LogEventInfo(LogLevel.Error, Logger.Name,null, $"Request hacia {Request.RequestUri} con el JSON:**START** {JsonConvert.SerializeObject(updateRequest)} **END**",null,new Exception(ex.ToString()));
+                logEx.Properties["ProcessID"] = processId;
+                logEx.Properties["AppID"] = Constants.ApplicationIdWebAPI;
+                logEx.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(logEx);
                 return Content(HttpStatusCode.InternalServerError, new OperationResult
                 {
                     IsSuccessful = false,
@@ -309,6 +348,9 @@ namespace CrmAboxApi.Controllers
         // DELETE api/contacts/5
         public void Delete(int id)
         {
+
+
+
         }
     }
 }

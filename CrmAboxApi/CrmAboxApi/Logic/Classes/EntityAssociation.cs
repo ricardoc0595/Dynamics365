@@ -2,6 +2,7 @@
 using Logic.CrmAboxApi.Classes.Helper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NLog;
 using System;
 using System.Diagnostics;
 using System.Net.Http;
@@ -76,7 +77,14 @@ namespace CrmAboxApi.Logic.Classes
                             CrmWebAPIError err = result.ToObject<CrmWebAPIError>();
 
                             if (err != null)
-                                Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name, url, err.error.code, err.error.message, response.ReasonPhrase);
+                            {
+                                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, $"Url:{url} ErrorCode:{err.error.code} ErrorMessage:{err.error.message} ResponseReasonPhrase:{response.ReasonPhrase}");
+                                log.Properties["ProcessID"] = processId;
+                                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                                Logger.Log(log);
+                            }
+                              
                             operationResult.Code = "Ocurrió un error desasociando las entidades";
                             operationResult.Message = response.ReasonPhrase;
                             operationResult.IsSuccessful = false;
@@ -87,7 +95,12 @@ namespace CrmAboxApi.Logic.Classes
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+
+                    LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, ex);
+                    log.Properties["ProcessID"] = processId;
+                    log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                    log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                    Logger.Log(log);
                     operationResult.Code = "";
                     operationResult.Message = ex.ToString();
                     operationResult.IsSuccessful = false;
@@ -98,7 +111,13 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, ex);
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
+                
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;
@@ -171,7 +190,14 @@ namespace CrmAboxApi.Logic.Classes
                             CrmWebAPIError err = result.ToObject<CrmWebAPIError>();
 
                             if (err != null)
-                                Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name, url, err.error.code, err.error.message, response.ReasonPhrase);
+                            {
+                                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, $"Url:{url} ErrorCode:{err.error.code} ErrorMessage:{err.error.message} ResponseReasonPhrase:{response.ReasonPhrase}");
+                                log.Properties["ProcessID"] = processId;
+                                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                                Logger.Log(log);
+                            }
+                               
                             operationResult.Code = "Ocurrió un error asociando las entidades";
                             operationResult.Message = response.ReasonPhrase;
                             operationResult.IsSuccessful = false;
@@ -182,7 +208,12 @@ namespace CrmAboxApi.Logic.Classes
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+
+                    LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, ex);
+                    log.Properties["ProcessID"] = processId;
+                    log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                    log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                    Logger.Log(log);
                     operationResult.Code = "";
                     operationResult.Message = ex.ToString();
                     operationResult.IsSuccessful = false;
@@ -193,7 +224,12 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, ex);
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;

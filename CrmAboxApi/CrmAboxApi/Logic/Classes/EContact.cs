@@ -7,6 +7,7 @@ using CrmAboxApi.Logic.Methods;
 using Logic.CrmAboxApi.Classes.Helper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -14,6 +15,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+
 
 namespace CrmAboxApi.Logic.Classes
 {
@@ -213,8 +215,12 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 jObject = null;
                 return jObject;
             }
@@ -321,7 +327,11 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 jObject = null;
                 return jObject;
             }
@@ -389,7 +399,11 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 jObject = null;
                 return jObject;
             }
@@ -417,8 +431,16 @@ namespace CrmAboxApi.Logic.Classes
 
                             MethodBase m = MethodBase.GetCurrentMethod();
                             string url = $"contacts?$select={ContactFields.EntityId}";
-                            Logger.Debug("ProcessID: {processId} Url:{url} Action: {actionName} Data:{requestData}", processId,url, m.Name, jsonObject.ToString(Formatting.None));
-                           
+                            
+
+
+                            LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"ProcessID: {processId} Url:{url} Data:{jsonObject.ToString(Formatting.None)}");
+                            log.Properties["ProcessID"] = processId;
+                            log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                            log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                            Logger.Log(log);
+
+
                             HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
                             var response = client.PostAsync(url, c).Result;
                             if (response.IsSuccessStatusCode)
@@ -440,7 +462,15 @@ namespace CrmAboxApi.Logic.Classes
                                 CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
 
                                 if (err != null)
-                                    Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name,url,err.error.code,err.error.message,response.ReasonPhrase);
+                                {
+                                     log = new LogEventInfo(LogLevel.Error, Logger.Name, $"Url:{url} ErrorCode:{err.error.code} ErrorMessage:{err.error.message} ResponseReasonPhrase:{response.ReasonPhrase}");
+                                    log.Properties["ProcessID"] = processId;
+                                    log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                                    log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                                    Logger.Log(log);
+                                }
+                                    
+
 
                                 operationResult.Code = "";
                                 operationResult.Message = "Error al crear el contacto en el CRM";
@@ -453,7 +483,11 @@ namespace CrmAboxApi.Logic.Classes
                     catch (Exception ex)
                     {
                         //TODO: Crear Queue de procesos fallidos en BD para reprocesar
-                        Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                        LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null,"",null,ex);
+                        log.Properties["ProcessID"] = processId;
+                        log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                        log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                        Logger.Log(log);
                         operationResult.Code = "";
                         operationResult.Message = ex.ToString();
                         operationResult.IsSuccessful = false;
@@ -465,7 +499,11 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;
@@ -491,7 +529,14 @@ namespace CrmAboxApi.Logic.Classes
                             MethodBase m = MethodBase.GetCurrentMethod();
                             //client.DefaultRequestHeaders.Add("Prefer", "return=representation");
                             string url = $"{this.EntityPluralName}({contactId})";
-                            Logger.Debug("ProcessID: {processId} Url:{url} Action: {actionName} ", processId, url, m.Name);
+                           
+
+                            LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"Url:{url}");
+                            log.Properties["ProcessID"] = processId;
+                            log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                            log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                            Logger.Log(log);
+
                             //HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
                             var response = client.DeleteAsync(url).Result;
                             if (response.IsSuccessStatusCode)
@@ -513,7 +558,14 @@ namespace CrmAboxApi.Logic.Classes
                                 CrmWebAPIError err = userId.ToObject<CrmWebAPIError>();
 
                                 if (err != null)
-                                    Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name, url, err.error.code, err.error.message, response.ReasonPhrase);
+                                {
+                                    log = new LogEventInfo(LogLevel.Error, Logger.Name, $"Url:{url} ErrorCode:{err.error.code} ErrorMessage:{err.error.message} ResponseReasonPhrase:{response.ReasonPhrase}");
+                                    log.Properties["ProcessID"] = processId;
+                                    log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                                    log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                                    Logger.Log(log);
+                                }
+                                   
                                 operationResult.Code = "Error al eliminar el contacto del CRM";
                                 operationResult.Message = response.ReasonPhrase;
                                 operationResult.IsSuccessful = false;
@@ -524,7 +576,11 @@ namespace CrmAboxApi.Logic.Classes
                     }
                     catch (Exception ex)
                     {
-                        Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                        LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null,"",null,ex);
+                        log.Properties["ProcessID"] = processId;
+                        log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                        log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                        Logger.Log(log);
                         operationResult.Code = "";
                         operationResult.Message = ex.ToString();
                         operationResult.IsSuccessful = false;
@@ -536,7 +592,11 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;
@@ -560,7 +620,14 @@ namespace CrmAboxApi.Logic.Classes
                         client.DefaultRequestHeaders.Add("Prefer", "return=representation");
                         MethodBase m = MethodBase.GetCurrentMethod();
                         string url = $"{this.EntityPluralName}({ContactFields.IdAboxPatient}={idContact})?$select={ContactFields.EntityId}&$expand={ContactFields.ContactxDoseRelationship}($select={DoseFields.EntityId},{DoseFields.Dose};$expand=new_ProductDose($select={ProductFields.ProductNumber}))";
-                        Logger.Debug("ProcessID: {processId} Url:{url} Action: {actionName} ", processId, url, m.Name);
+                        
+
+                        LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"Url:{url}");
+                        log.Properties["ProcessID"] = processId;
+                        log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                        log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                        Logger.Log(log);
+
                         //var response = client.GetAsync($"{this.EntityPluralName}({ContactFields.IdAboxPatient}={idContact})?$select={ContactFields.EntityId}&$expand={ContactFields.ContactxDoseRelationship}($select={DoseFields.EntityId},{DoseFields.Dose})").Result;
                         /*TODO: Optimizar este request, el expand no esta trayendo los datos de las dosis, se necesita sacar
                          el ID del producto que tiene esta entidad Dosis para mejorar los tiempos de actualizacion, Valorar
@@ -600,7 +667,14 @@ namespace CrmAboxApi.Logic.Classes
 
                             
                             if (err != null)
-                                Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name,url, err.error.code, err.error.message, response.ReasonPhrase);
+                            {
+                                log = new LogEventInfo(LogLevel.Error, Logger.Name, $"Url:{url} ErrorCode:{err.error.code} ErrorMessage:{err.error.message} ResponseReasonPhrase:{response.ReasonPhrase}");
+                                log.Properties["ProcessID"] = processId;
+                                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                                Logger.Log(log);
+                            }
+                               
 
                             operationResult.Code = "Error al obtener las dosis del contacto en el CRM";
                             operationResult.Message = response.ReasonPhrase;
@@ -612,7 +686,11 @@ namespace CrmAboxApi.Logic.Classes
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                    LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                    log.Properties["ProcessID"] = processId;
+                    log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                    log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                    Logger.Log(log);
                     operationResult.Code = "";
                     operationResult.Message = ex.ToString();
                     operationResult.IsSuccessful = false;
@@ -623,7 +701,11 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;
@@ -648,7 +730,11 @@ namespace CrmAboxApi.Logic.Classes
                         MethodBase m = MethodBase.GetCurrentMethod();
                         string url = $"{this.EntityPluralName}({ContactFields.IdAboxPatient}={idContact})?$select={ContactFields.EntityId}&$expand={ContactFields.ContactxDoctorRelationship}($select={DoctorFields.DoctorIdKey})";
 
-                        Logger.Debug("ProcessID: {processId} Url:{url} Action:{actionName}", processId, url, m.Name);
+                        LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"Url:{url}");
+                        log.Properties["ProcessID"] = processId;
+                        log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                        log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                        Logger.Log(log);
 
                         var response = client.GetAsync(url).Result;
                         if (response.IsSuccessStatusCode)
@@ -681,7 +767,14 @@ namespace CrmAboxApi.Logic.Classes
 
                             
                             if (err != null)
-                                Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name, url, err.error.code, err.error.message, response.ReasonPhrase);
+                            {
+                                log = new LogEventInfo(LogLevel.Error, Logger.Name, $"Url:{url} ErrorCode:{err.error.code} ErrorMessage:{err.error.message} ResponseReasonPhrase:{response.ReasonPhrase}");
+                                log.Properties["ProcessID"] = processId;
+                                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                                Logger.Log(log);
+                            }
+                                
                             operationResult.Code = "Error al obtener los doctores relacionados del contacto en el CRM";
                             operationResult.Message = response.ReasonPhrase;
                             operationResult.IsSuccessful = false;
@@ -692,7 +785,12 @@ namespace CrmAboxApi.Logic.Classes
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+
+                    LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                    log.Properties["ProcessID"] = processId;
+                    log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                    log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                    Logger.Log(log);
                     operationResult.Code = "";
                     operationResult.Message = ex.ToString();
                     operationResult.IsSuccessful = false;
@@ -703,7 +801,12 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;
@@ -733,7 +836,14 @@ namespace CrmAboxApi.Logic.Classes
                             MethodBase m = MethodBase.GetCurrentMethod();
 
                             string url = $"contacts({ContactFields.IdAboxPatient}={idToUpdate})";
-                            Logger.Debug("ProcessID: {processId} Url:{url} Action: {actionName} Data:{requestData}", processId,url, m.Name, jsonObject.ToString(Formatting.None));
+                         
+
+                            LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"Url:{url} Data:{jsonObject.ToString(Formatting.None)}");
+                            log.Properties["ProcessID"] = processId;
+                            log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                            log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                            Logger.Log(log);
+
                             HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
                             var response = client.PatchAsync(url, c).Result;
                             if (response.IsSuccessStatusCode)
@@ -756,7 +866,14 @@ namespace CrmAboxApi.Logic.Classes
 
                               
                                 if (err != null)
-                                    Logger.Error("ProcessID: {processId} Method:{methodName} Url:{url} ErrorCode:{errCode} ErrorMessage:{errorMessage} ResponseReasonPhrase:{reasonPhrase}", processId, m.Name,url, err.error.code, err.error.message, response.ReasonPhrase);
+                                {
+                                    log = new LogEventInfo(LogLevel.Error, Logger.Name, $"Url:{url} ErrorCode:{err.error.code} ErrorMessage:{err.error.message} ResponseReasonPhrase:{response.ReasonPhrase}");
+                                    log.Properties["ProcessID"] = processId;
+                                    log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                                    log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                                    Logger.Log(log);
+                                }
+                                
                                 operationResult.Code = "";
                                 operationResult.Message = "Error al actualizar el contacto en el CRM";
                                 operationResult.IsSuccessful = false;
@@ -767,8 +884,13 @@ namespace CrmAboxApi.Logic.Classes
                     }
                     catch (Exception ex)
                     {
-                        
-                        Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+
+                        LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                        log.Properties["ProcessID"] = processId;
+                        log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                        log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                        Logger.Log(log);
+
                         operationResult.Code = "";
                         operationResult.Message = ex.ToString();
                         operationResult.IsSuccessful = false;
@@ -780,7 +902,12 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 operationResult.Code = "";
                 operationResult.Message = ex.ToString();
                 operationResult.IsSuccessful = false;
@@ -887,7 +1014,7 @@ namespace CrmAboxApi.Logic.Classes
                 {
                     DoseRecord[] dosesArray = null;
                     string[] dosesCreated = null;
-
+                    
                     /*Este request se deja por fuera del metodo que crea toda la estructura de
                      * Contacto porque es un proceso individual de crear una entidad de Dosis,
                      * la cual puede eventualmente fallar o no crearse correctamente, ademas se necesita
@@ -935,7 +1062,12 @@ namespace CrmAboxApi.Logic.Classes
                                         }
                                         else
                                         {
-                                            Logger.Error("Message:{message} ProductId: {productId} Method:{methodName}",result.Message, dosesArray[i].IdProduct,MethodBase.GetCurrentMethod().Name);
+                                            LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, $"Message:{result.Message} ProductId: {dosesArray[i].IdProduct}");
+                                            log.Properties["ProcessID"] = processId;
+                                            log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                                            log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                                            Logger.Log(log);
+
                                         }
                                     }
 
@@ -946,7 +1078,13 @@ namespace CrmAboxApi.Logic.Classes
                                 }
                                 catch (Exception ex)
                                 {
-                                    Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                                   
+                                    LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name,null, $"ProcessID: {processId}",null,ex);
+                                    log.Properties["ProcessID"] = processId;
+                                    log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                                    log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                                    Logger.Log(log);
+
                                     throw ex;
                                 }
                             }
@@ -997,7 +1135,13 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
+                
+                //Logger.Error(ex,"");
                 responseObject.Code = "";
                 responseObject.Message = ex.ToString();
                 responseObject.IsSuccessful = false;
@@ -1023,7 +1167,13 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
+
                 responseObject.Code = "";
                 responseObject.Message = ex.ToString();
                 responseObject.IsSuccessful = false;
@@ -1151,7 +1301,11 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 responseObject.IsSuccessful = false;
                 responseObject.Message = ex.Message;
                 responseObject.Code = "";
@@ -1269,7 +1423,11 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 responseObject.IsSuccessful = false;
                 responseObject.Message = ex.Message;
                 responseObject.Code = "";
@@ -1417,7 +1575,11 @@ namespace CrmAboxApi.Logic.Classes
                                     }
                                     catch (Exception ex)
                                     {
-                                        Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                                        LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                                        log.Properties["ProcessID"] = processId;
+                                        log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                                        log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                                        Logger.Log(log);
                                         throw ex;
                                     }
                                 }
@@ -1564,7 +1726,11 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 result.IsSuccessful = false;
                 result.Message = ex.ToString();
                 result.InternalError = null;
@@ -1720,7 +1886,11 @@ namespace CrmAboxApi.Logic.Classes
                                 }
                                 catch (Exception ex)
                                 {
-                                    Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                                    LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                                    log.Properties["ProcessID"] = processId;
+                                    log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                                    log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                                    Logger.Log(log);
                                     throw ex;
                                 }
                             }
@@ -1861,7 +2031,11 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 result.IsSuccessful = false;
                 result.Message = ex.ToString();
                 result.InternalError = null;
@@ -1879,7 +2053,11 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 result = new OperationResult
                 {
                     IsSuccessful = false,
@@ -1901,7 +2079,11 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 result = new OperationResult
                 {
                     IsSuccessful = false,
@@ -1926,7 +2108,11 @@ namespace CrmAboxApi.Logic.Classes
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "ProcessID: {processId} Method:{methodName}", processId, new StackTrace(ex).GetFrame(0).GetMethod().Name);
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
                 responseObject.Code = "";
                 responseObject.Message = ex.ToString();
                 responseObject.IsSuccessful = false;
