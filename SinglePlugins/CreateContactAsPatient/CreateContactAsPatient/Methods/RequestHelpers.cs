@@ -778,6 +778,13 @@ namespace CreateContactAsPatient.Methods
                     }
                 }
 
+                bool isChildContact = false;
+                if (contact.Attributes.Contains(ContactFields.IsChildContact))
+                {
+                    isChildContact = contact.GetAttributeValue<bool>(ContactFields.IsChildContact);
+                }
+
+
                 request.personalinfo = new PatientSignupRequest.Request.Personalinfo();
                 request.patientincharge = new PatientSignupRequest.Request.Patientincharge();
 
@@ -835,15 +842,31 @@ namespace CreateContactAsPatient.Methods
                     }
                 }
 
+
+
                 if (contact.Attributes.Contains(ContactFields.Birthdate))
                 {
                     DateTime birthdate = new DateTime();
                     birthdate = contact.GetAttributeValue<DateTime>(ContactFields.Birthdate);
                     if (birthdate != null)
                     {
+                        DateTime today = DateTime.Now;
+
+                        //if (sharedMethods.GetAge(birthdate) < 12 && !isChildContact)
+                        //{
+                           
+                        //    Exception ex = new Exception($"Para participar en el programa Abox el usuario debe tener al menos 12 años");
+                        //    ex.Data["HasFeedbackMessage"] = true;
+                        //    throw ex;
+                        //}
+
                         request.personalinfo.dateofbirth = birthdate.ToString("yyyy-MM-dd");
                         if (addPatientInChargeInfo)
                             request.patientincharge.dateofbirth = birthdate.ToString("yyyy-MM-dd");
+
+
+                       
+
                     }
                 }
 

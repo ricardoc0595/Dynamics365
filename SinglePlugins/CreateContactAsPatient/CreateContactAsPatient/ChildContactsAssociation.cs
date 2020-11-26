@@ -87,7 +87,7 @@ namespace CreateContactAsPatient
                             helperMethods = new RequestHelpers();
                             targetEntity = (EntityReference)context.InputParameters["Target"];
 
-                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.UserType, ContactFields.Id, ContactFields.Country, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname };
+                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.UserType, ContactFields.Id, ContactFields.Country, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname,ContactFields.Email };
                             var columnSet = new ColumnSet(columnsToGet);
                             parentContact = service.Retrieve(contactEntity.EntitySingularName, targetEntity.Id, columnSet);
                         }
@@ -123,6 +123,8 @@ namespace CreateContactAsPatient
                                 {
                                     if (contactsRelated.Entities.Count + relatedEntities.Count > 1 || relatedEntities.Count > 1)
                                     {
+                                     
+                                        //TODO: QUICK CREATE se comporta distinto, entra aqui despues de haber asociado y esta mandando este mensaje
                                         //TODO:Hacer constante configurable de cantidad de bajo cuido permitidos
 
                                         Exception ex = new Exception("No es posible asignar más de un contacto bajo cuido.");

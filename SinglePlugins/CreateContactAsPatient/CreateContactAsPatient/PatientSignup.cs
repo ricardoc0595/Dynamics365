@@ -15,11 +15,12 @@ namespace CreateContactAsPatient
     public class PatientSignup : IPlugin
     {
         private MShared sharedMethods = null;
-
+        private ContactMethods contactMethods = null;
         public void Execute(IServiceProvider serviceProvider)
         {
             ITracingService trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
             sharedMethods = new MShared();
+            contactMethods = new ContactMethods();
             try
             {
                 // Obtain the execution context from the service provider.
@@ -48,20 +49,44 @@ namespace CreateContactAsPatient
                     {
                         RequestHelpers reqHelpers = new RequestHelpers();
 
-                        /* Cuando se esta creando un paciente que va a ser un paciente bajo cuido de un tutor/cuidador,
-                        Se tiene que identificar este escenario para no hacer ningun request aca, la creacion del paciente se hace
-                        desde el associate*/
-
-                        if (contact.GetAttributeValue<bool>(ContactFields.IsChildContact))
-                        {
-                            return;
-                        }
+                       
 
                         if (contact.Attributes.Contains(ContactFields.IdAboxPatient))
                         {
                             Exception ex = new Exception($"Este contacto ya posee un Id Paciente de Abox registrado.({Convert.ToString(contact.GetAttributeValue<int>(ContactFields.IdAboxPatient))})");
                             ex.Data["HasFeedbackMessage"] = true;
                             throw ex;
+                        }
+
+
+                        var validationStatusMessages = contactMethods.GetEntityValidationStatus(contact, trace);
+
+                        if (validationStatusMessages.Count>0)
+                        {
+                            string messageRows = "";
+
+
+                            //foreach (var message in validationStatusMessages)
+                            //{
+                            //    messageRows += message+"\n";
+                            //}
+
+                            /*El mensaje que se envia al usuario a Dynamics es poco amigable y si se envia un mensaje muy largo, la forma en que lo muestra es completamente
+                            ilegible, por esto solo se muestra un mensaje a la vez
+                            Para mostrar un mensaje mas amigable, hay que implementar un propio boton de Save en el Ribbon*/
+                            messageRows = validationStatusMessages[0];
+                            Exception ex = new Exception($"{messageRows}");
+                            ex.Data["HasFeedbackMessage"] = true;
+                            throw ex;
+                        }
+
+                        /* Cuando se esta creando un paciente que va a ser un paciente bajo cuido de un tutor/cuidador,
+                       Se tiene que identificar este escenario para no hacer ningun request aca, la creacion del paciente se hace
+                       desde el associate*/
+
+                        if (contact.GetAttributeValue<bool>(ContactFields.IsChildContact))
+                        {
+                            return;
                         }
 
                         PatientSignupRequest.Request request = reqHelpers.GetSignupPatientRequestObject(contact, service, trace);
@@ -88,6 +113,10 @@ namespace CreateContactAsPatient
                         {
                             wrData.Url = AboxServices.MainPatientForTutorOrCaretakerService;
                             wrData.Authorization = Constants.TokenForAboxServices;
+                        }
+                        else if (userTypeFromContactBeingCreated == Constants.OtherInterestIdType)
+                        {
+                            wrData.Url = AboxServices.ConsumerSignup;
                         }
                         else
                         {

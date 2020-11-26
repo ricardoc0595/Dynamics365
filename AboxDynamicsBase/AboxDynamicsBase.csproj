@@ -59,6 +59,7 @@
     <Compile Include="Classes\Entities\ProductEntity.cs" />
     <Compile Include="Classes\Entities\ProvinceEntity.cs" />
     <Compile Include="Classes\LogClass.cs" />
+    <Compile Include="Classes\ValidationMessages.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

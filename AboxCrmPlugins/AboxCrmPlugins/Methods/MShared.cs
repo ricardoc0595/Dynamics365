@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace AboxCrmPlugins.Methods
 {
@@ -126,6 +127,192 @@ namespace AboxCrmPlugins.Methods
             }
 
             return wrResponse;
+        }
+
+        public bool IsValidName(string input, Microsoft.Xrm.Sdk.ITracingService trace)
+        {
+            try
+            {
+                string pattern = Constants.RegexValidName;
+                Match m = Regex.Match(@input, pattern);
+                return m.Success;
+            }
+            catch (Exception ex)
+            {
+                this.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"",
+                    ProcessId = ""
+                }, trace);
+
+                trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw;
+            }
+
+
+        }
+
+        public bool IsValidLastname(string input, Microsoft.Xrm.Sdk.ITracingService trace)
+        {
+            try
+            {
+                string pattern = Constants.RegexValidLastname;
+                Match m = Regex.Match(@input, pattern);
+                return m.Success;
+            }
+            catch (Exception ex)
+            {
+                this.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"",
+                    ProcessId = ""
+                }, trace);
+
+                trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw;
+            }
+        }
+
+        public bool IsValidMaxLength(string input,int maxLength, Microsoft.Xrm.Sdk.ITracingService trace)
+        {
+            try
+            {
+                bool isValid = false;
+
+                if (input.Length<=maxLength)
+                {
+                    isValid = true;
+                }
+
+                return isValid;
+            }
+            catch (Exception ex)
+            {
+                this.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"Error validando el max length",
+                    ProcessId = ""
+                }, trace);
+
+                //trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw;
+            }
+        }
+
+        public bool IsValidMinLength(string input, int minLength, Microsoft.Xrm.Sdk.ITracingService trace)
+        {
+            try
+            {
+                bool isValid = false;
+
+                if (input.Length >= minLength)
+                {
+                    isValid = true;
+                }
+
+                return isValid;
+            }
+            catch (Exception ex)
+            {
+                this.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"Error validando el min length",
+                    ProcessId = ""
+                }, trace);
+
+                //trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw;
+            }
+        }
+
+
+        public bool HasOnlyNumbers(string input, Microsoft.Xrm.Sdk.ITracingService trace)
+        {
+            try
+            {
+                string pattern = Constants.RegexOnlyNumbers;
+                Match m = Regex.Match(@input, pattern);
+                return m.Success;
+            }
+            catch (Exception ex)
+            {
+                this.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"Error validando",
+                    ProcessId = ""
+                }, trace);
+
+                //trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw;
+            }
+        }
+
+
+
+
+        public bool IsValidPassword(string input, Microsoft.Xrm.Sdk.ITracingService trace)
+        {
+            try
+            {
+                string pattern = Constants.RegexPassword;
+                Match m = Regex.Match(@input, pattern);
+                return m.Success;
+            }
+            catch (Exception ex)
+            {
+                this.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"Error validando el formato de contraseña",
+                    ProcessId = ""
+                }, trace);
+
+                //trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw;
+            }
+        }
+
+
+        public Int32 GetAge(DateTime dateOfBirth)
+        {
+            try
+            {
+                var today = DateTime.Today;
+                var a = (today.Year * 100 + today.Month) * 100 + today.Day;
+                var b = (dateOfBirth.Year * 100 + dateOfBirth.Month) * 100 + dateOfBirth.Day;
+                int s = (a - b) / 10000;
+                return s;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+           
+            
         }
 
         public void LogPluginFeedback(LogClass log, Microsoft.Xrm.Sdk.ITracingService trace)

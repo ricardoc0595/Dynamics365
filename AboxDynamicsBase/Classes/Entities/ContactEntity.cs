@@ -1,4 +1,6 @@
-﻿namespace AboxDynamicsBase.Classes.Entities
+﻿using System.Collections.Generic;
+
+namespace AboxDynamicsBase.Classes.Entities
 {
     public class ContactEntity : EntityBase
     {
@@ -9,6 +11,8 @@
         }
     }
 
+   
+
     public static class ContactSchemas
     {
         public const string UserType = "new_UserType";
@@ -18,6 +22,8 @@
         public const string Canton = "new_Canton";
         public const string District = "new_Distrit";
     }
+
+    
 
     public static class ContactFields
     {
@@ -49,5 +55,11 @@
         public const string Interests = "new_clientinterest";
         public const string ContactxContactLookup = "new_contactcontactid";
         public const string IsChildContact = "new_ischildcontact";
+		public const string CountryLookup = "new_countryid";
+        public const string CityLookup = "new_cityid";
+        public const string CantonLookup = "new_canton";
+        public const string DistrictLookup = "new_distrit";
+        public const string NoEmail = "new_noemail";
+        public const string OtherInterestLookup = "new_otherinterest";
     }
 }

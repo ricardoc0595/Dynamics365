@@ -1,7 +1,11 @@
-﻿using AboxDynamicsBase.Classes.Entities;
+﻿using AboxCrmPlugins.Methods;
+using AboxDynamicsBase.Classes;
+using AboxDynamicsBase.Classes.Entities;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CreateContactAsPatient.Methods
 {
@@ -16,6 +20,153 @@ namespace CreateContactAsPatient.Methods
         public Entity GetFullUpdatedContactData(Entity updatedContact, Entity fullContact)
         {
             return null;
+        }
+
+        public List<string> GetEntityValidationStatus(Entity contact, Microsoft.Xrm.Sdk.ITracingService trace)
+        {
+            List<string> validationMessages = new List<string>();
+          
+            MShared sharedMethods = new MShared();
+            try
+            {
+
+                //if (contact.Attributes.Contains(ContactFields.Id))
+                //{
+                //    request.personalinfo.id = contact.Attributes[ContactFields.Id].ToString();
+
+                //}
+
+                bool isChildContact = false;
+                if (contact.Attributes.Contains(ContactFields.IsChildContact))
+                {
+                    isChildContact = contact.GetAttributeValue<bool>(ContactFields.IsChildContact);
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Firstname))
+                {
+                    
+                    if (!sharedMethods.IsValidName(contact.Attributes[ContactFields.Firstname].ToString(), trace))
+                    {
+                        validationMessages.Add($"{ValidationMessages.Contact.ValidName} en el campo Nombre");
+                    }
+
+                    if (!sharedMethods.IsValidMaxLength(contact.Attributes[ContactFields.Firstname].ToString(),Constants.MaxNameLength, trace))
+                    {
+                        validationMessages.Add(String.Format(ValidationMessages.Contact.MaxLengthFormat,Constants.MaxNameLength)+" en el campo Nombre");
+                    }
+
+                    if (!sharedMethods.IsValidMinLength(contact.Attributes[ContactFields.Firstname].ToString(), Constants.MinNameLength, trace))
+                    {
+                        validationMessages.Add(String.Format(ValidationMessages.Contact.MinLengthFormat, Constants.MinNameLength) + " en el campo Nombre");
+                    }
+
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Lastname))
+                {
+                    
+                    if (!sharedMethods.IsValidLastname(contact.Attributes[ContactFields.Lastname].ToString(), trace))
+                    {
+                        validationMessages.Add($"{ValidationMessages.Contact.ValidName} en el campo Primer Apellido");
+                    }
+
+                    if (!sharedMethods.IsValidMaxLength(contact.Attributes[ContactFields.Lastname].ToString(), Constants.MaxNameLength, trace))
+                    {
+                        validationMessages.Add(String.Format(ValidationMessages.Contact.MaxLengthFormat, Constants.MaxNameLength) + " en el campo Primer Apellido");
+                    }
+
+                    if (!sharedMethods.IsValidMinLength(contact.Attributes[ContactFields.Lastname].ToString(), Constants.MinNameLength, trace))
+                    {
+                        validationMessages.Add(String.Format(ValidationMessages.Contact.MinLengthFormat, Constants.MinNameLength) + " en el campo Primer Apellido");
+                    }
+
+                }
+
+                if (contact.Attributes.Contains(ContactFields.SecondLastname))
+                {
+                    
+                    if (!sharedMethods.IsValidLastname(contact.Attributes[ContactFields.SecondLastname].ToString(), trace))
+                    {
+                        validationMessages.Add($"{ValidationMessages.Contact.ValidName} en el campo Segundo Apellido");
+                    }
+
+                    if (!sharedMethods.IsValidMaxLength(contact.Attributes[ContactFields.SecondLastname].ToString(), Constants.MaxNameLength, trace))
+                    {
+                        validationMessages.Add(String.Format(ValidationMessages.Contact.MaxLengthFormat, Constants.MaxNameLength) + " en el campo Segundo Apellido");
+                    }
+
+                    if (!sharedMethods.IsValidMinLength(contact.Attributes[ContactFields.SecondLastname].ToString(), Constants.MinNameLength, trace))
+                    {
+                        validationMessages.Add(String.Format(ValidationMessages.Contact.MinLengthFormat, Constants.MinNameLength) + " en el campo Segundo Apellido");
+                    }
+
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Password))
+                {
+
+                    if (!sharedMethods.IsValidPassword(contact.Attributes[ContactFields.Password].ToString(), trace))
+                    {
+                        validationMessages.Add($"{ValidationMessages.Contact.PasswordFormat}");
+                    }
+
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Birthdate))
+                {
+                    DateTime birthdate = new DateTime();
+                    birthdate = contact.GetAttributeValue<DateTime>(ContactFields.Birthdate);
+                    if (birthdate != null)
+                    {
+                        DateTime today = DateTime.Now;
+
+                        if (sharedMethods.GetAge(birthdate) < 12 && !isChildContact)
+                        {
+                            validationMessages.Add(ValidationMessages.Contact.AgeLimit);
+                        }
+                    }
+                }
+
+
+                if (contact.Attributes.Contains(ContactFields.Phone))
+                {
+                    if (!sharedMethods.HasOnlyNumbers(contact.Attributes[ContactFields.Phone].ToString(), trace))
+                    {
+                        validationMessages.Add($"{ValidationMessages.Contact.OnlyNumbers} en el campo Teléfono");
+                    }
+                }
+
+                if (contact.Attributes.Contains(ContactFields.SecondaryPhone))
+                {
+                    if (!sharedMethods.HasOnlyNumbers(contact.Attributes[ContactFields.SecondaryPhone].ToString(), trace))
+                    {
+                        validationMessages.Add($"{ValidationMessages.Contact.OnlyNumbers} en el campo Teléfono Opcional");
+                    }
+                }
+
+                //if (contact.Attributes.Contains(ContactFields.Email))
+                //{
+                    
+                //}
+
+                return validationMessages;
+            }
+            catch (Exception ex)
+            {
+                sharedMethods.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"Error validando los datos de la entidad.",
+                    ProcessId = ""
+                }, trace);
+                trace.Trace($"MethodName: {new StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+               
+                throw ex;
+            }
+
         }
 
         public EntityCollection GetContactChildContacts(Entity contact, IOrganizationService service)
