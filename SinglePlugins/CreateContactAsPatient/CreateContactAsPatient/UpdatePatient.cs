@@ -42,7 +42,7 @@ namespace CreateContactAsPatient
                 Entity contactUpdated = null;
                 UpdatePatientRequest.Request updatePatientRequest = null;
                 UpdateAccountRequest.Request updateAccountRequest = null;
-                ContactMethods contactMethods = null;
+                ContactMethods contactMethods = new ContactMethods() ;
 
                 if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is Entity)
                 {
@@ -109,6 +109,31 @@ namespace CreateContactAsPatient
                                     contactData.Attributes[keyName] = contactUpdated.Attributes[keyName];
                                 }
                             }
+
+
+                            //Validar Datos
+
+                            var validationStatusMessages = contactMethods.GetEntityValidationStatus(contactData, trace);
+
+                            if (validationStatusMessages.Count > 0)
+                            {
+                                string messageRows = "";
+
+
+                                //foreach (var message in validationStatusMessages)
+                                //{
+                                //    messageRows += message+"\n";
+                                //}
+
+                                /*El mensaje que se envia al usuario a Dynamics es poco amigable y si se envia un mensaje muy largo, la forma en que lo muestra es completamente
+                                ilegible, por esto solo se muestra un mensaje a la vez
+                                Para mostrar un mensaje mas amigable, hay que implementar un propio boton de Save en el Ribbon*/
+                                messageRows = validationStatusMessages[0];
+                                Exception ex = new Exception($"{messageRows}");
+                                ex.Data["HasFeedbackMessage"] = true;
+                                throw ex;
+                            }
+
 
                             /*Dependiendo del tipo de usuario y si tiene contactos a cargo o no, se utiizan los servicios de
                              updateAccount o updatePatient*/

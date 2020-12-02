@@ -56,6 +56,7 @@
     <Compile Include="Classes\Entities\DoctorEntity.cs" />
     <Compile Include="Classes\Entities\DoseEntity.cs" />
     <Compile Include="Classes\Entities\EntityBase.cs" />
+    <Compile Include="Classes\Entities\OtherInterestEntity.cs" />
     <Compile Include="Classes\Entities\ProductEntity.cs" />
     <Compile Include="Classes\Entities\ProvinceEntity.cs" />
     <Compile Include="Classes\LogClass.cs" />

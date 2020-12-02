@@ -462,6 +462,7 @@ namespace CreateContactAsPatient.Methods
                             }
                         }
                     }
+                    
 
                     #endregion -> Productos actuales del Contacto 1:N
 
@@ -529,7 +530,26 @@ namespace CreateContactAsPatient.Methods
                         }
                     }
 
+
                     #endregion -> Médicos actuales del contacto N:N
+
+                    //Si se envia null al servicio da error, se inicializan en arrays vacios
+
+                    if (requestStructure.medication == null)
+                    {
+                        requestStructure.medication = new UpdateAccountRequest.Request.Medication();
+                    }
+
+                    if (requestStructure.medication.medics==null)
+                    {
+                        requestStructure.medication.medics = new UpdateAccountRequest.Request.Medic[0];
+                    }
+
+                    if (requestStructure.medication.products == null)
+                    {
+                        requestStructure.medication.products = new UpdateAccountRequest.Request.Product[0];
+                    }
+
                 }
             }
             catch (Exception ex)
@@ -852,14 +872,6 @@ namespace CreateContactAsPatient.Methods
                     {
                         DateTime today = DateTime.Now;
 
-                        //if (sharedMethods.GetAge(birthdate) < 12 && !isChildContact)
-                        //{
-                           
-                        //    Exception ex = new Exception($"Para participar en el programa Abox el usuario debe tener al menos 12 años");
-                        //    ex.Data["HasFeedbackMessage"] = true;
-                        //    throw ex;
-                        //}
-
                         request.personalinfo.dateofbirth = birthdate.ToString("yyyy-MM-dd");
                         if (addPatientInChargeInfo)
                             request.patientincharge.dateofbirth = birthdate.ToString("yyyy-MM-dd");
@@ -888,7 +900,22 @@ namespace CreateContactAsPatient.Methods
 
                 if (contact.Attributes.Contains(ContactFields.Email))
                 {
-                    request.contactinfo.email = contact.Attributes[ContactFields.Email].ToString();
+                    bool saveWithoutEmail = false;
+                    if (contact.Attributes.Contains(ContactFields.NoEmail))
+                    {
+
+                        saveWithoutEmail = Convert.ToBoolean(contact.GetAttributeValue<OptionSetValue>(ContactFields.NoEmail).Value);
+                        
+                    }
+                    if (saveWithoutEmail)
+                    {
+                        //TODO: Cual sera el correo default desde CRM
+                        request.contactinfo.email = Constants.NoEmailDefaultAddress;
+                    }
+                    else
+                    {
+                        request.contactinfo.email = contact.Attributes[ContactFields.Email].ToString();
+                    }
                 }
 
                 if (contact.Attributes.Contains(ContactFields.Country))
@@ -1004,26 +1031,27 @@ namespace CreateContactAsPatient.Methods
 
                 #endregion ContactInfo
 
-                #region Medication
 
-                //if (request.medication!=null)
-                //{
-                //    #region Products
+                if (contact.Attributes.Contains(ContactFields.OtherInterestLookup))
+                {
+                    EntityReference otherInterestReference = null;
+                    OtherInterestEntity otherIntEntity = new OtherInterestEntity();
+                    otherInterestReference = (EntityReference)contact.Attributes[ContactFields.OtherInterestLookup];
+                    if (otherInterestReference != null)
+                    {
+                        var otherInterestRetrieved = service.Retrieve(otherIntEntity.EntitySingularName, otherInterestReference.Id, new ColumnSet(OtherInterestFields.Id));
+                        if (otherInterestRetrieved.Attributes.Contains(OtherInterestFields.Id))
+                        {
+                            string otherInterestValue = otherInterestRetrieved.GetAttributeValue<string>(OtherInterestFields.Id);
 
-                //    //contact.RelatedEntities;
-                //    ////contact.
-                //    //service.Retrieve("product", , new ColumnSet(true));
-                //    //contact.Attributes[ContactFields.ContactxProductRelationShip]= new EntityReference("product",);
+                            if (!String.IsNullOrEmpty(otherInterestValue))
+                            {
+                                request.otherInterest = otherInterestValue;
+                            }
+                        }
+                    }
+                }
 
-                //    #endregion
-
-                //    #region Medics
-
-                //    #endregion
-
-                //}
-
-                #endregion Medication
 
                 return request;
             }

@@ -169,6 +169,25 @@ namespace CreateContactAsPatient
                             }
                             else
                             {
+
+                                if (contact.Attributes.Contains(ContactFields.Email))
+                                {
+                                    bool saveWithoutEmail = false;
+                                    if (contact.Attributes.Contains(ContactFields.NoEmail))
+                                    {
+
+                                        saveWithoutEmail = Convert.ToBoolean(contact.GetAttributeValue<OptionSetValue>(ContactFields.NoEmail).Value);
+
+                                    }
+                                    if (saveWithoutEmail)
+                                    {
+                                        //TODO: Cual sera el correo default desde CRM
+                                        request.contactinfo.email = Constants.NoEmailDefaultAddress;
+                                        contact.Attributes.Add(ContactFields.Email, Constants.NoEmailDefaultAddress);
+                                    }
+                                    
+                                }
+
                                 contact.Attributes.Add(ContactFields.IdAboxPatient, serviceResponseProperties.response.details.idPaciente);
                             }
                         }

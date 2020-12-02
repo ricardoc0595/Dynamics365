@@ -103,6 +103,9 @@ namespace CrmAboxApi.Logic.Methods
             else if (type == "02" || type.ToLower() == "extranjero")
             {
                 idType = Constants.ForeignerIdValue.ToString();
+            }else if (type == "03" || type.ToLower() == "menor de edad")
+            {
+                idType = Constants.MinorIdValue.ToString();
             }
 
             return idType;

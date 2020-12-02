@@ -18,29 +18,45 @@ Abox.ContactFunctions = {
 
         //Get the context of the form
         var formContext = executionContext.getFormContext();
-       
+
         var formType = formContext.ui.getFormType();
 
         if (formType === 1) {
 
-            this.setFieldsAlerts(formContext);
-            this.setInitialLockedFields(formContext);
+            this.setFieldsControlsAndAlerts(formContext);
+            this.disableFieldsUntilCountrySelected(formContext);
             this.setUnderCareLogic(formContext);
 
+
+
             //Para poder implementar un mensaje mas amigable, hay que hacer un propio boton de guardar customizado y llamar al metodo save() del api de dynamics
-            
+
             //this.setOnSaveAction(formContext,executionContext);
 
-        }else if(formType===2){
+        } else if (formType === 2) {
 
 
             this.validateUpdateAvailability(formContext);
 
+            var isChildContactField = formContext.getAttribute(this.ContactFields.IsChildContact);
+
+
+            var idTypeField = formContext.getAttribute(this.ContactFields.IdType);
+            if (idTypeField !== null) {
+                var isChild = isChildContactField.getValue();
+            }
+
+            if (isChild) {
+                this.setUnderCareRequiredFields("none", formContext);
+            }
+
+            this.setFieldsControlsAndAlerts(formContext);
+            this.setUpdateFormLogic(formContext);
         }
 
     },
 
-    setOnSaveAction:function(formContext,executionContext){
+    setOnSaveAction: function (formContext, executionContext) {
 
         formContext.data.entity.addOnSave(function (ex) {
             console.log(ex);
@@ -70,7 +86,6 @@ Abox.ContactFunctions = {
         ContactxProductRelationship: "new_product_contact",
         ContactxContactRelationship: "new_contact_contact",
         ContactxDoseRelationship: "new_contact_new_dose",
-        OtherInterest: "new_otherinterest",
         Canton: "new_canton",
         District: "new_distrit",
         Province: "new_cityid",
@@ -82,48 +97,111 @@ Abox.ContactFunctions = {
         CantonLookup: "new_canton",
         DistrictLookup: "new_distrit",
         NoEmail: "new_noemail",
-        OtherInterestLookup : "new_otherinterest",
+        OtherInterestLookup: "new_otherinterest",
 
     },
 
-    validateUpdateAvailability:function(formContext){
+    validateUpdateAvailability: function (formContext) {
 
 
-        var idPatientField=formContext.getAttribute(this.ContactFields.IdAboxPatient);
+        var idPatientField = formContext.getAttribute(this.ContactFields.IdAboxPatient);
 
-        if(idPatientField.getValue()===null || idPatientField.getValue()==="null"){
+        if (idPatientField.getValue() === null || idPatientField.getValue() === "null") {
 
             formContext.ui.setFormNotification("Este contacto no posee un ID de paciente Abox registrado, es posible que haya ocurrido un error y no se haya podido registrar correctamente.", "WARNING", null);
         }
 
-        
+
 
     },
 
-    setInitialLockedFields:function(formContext){
+    setInitialData: function (formContext) {
 
-        var fieldNames=[this.ContactFields.UserType,this.ContactFields.Firstname,this.ContactFields.Lastname,this.ContactFields.SecondLastname,this.ContactFields.IdType,this.ContactFields.Id,this.ContactFields.NoEmail,this.ContactFields.Email,this.ContactFields.Phone,this.ContactFields.SecondaryPhone,this.ContactFields.Gender,this.ContactFields.Birthdate,this.ContactFields.CityLookup,this.ContactFields.CantonLookup,this.ContactFields.DistrictLookup,this.ContactFields.Interests,this.ContactFields.Password];
 
-        var that=this;
+
+    },
+
+    setCreateFormLogic: function (formContext) {
+
+
+
+
+    }
+    ,
+
+    setUpdateFormLogic: function (formContext) {
+
+        var passwordField = formContext.getAttribute(this.ContactFields.Password);
+        var passwordControl = formContext.getControl(this.ContactFields.Password);
+        if (passwordField != null) {
+
+            // passwordField.setValue("");
+            passwordField.setRequiredLevel("none");
+            // if (passwordControl) {
+            //     passwordControl.setVisible(true);
+
+            // }
+        }
+
+        var clientInterestField = formContext.getAttribute(this.ContactFields.Interests);
+
+
+        if (clientInterestField != null) {
+
+            clientInterestField.setRequiredLevel("none");
+
+        }
+
+
+        var userTypeControl = formContext.getControl(this.ContactFields.UserType);
+        if (userTypeControl != null) {
+            userTypeControl.setDisabled(true);
+        }
+
+        var idTypeControl = formContext.getControl(this.ContactFields.IdType);
+        if (idTypeControl != null) {
+            idTypeControl.setDisabled(true);
+        }
+
+        var idControl = formContext.getControl(this.ContactFields.Id);
+        if (idControl != null) {
+            idControl.setDisabled(true);
+        }
+
+        var isChildContactControl = formContext.getControl(this.ContactFields.IsChildContact);
+        if (isChildContactControl !== null) {
+
+            isChildContactControl.setVisible(false);
+        }
+
+
+
+    },
+
+    disableFieldsUntilCountrySelected: function (formContext) {
+
+        var fieldNames = [this.ContactFields.UserType, this.ContactFields.Firstname, this.ContactFields.Lastname, this.ContactFields.SecondLastname, this.ContactFields.IdType, this.ContactFields.Id, this.ContactFields.NoEmail, this.ContactFields.Email, this.ContactFields.Phone, this.ContactFields.SecondaryPhone, this.ContactFields.Gender, this.ContactFields.Birthdate, this.ContactFields.CityLookup, this.ContactFields.CantonLookup, this.ContactFields.DistrictLookup, this.ContactFields.Interests, this.ContactFields.Password];
+
+        var that = this;
 
         //se define funcion que se llamara para verificar si hay pais definido o no
         function initialCountryCheck() {
             if (countryLookupField.getValue() !== null) {
 
                 countryControl.clearNotification();
-                that.enableFields(formContext,fieldNames);
+                that.enableFields(formContext, fieldNames);
                 var fieldsToClear = [that.ContactFields.Id, that.ContactFields.Phone, that.ContactFields.SecondaryPhone];
-                that.clearTextFields(formContext,fieldsToClear);
-               
+                that.clearTextFields(formContext, fieldsToClear);
+
             } else {
                 countryControl.setNotification("Seleccione un país");
-                that.disableFields(formContext,fieldNames);
+                that.disableFields(formContext, fieldNames);
             }
         }
 
         var countryLookupField = formContext.getAttribute(this.ContactFields.CountryLookup);
         var countryControl = formContext.getControl(this.ContactFields.CountryLookup);
-        
+
         if (countryLookupField != null) {
 
             var countryValue = countryLookupField.getValue();
@@ -135,6 +213,15 @@ Abox.ContactFunctions = {
                 return;
             }
         }
+
+
+
+        var idTypeControl = formContext.getControl(that.ContactFields.IdType);
+        if (idTypeControl !== null) {
+            idTypeControl.setDisabled(true);
+
+        }
+
     },
 
     setUnderCareRequiredFields: function (requiredLevel, formContext) {
@@ -361,15 +448,21 @@ Abox.ContactFunctions = {
 
     },
 
-    clearTextFields:function(formContext, fieldsToClear){
-        fieldsToClear.forEach(function (fieldName) {
+    clearTextFields: function (formContext, fieldsToClear) {
+        if (typeof fieldsToClear !== "undefined" && formContext !== "undefined") {
 
-            //var field = formContext.getAttribute(fieldName);
-            var field = formContext.getAttribute(fieldName);
-            if (field !== null) {
-                field.setValue("");
+            if (fieldsToClear.constructor === Array) {
+                fieldsToClear.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var field = formContext.getAttribute(fieldName);
+                    if (field !== null) {
+                        field.setValue("");
+                    }
+                });
             }
-        });
+
+        }
     },
 
     enableFields: function (formContext, fieldsToEnable) {
@@ -386,11 +479,26 @@ Abox.ContactFunctions = {
 
     },
 
-    setFieldsAlerts: function (formContext) {
+    setFieldsControlsAndAlerts: function (formContext) {
 
         var that = this;
         var idField = formContext.getAttribute(this.ContactFields.Id);
         var idControl = formContext.getControl(this.ContactFields.Id);
+
+
+        var idTypeField = formContext.getAttribute(this.ContactFields.IdType);
+        var idTypeControl = formContext.getControl(this.ContactFields.IdType);
+
+
+        if (idTypeField !== null) {
+
+            idTypeField.addOnChange(function () {
+
+                that.clearTextFields(formContext, [that.ContactFields.Id]);
+
+            });
+        }
+
 
         if (idField !== null) {
             idField.addOnChange(function () {
@@ -469,8 +577,31 @@ Abox.ContactFunctions = {
     },
     setUnderCareLogic: function (formContext) {
 
-        var that=this;
+        var that = this;
         var isChildContactField = formContext.getAttribute(this.ContactFields.IsChildContact);
+
+
+        var idTypeField = formContext.getAttribute(that.ContactFields.IdType);
+        var idTypeControl = formContext.getControl(that.ContactFields.IdType);
+        if (idTypeField !== null) {
+            idTypeField.addOnChange(function () {
+
+                var isChild = isChildContactField.getValue();
+                if (idTypeField.getValue() !== null) {
+
+                    if (idTypeField.getValue() === 3 && !isChild) {
+
+                        idTypeControl.setNotification("Este tipo de identificación solo está disponible para pacientes bajo cuido");
+
+                    } else {
+                        idTypeControl.clearNotification();
+                    }
+                }
+
+            });
+        }
+
+
         isChildContactField.addOnChange(function () {
 
             // Set the value of the field to TRUE
@@ -479,16 +610,35 @@ Abox.ContactFunctions = {
             // Set the value of the field to FALSE
             var isChild = isChildContactField.getValue();
 
-            
+
             console.log("childContactChanged val:" + isChild);
 
             if (isChild) {
 
                 that.setUnderCareRequiredFields("none", formContext);
 
+                if (idTypeField.getValue() !== null) {
+
+                    if (idTypeField.getValue() === 3) {
+
+                        idTypeControl.clearNotification();
+
+                    }
+                }
+
+
             } else {
 
                 that.setUnderCareRequiredFields("required", formContext);
+
+                if (idTypeField.getValue() !== null) {
+
+                    if (idTypeField.getValue() === 3) {
+
+                        idTypeControl.setNotification("Este tipo de identificación solo está disponible para pacientes bajo cuido");
+
+                    }
+                }
 
             }
         });

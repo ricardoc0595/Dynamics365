@@ -46,11 +46,11 @@ namespace CrmAboxApi.Logic.Classes
         }
 
         #region -> Internal Methods
-        private JObject GetCreateContactJsonStructure(PatientSignup signupProperties,Guid processId)
+        private JObject GetCreateContactJsonStructure(PatientSignup signupProperties,Guid processId,bool isChildContact)
         {
             OperationResult result = new OperationResult();
             JObject jObject = new JObject();
-
+            OtherInterestEntity otherInterestEntity = new OtherInterestEntity();
             try
             {
                 if (signupProperties != null)
@@ -77,10 +77,19 @@ namespace CrmAboxApi.Logic.Classes
                         jObject.Add($"{ContactSchemas.District}@odata.bind", $"/{districtEntity.EntityPluralName}({DistrictFields.IdDistrict}='{signupProperties.contactinfo.district}')");
                     }
 
-                    if (!(String.IsNullOrEmpty(signupProperties.otherInterest)))
+                    if (isChildContact)
                     {
-                        jObject.Add($"{ContactFields.OtherInterest}", signupProperties.otherInterest);
+                        jObject.Add(ContactFields.IsChildContact, true);
                     }
+                    else
+                    {
+                        jObject.Add(ContactFields.IsChildContact, false);
+                    }
+
+                    //if (!(String.IsNullOrEmpty(signupProperties.otherInterest)))
+                    //{
+                    //    jObject.Add($"{ContactFields.OtherInterestLookup}", signupProperties.otherInterest);
+                    //}
 
 
 
@@ -100,14 +109,9 @@ namespace CrmAboxApi.Logic.Classes
                     }
 
 
-                    if (!String.IsNullOrEmpty(signupProperties.otherInterest))
+                    if (!(String.IsNullOrEmpty(signupProperties.otherInterest)))
                     {
-                        bool parsed = Int32.TryParse(signupProperties.otherInterest.ToString(), out int aux);
-                        if (parsed)
-                        {
-                            int value = Int32.Parse(signupProperties.otherInterest.ToString());
-                            jObject.Add(ContactFields.OtherInterest, value);
-                        }
+                        jObject.Add($"{otherInterestEntity.EntitySingularName}@odata.bind", $"/{otherInterestEntity.EntityPluralName}({OtherInterestFields.Id}='{signupProperties.otherInterest}')");
                     }
 
                     if (signupProperties.personalinfo != null)
@@ -209,6 +213,9 @@ namespace CrmAboxApi.Logic.Classes
                         }
                         jObject.Add($"{ContactFields.Interests}", values);
                     }
+
+                    
+
                 }
 
                 return jObject;
@@ -1002,7 +1009,7 @@ namespace CrmAboxApi.Logic.Classes
 
         #region -> Public Methods
 
-        public OperationResult CreateAsPatient(PatientSignup signupRequest, string idRelatedPatient, Guid processId)
+        public OperationResult CreateAsPatient(PatientSignup signupRequest, string idRelatedPatient, Guid processId, bool isChildContact = false)
         {
             OperationResult responseObject = new OperationResult();
 
@@ -1093,7 +1100,7 @@ namespace CrmAboxApi.Logic.Classes
 
                     #endregion -> Dose Retrieve
 
-                    JObject newContact = this.GetCreateContactJsonStructure(signupProperties,processId);
+                    JObject newContact = this.GetCreateContactJsonStructure(signupProperties,processId,isChildContact);
 
                     #region -> Patient Related
 
@@ -1161,7 +1168,7 @@ namespace CrmAboxApi.Logic.Classes
 
                 if (signupProperties != null)
                 {
-                    JObject newContact = this.GetCreateContactJsonStructure(signupProperties, processId);
+                    JObject newContact = this.GetCreateContactJsonStructure(signupProperties, processId,false);
                     responseObject = this.ContactCreateRequest(newContact, processId);
                 }
             }
@@ -1214,7 +1221,7 @@ namespace CrmAboxApi.Logic.Classes
                         patientid = signupPropertiesFromRequest.patientid,
                         patientid_primary = null,
                         country = signupPropertiesFromRequest.country,
-                        userType = "01",
+                        userType = "",
                         medication = signupPropertiesFromRequest.medication,
                         contactinfo = new PatientSignup.Contactinfo
                         {
@@ -1252,7 +1259,7 @@ namespace CrmAboxApi.Logic.Classes
                         otherInterest = null,
                     };
 
-                    responseFromPatientUnderCareCreate = this.CreateAsPatient(signupPatientUnderCare, null,processId);
+                    responseFromPatientUnderCareCreate = this.CreateAsPatient(signupPatientUnderCare, null,processId,true);
 
                     #endregion 
 
@@ -1269,7 +1276,7 @@ namespace CrmAboxApi.Logic.Classes
                         signupPatientOwner.medication = null;
                         signupPatientOwner.patientincharge = null;
 
-                        responseFromOwnerCreate = this.CreateAsPatient(signupPatientOwner, idUnderCarePatient,processId);
+                        responseFromOwnerCreate = this.CreateAsPatient(signupPatientOwner, idUnderCarePatient,processId,false);
 
                         if (responseFromOwnerCreate.IsSuccessful)
                         {
@@ -1336,7 +1343,7 @@ namespace CrmAboxApi.Logic.Classes
                     signupPatientUnderCare = new PatientSignup
                     {
                         country = signupPropertiesFromRequest.country,
-                        userType = "01",
+                        userType = "",
                         patientid = signupPropertiesFromRequest.patientid,
                         medication = signupPropertiesFromRequest.medication,
                         contactinfo = new PatientSignup.Contactinfo
@@ -1375,7 +1382,7 @@ namespace CrmAboxApi.Logic.Classes
                         otherInterest = null,
                     };
 
-                    responseFromPatientInChargeCreate = this.CreateAsPatient(signupPatientUnderCare, null,processId);
+                    responseFromPatientInChargeCreate = this.CreateAsPatient(signupPatientUnderCare, null,processId,true);
 
                     #endregion -> Crear paciente bajo cuido como contacto
 
@@ -1392,7 +1399,7 @@ namespace CrmAboxApi.Logic.Classes
                         signupPatientOwner.medication = null;
                         signupPatientOwner.patientincharge = null;
 
-                        responseFromOwnerCreate = this.CreateAsPatient(signupPatientOwner, idUnderCarePatient,processId);
+                        responseFromOwnerCreate = this.CreateAsPatient(signupPatientOwner, idUnderCarePatient,processId,false);
 
                         if (responseFromOwnerCreate.IsSuccessful)
                         {

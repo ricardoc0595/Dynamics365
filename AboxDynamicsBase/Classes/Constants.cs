@@ -10,6 +10,7 @@
         public const int FemaleGenderValue = 2;
         public const int NationalIdValue = 1;
         public const int ForeignerIdValue = 2;
+        public const int MinorIdValue = 3;
         public const int DoseFrequencyOnePerDay = 1;
         public const int DoseFrequencyTwoPerDay = 2;
         public const int DoseFrequencyThreePerDay = 3;
@@ -38,6 +39,7 @@
 
         public const int MaxNameLength = 30;
         public const int MinNameLength = 3;
+        public const string NoEmailDefaultAddress= "defaultCrm @loymark.com";
 
 
 

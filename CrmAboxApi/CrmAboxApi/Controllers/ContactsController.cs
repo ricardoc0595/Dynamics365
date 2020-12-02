@@ -175,7 +175,7 @@ namespace CrmAboxApi.Controllers
                         switch (signupRequest.userType.ToLower())
                         {
                             case "01":
-                                response = contactProcedures.CreateAsPatient(signupRequest, null,processId);
+                                response = contactProcedures.CreateAsPatient(signupRequest, null,processId,false);
                                 break;
 
                             case "02":
