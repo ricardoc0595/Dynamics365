@@ -17,6 +17,8 @@ namespace AboxDynamicsBase.Classes
             public const string PasswordFormat = "La contraseña debe tener mínimo una letra mayúscula, una minúscula y un número. Debe ser de mínimo 8 caracteres y que no exceda los 30 caracteres";
             public const string MaxLengthFormat = "El máximo de caracteres permitidos es {0}";
             public const string MinLengthFormat = "El mínimo de caracteres permitidos es {0}";
+            public const string IdentificationFormat = "La cédula únicamente debe contener números.";
+            public const string AlphanumericForeignerIdFormat = "Ingresar sólo números o letras";
         }
 
     }

@@ -176,25 +176,7 @@ namespace CreateContactAsPatient
                                         {
                                             trace.Trace(Constants.ErrorMessageCodeReturned + serviceResponseProperties.response.code);
 
-                                            #region debug log
-
-                                            try
-                                            {
-                                                sharedMethods.LogPluginFeedback(new LogClass
-                                                {
-                                                    Exception = "",
-                                                    Level = "debug",
-                                                    ClassName = this.GetType().ToString(),
-                                                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
-                                                    Message = $"Url:{wrData.Url} ResponseCode:{serviceResponseProperties.response.code}",
-                                                    ProcessId = ""
-                                                }, trace);
-                                            }
-                                            catch (Exception e)
-                                            {
-                                            }
-
-                                            #endregion debug log
+                                          
 
                                             //TODO: No se esta respetando este throw y el plugin se esta ejecutando de todas formas
                                             Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
@@ -281,25 +263,6 @@ namespace CreateContactAsPatient
                                                 {
                                                     trace.Trace(Constants.ErrorMessageCodeReturned + welcomeServiceResponseProperties.response.code);
 
-                                                    #region debug log
-
-                                                    try
-                                                    {
-                                                        sharedMethods.LogPluginFeedback(new LogClass
-                                                        {
-                                                            Exception = "",
-                                                            Level = "debug",
-                                                            ClassName = this.GetType().ToString(),
-                                                            MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
-                                                            Message = $"Url:{wrDataWelcomeMail.Url} ResponseCode:{welcomeServiceResponseProperties.response.code}",
-                                                            ProcessId = ""
-                                                        }, trace);
-                                                    }
-                                                    catch (Exception e)
-                                                    {
-                                                    }
-
-                                                    #endregion debug log
 
                                                     Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
                                                     serviceEx.Data["HasFeedbackMessage"] = true;

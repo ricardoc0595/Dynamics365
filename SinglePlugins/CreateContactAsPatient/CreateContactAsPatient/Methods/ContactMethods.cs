@@ -30,17 +30,39 @@ namespace CreateContactAsPatient.Methods
             try
             {
 
-                //if (contact.Attributes.Contains(ContactFields.Id))
-                //{
-                //    request.personalinfo.id = contact.Attributes[ContactFields.Id].ToString();
-
-                //}
-
                 bool isChildContact = false;
                 if (contact.Attributes.Contains(ContactFields.IsChildContact))
                 {
                     isChildContact = contact.GetAttributeValue<bool>(ContactFields.IsChildContact);
                 }
+
+                if (contact.Attributes.Contains(ContactFields.Id))
+                {
+                    
+                    if (contact.Attributes.Contains(ContactFields.IdType))
+                    {
+                        int idType = contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType).Value;
+
+                        if (idType != Constants.ForeignerIdValue && idType != Constants.MinorIdValue)
+                        {
+                            if (!sharedMethods.IsValidNumericID(contact.Attributes[ContactFields.Id].ToString(), trace))
+                            {
+                                validationMessages.Add(ValidationMessages.Contact.IdentificationFormat);
+                            }
+                        }
+                        else if (idType == Constants.ForeignerIdValue)
+                        {
+                            if (!sharedMethods.IsAlphanumeric(contact.Attributes[ContactFields.Id].ToString(), trace))
+                            {
+                                validationMessages.Add(ValidationMessages.Contact.AlphanumericForeignerIdFormat+" en el campo Cédula");
+                            }
+                        }
+                    }
+                   
+
+                }
+
+                
 
                 if (contact.Attributes.Contains(ContactFields.Firstname))
                 {
@@ -105,7 +127,7 @@ namespace CreateContactAsPatient.Methods
                 if (contact.Attributes.Contains(ContactFields.Password))
                 {
 
-                    if (!sharedMethods.IsValidPassword(contact.Attributes[ContactFields.Password].ToString(), trace))
+                    if (!isChildContact && !sharedMethods.IsValidPassword(contact.Attributes[ContactFields.Password].ToString(), trace))
                     {
                         validationMessages.Add($"{ValidationMessages.Contact.PasswordFormat}");
                     }
@@ -130,7 +152,8 @@ namespace CreateContactAsPatient.Methods
 
                 if (contact.Attributes.Contains(ContactFields.Phone))
                 {
-                    if (!sharedMethods.HasOnlyNumbers(contact.Attributes[ContactFields.Phone].ToString(), trace))
+                    //Los contactos bajo cuido no validan este campo pues no lo tienen disponible, esta informacion la tiene le paciente a cargo de ellos
+                    if (!isChildContact && !sharedMethods.HasOnlyNumbers(contact.Attributes[ContactFields.Phone].ToString(), trace))
                     {
                         validationMessages.Add($"{ValidationMessages.Contact.OnlyNumbers} en el campo Teléfono");
                     }
@@ -138,7 +161,8 @@ namespace CreateContactAsPatient.Methods
 
                 if (contact.Attributes.Contains(ContactFields.SecondaryPhone))
                 {
-                    if (!sharedMethods.HasOnlyNumbers(contact.Attributes[ContactFields.SecondaryPhone].ToString(), trace))
+                    //Los contactos bajo cuido no validan este campo pues no lo tienen disponible, esta informacion la tiene le paciente a cargo de ellos
+                    if (!isChildContact && !sharedMethods.HasOnlyNumbers(contact.Attributes[ContactFields.SecondaryPhone].ToString(), trace))
                     {
                         validationMessages.Add($"{ValidationMessages.Contact.OnlyNumbers} en el campo Teléfono Opcional");
                     }
@@ -146,7 +170,10 @@ namespace CreateContactAsPatient.Methods
 
                 //if (contact.Attributes.Contains(ContactFields.Email))
                 //{
-                    
+                //    if (!sharedMethods.IsValidEmail(contact.Attributes[ContactFields.Email].ToString(), trace))
+                //    {
+                //        validationMessages.Add($"{ValidationMessages.Contact.OnlyNumbers} en el campo Teléfono Opcional");
+                //    }
                 //}
 
                 return validationMessages;

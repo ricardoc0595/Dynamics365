@@ -129,11 +129,88 @@ namespace AboxCrmPlugins.Methods
             return wrResponse;
         }
 
+        public bool IsValidNumericID(string input, Microsoft.Xrm.Sdk.ITracingService trace)
+        {
+            try
+            {
+                string pattern = Constants.RegexIdentificationNumeric;
+                Match m = Regex.Match(@input, pattern);
+                return m.Success;
+            }
+            catch (Exception ex)
+            {
+                this.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"",
+                    ProcessId = ""
+                }, trace);
+
+                trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw;
+            }
+        }
+
+        public bool IsAlphanumeric(string input, Microsoft.Xrm.Sdk.ITracingService trace)
+        {
+            try
+            {
+                string pattern = Constants.RegexAlphanumeric;
+                Match m = Regex.Match(@input, pattern);
+                return m.Success;
+            }
+            catch (Exception ex)
+            {
+                this.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"",
+                    ProcessId = ""
+                }, trace);
+
+                trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw;
+            }
+        }
+
         public bool IsValidName(string input, Microsoft.Xrm.Sdk.ITracingService trace)
         {
             try
             {
                 string pattern = Constants.RegexValidName;
+                Match m = Regex.Match(@input, pattern);
+                return m.Success;
+            }
+            catch (Exception ex)
+            {
+                this.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"",
+                    ProcessId = ""
+                }, trace);
+
+                trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw;
+            }
+
+
+        }
+
+        public bool IsValidEmail(string input, Microsoft.Xrm.Sdk.ITracingService trace)
+        {
+            try
+            {
+                string pattern = Constants.RegexEmail;
                 Match m = Regex.Match(@input, pattern);
                 return m.Success;
             }

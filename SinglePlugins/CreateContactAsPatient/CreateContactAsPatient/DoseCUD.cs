@@ -318,7 +318,11 @@ namespace CreateContactAsPatient
                             if (serviceResponseProperties.response.code != "MEMCTRL-1014")
                             {
                                 trace.Trace(Constants.ErrorMessageCodeReturned + serviceResponseProperties.response.code);
-                                throw new InvalidPluginExecutionException(Constants.ErrorMessageTransactionCodeReturned + serviceResponseProperties.response.message);
+
+                                Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
+                                serviceEx.Data["HasFeedbackMessage"] = true;
+                                throw serviceEx;
+
                             }
                             else
                             {
@@ -355,7 +359,16 @@ namespace CreateContactAsPatient
                     trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + e.ToString());
                 }
 
-                throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
+                if (ex.Data["HasFeedbackMessage"] != null)
+                {
+                    throw new InvalidPluginExecutionException(ex.Message);
+                }
+                else
+                {
+                    throw new InvalidPluginExecutionException(Constants.GeneralPluginErrorMessage);
+                }
+
+                
             }
         }
     }

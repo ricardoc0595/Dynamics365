@@ -56,6 +56,7 @@ Abox.SharedLogic = {
         FemaleGenderValue: 2,
         NationalIdValue: 1,
         ForeignerIdValue: 2,
+        MinorIdValue : 3,
         DoseFrequencyOnePerDay: 1,
         DoseFrequencyTwoPerDay: 2,
         DoseFrequencyThreePerDay: 3,

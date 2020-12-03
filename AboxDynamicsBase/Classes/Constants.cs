@@ -36,10 +36,14 @@
         public const string RegexValidLastname = @"^[a-zA-ZáéíóúñüàèÁÉÍÓÚÑÜ ]+([a-zA-ZáéíóúñüàèÁÉÍÓÚÑÜ ]+)*$";
         public const string RegexPassword = @"^(?!.*[ñÑ])(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,30}$";
         public const string RegexOnlyNumbers = @"^[0-9]+$";
+        public const string RegexIdentificationNumeric = @"^[0-9]*$";
+        public const string RegexAlphanumeric = @"^[a-zA-Z0-9]*$";
+
+        public const string RegexEmail = @"^(("")("".+?(\?<!\\)""@)|((((\.(?!\.))|[-!#\$%&'\*\+\/=\?\^`\{\}\|~\w])*)@))((\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$";
 
         public const int MaxNameLength = 30;
         public const int MinNameLength = 3;
-        public const string NoEmailDefaultAddress= "defaultCrm @loymark.com";
+        public const string NoEmailDefaultAddress= "defaultCrm@loymark.com";
 
 
 

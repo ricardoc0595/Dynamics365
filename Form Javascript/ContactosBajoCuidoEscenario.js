@@ -153,6 +153,14 @@ Abox.ContactFunctions = {
         }
 
 
+    
+        var countryControl = formContext.getControl(this.ContactFields.CountryLookup);
+
+        if (countryControl != null) {
+
+            countryControl.setDisabled(true);
+        }
+
         var userTypeControl = formContext.getControl(this.ContactFields.UserType);
         if (userTypeControl != null) {
             userTypeControl.setDisabled(true);
@@ -505,6 +513,7 @@ Abox.ContactFunctions = {
 
                 var dataFormat = that.getCountryFormat(formContext);
                 var isForeignId = false;
+               
                 //identificar si es extranjero
                 var idTypeField = formContext.getAttribute(that.ContactFields.IdType);
 
@@ -516,6 +525,11 @@ Abox.ContactFunctions = {
                         if (idTypeValue.toString() === Abox.SharedLogic.Constants.ForeignerIdValue.toString()) {
                             isForeignId = true;
                         }
+
+                        // if (idTypeValue.toString() === Abox.SharedLogic.Constants.MinorIdValue.toString()) {
+                        //     isMinor = true;
+                        // }
+
                     }
                 }
 
@@ -528,6 +542,7 @@ Abox.ContactFunctions = {
                         that.setFieldNotification(value, null, idControl, 30, null);
                     } else {
                         that.setFieldNotification(value, null, idControl, dataFormat.MaxID, dataFormat.MinID);
+                        
                     }
                 }
 
@@ -583,6 +598,8 @@ Abox.ContactFunctions = {
 
         var idTypeField = formContext.getAttribute(that.ContactFields.IdType);
         var idTypeControl = formContext.getControl(that.ContactFields.IdType);
+        var idField = formContext.getAttribute(that.ContactFields.Id);
+        var idControl = formContext.getControl(that.ContactFields.Id);
         if (idTypeField !== null) {
             idTypeField.addOnChange(function () {
 
@@ -594,7 +611,17 @@ Abox.ContactFunctions = {
                         idTypeControl.setNotification("Este tipo de identificación solo está disponible para pacientes bajo cuido");
 
                     } else {
-                        idTypeControl.clearNotification();
+                        if (idTypeField.getValue() === 3) {
+                            if (idControl !== null) {
+
+                                idControl.clearNotification();
+
+
+                            }
+                        } else {
+                            idTypeControl.clearNotification();
+
+                        }
                     }
                 }
 

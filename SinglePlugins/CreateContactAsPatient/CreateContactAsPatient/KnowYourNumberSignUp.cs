@@ -275,7 +275,10 @@ namespace CreateContactAsPatient
 
                             if (serviceResponseProperties.response.code != "MEMEX-0002")
                             {
-                                throw new InvalidPluginExecutionException(Constants.ErrorMessageTransactionCodeReturned + serviceResponseProperties.response.message);
+                                Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
+                                serviceEx.Data["HasFeedbackMessage"] = true;
+                                throw serviceEx;
+                                
                             }
                             else
                             {

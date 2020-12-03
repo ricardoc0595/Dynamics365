@@ -101,7 +101,21 @@ namespace CrmAboxApi.Logic.Classes
                             if (signupProperties.patientid_primary != null)
                                 jObject.Add(ContactFields.IdAboxPatient, signupProperties.patientid_primary.ToString());
                         }
+                        else if (signupProperties.userType == "05")
+                        {
+                            if (signupProperties.patientid != null)
+                                jObject.Add(ContactFields.IdAboxPatient, signupProperties.patientid.ToString());
+                        }
                         else if (signupProperties.userType == "01")
+                        {
+                            if (signupProperties.patientid != null)
+                                jObject.Add(ContactFields.IdAboxPatient, signupProperties.patientid.ToString());
+                        }
+                    }
+                    else
+                    {
+                        //Los pacientes bajo cuido, en el CRM actualmente no tienen un tipo de usuario definido
+                        if (isChildContact)
                         {
                             if (signupProperties.patientid != null)
                                 jObject.Add(ContactFields.IdAboxPatient, signupProperties.patientid.ToString());
@@ -1221,7 +1235,7 @@ namespace CrmAboxApi.Logic.Classes
                         patientid = signupPropertiesFromRequest.patientid,
                         patientid_primary = null,
                         country = signupPropertiesFromRequest.country,
-                        userType = "",
+                        userType = "",//Si se agrega un tipo de usuario default para usuarios bajo cuido, revisar la asignacion del id de paciente en metodo GetCreateContactJsonStructure 
                         medication = signupPropertiesFromRequest.medication,
                         contactinfo = new PatientSignup.Contactinfo
                         {
@@ -1331,7 +1345,7 @@ namespace CrmAboxApi.Logic.Classes
 
                 if (signupRequest != null)
                 {
-                    OperationResult responseFromPatientInChargeCreate = null;
+                    OperationResult responseFromPatientUndercareCreation = null;
                     OperationResult responseFromOwnerCreate = null;
 
                     /*Crear primeramente el paciente a cargo, para así continuar con el encargado pues ya se tiene el ID del paciente creado en CRM
@@ -1343,7 +1357,7 @@ namespace CrmAboxApi.Logic.Classes
                     signupPatientUnderCare = new PatientSignup
                     {
                         country = signupPropertiesFromRequest.country,
-                        userType = "",
+                        userType = "",//Si se agrega un tipo de usuario default para usuarios bajo cuido, revisar la asignacion del id de paciente en metodo GetCreateContactJsonStructure
                         patientid = signupPropertiesFromRequest.patientid,
                         medication = signupPropertiesFromRequest.medication,
                         contactinfo = new PatientSignup.Contactinfo
@@ -1382,7 +1396,7 @@ namespace CrmAboxApi.Logic.Classes
                         otherInterest = null,
                     };
 
-                    responseFromPatientInChargeCreate = this.CreateAsPatient(signupPatientUnderCare, null,processId,true);
+                    responseFromPatientUndercareCreation = this.CreateAsPatient(signupPatientUnderCare, null,processId,true);
 
                     #endregion -> Crear paciente bajo cuido como contacto
 
@@ -1392,9 +1406,9 @@ namespace CrmAboxApi.Logic.Classes
                     #region -> Crear Dueño de la cuenta como Contacto
 
                     PatientSignup signupPatientOwner = null;
-                    if (responseFromPatientInChargeCreate.IsSuccessful)
+                    if (responseFromPatientUndercareCreation.IsSuccessful)
                     {
-                        string idUnderCarePatient = responseFromPatientInChargeCreate.Data.ToString();
+                        string idUnderCarePatient = responseFromPatientUndercareCreation.Data.ToString();
                         signupPatientOwner = signupPropertiesFromRequest;
                         signupPatientOwner.medication = null;
                         signupPatientOwner.patientincharge = null;
@@ -1413,7 +1427,7 @@ namespace CrmAboxApi.Logic.Classes
                             this.Delete(idUnderCarePatient, processId);
                             responseObject.IsSuccessful = false;
                             responseObject.Message = "Ocurrió un error al crear el dueño de la cuenta";
-                            responseObject.InternalError = responseFromPatientInChargeCreate.InternalError;
+                            responseObject.InternalError = responseFromPatientUndercareCreation.InternalError;
                             responseObject.Code = "";
                         }
                     }
@@ -1421,7 +1435,7 @@ namespace CrmAboxApi.Logic.Classes
                     {
                         responseObject.IsSuccessful = false;
                         responseObject.Message = "Ocurrió un error al crear el paciente a cargo";
-                        responseObject.InternalError = responseFromPatientInChargeCreate.InternalError;
+                        responseObject.InternalError = responseFromPatientUndercareCreation.InternalError;
                         responseObject.Code = "";
                     }
 

@@ -76,7 +76,7 @@ namespace CreateContactAsPatient
 
                             //contactMethods = new ContactMethods();
 
-                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.Province, ContactFields.Canton, ContactFields.District, ContactFields.Interests, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate, ContactFields.ContactxContactLookup, ContactFields.Phone, ContactFields.SecondaryPhone, ContactFields.Email };
+                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.Province, ContactFields.Canton, ContactFields.District, ContactFields.Interests, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate, ContactFields.ContactxContactLookup, ContactFields.Phone, ContactFields.SecondaryPhone, ContactFields.Email,ContactFields.IsChildContact };
                             var columnSet = new ColumnSet(columnsToGet);
                             Entity contactData = service.Retrieve(contactEntity.EntitySingularName, contactUpdated.Id, columnSet);
 
@@ -221,7 +221,10 @@ namespace CreateContactAsPatient
 
                                     if (updatePatientResponse.response.code != "MEMCTRL-1014")
                                     {
-                                        throw new InvalidPluginExecutionException(Constants.ErrorMessageTransactionCodeReturned + updatePatientResponse.response.message);
+                                        Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + updatePatientResponse.response.message);
+                                        serviceEx.Data["HasFeedbackMessage"] = true;
+                                        throw serviceEx;
+                                        
                                     }
                                     else
                                     {
