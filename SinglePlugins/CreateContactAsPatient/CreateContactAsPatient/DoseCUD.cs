@@ -43,6 +43,7 @@ namespace CreateContactAsPatient
                 Entity doseInput = null;
                 Entity contact = null;
                 Entity product = null;
+                ContactMethods contactMethods = new ContactMethods();
 
                 UpdatePatientRequest.Request updatePatientRequest = null;
 
@@ -109,6 +110,21 @@ namespace CreateContactAsPatient
                         if (contact != null)
                         {
                             RequestHelpers helperMethods = new RequestHelpers();
+
+
+                            var relatedContacts = contactMethods.GetContactChildContacts(contact, service);
+
+                            if (relatedContacts != null)
+                            {
+                                if (relatedContacts.Entities.Count > 0)
+                                {
+
+                                    Exception serviceEx = new Exception("No es posible realizar esta operación en usuarios que tienen pacientes bajo cuido registrados.");
+                                    serviceEx.Data["HasFeedbackMessage"] = true;
+                                    throw serviceEx;
+                                }
+
+                            }
 
                             updatePatientRequest = helperMethods.GetPatientUpdateStructure(contact, service, trace);
                         }

@@ -1,4 +1,5 @@
-﻿using AboxDynamicsBase.Classes.Entities;
+﻿using AboxDynamicsBase.Classes;
+using AboxDynamicsBase.Classes.Entities;
 using CrmAboxApi.Logic.Classes.Deserializing;
 using CrmAboxApi.Logic.Classes.Helper;
 
@@ -278,6 +279,21 @@ namespace CrmAboxApi.Logic.Classes
 
                     if (!(String.IsNullOrEmpty(updateProperties.Telefono2)))
                         jObject.Add(ContactFields.SecondaryPhone, updateProperties.Telefono2);
+
+                    if (!(String.IsNullOrEmpty(updateProperties.Email)))
+                    {
+                        if (updateProperties.Email.Contains(Constants.NoEmailDefaultAddress))
+                        {
+                            jObject.Add(ContactFields.NoEmail, 1);
+                        }
+                        else
+                        {
+                            jObject.Add(ContactFields.Email, updateProperties.Email);
+                            jObject.Add(ContactFields.NoEmail, 0);
+                        }
+
+
+                    }
 
 
                     if (!(String.IsNullOrEmpty(updateProperties.Provincia)))

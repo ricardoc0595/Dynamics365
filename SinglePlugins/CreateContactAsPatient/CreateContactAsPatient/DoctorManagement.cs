@@ -79,7 +79,7 @@ namespace CreateContactAsPatient
                     {
                         productEntity = new ProductEntity();
                         updatePatientRequest = new UpdatePatientRequest.Request();
-
+                        ContactMethods contactMethods = new ContactMethods();
                         #region -> Target
 
                         if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is EntityReference)
@@ -91,7 +91,23 @@ namespace CreateContactAsPatient
                             var columnSet = new ColumnSet(columnsToGet);
                             contact = service.Retrieve(contactEntity.EntitySingularName, targetEntity.Id, columnSet);
 
+                            var relatedContacts = contactMethods.GetContactChildContacts(contact,service);
+
+                            if (relatedContacts != null)
+                            {
+                                if (relatedContacts.Entities.Count > 0)
+                                {
+
+                                    Exception serviceEx = new Exception("No es posible realizar esta operación en usuarios que tienen pacientes bajo cuido registrados.");
+                                    serviceEx.Data["HasFeedbackMessage"] = true;
+                                    throw serviceEx;
+                                }
+
+                            }
+
                             //updatePatientRequest.personalinfo = new UpdatePatientRequest.Request.Personalinfo();
+
+
 
                             updatePatientRequest = helperMethods.GetPatientUpdateStructure(contact, service, trace);
                         }

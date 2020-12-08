@@ -245,6 +245,21 @@ namespace CreateContactAsPatient.Methods
                         }
                     }
 
+                    if (requestStructure.medication==null)
+                    {
+                        requestStructure.medication = new UpdatePatientRequest.Request.Medication();
+                    }
+
+                    if (requestStructure.medication.products==null)
+                    {
+                        requestStructure.medication.products = new UpdatePatientRequest.Request.Product[0];
+                    }
+
+                    if (requestStructure.medication.medics==null)
+                    {
+                        requestStructure.medication.medics = new UpdatePatientRequest.Request.Medic[0];
+                    }
+
                     #endregion -> Médicos actuales del contacto N:N
                 }
             }
@@ -292,8 +307,30 @@ namespace CreateContactAsPatient.Methods
                     if (contact.Attributes.Contains(ContactFields.SecondaryPhone))
                         requestStructure.Telefono2 = Convert.ToString(contact.GetAttributeValue<string>(ContactFields.SecondaryPhone));
 
-                    if (contact.Attributes.Contains(ContactFields.Email))
-                        requestStructure.Email = contact.Attributes[ContactFields.Email].ToString();
+                 
+
+                    bool saveWithoutEmail = false;
+                    if (contact.Attributes.Contains(ContactFields.NoEmail))
+                    {
+                        saveWithoutEmail = Convert.ToBoolean(contact.GetAttributeValue<OptionSetValue>(ContactFields.NoEmail).Value);
+                    }
+
+                    if (saveWithoutEmail)
+                    {
+                        //TODO: Cual sera el correo default desde CRM
+                        if (contact.Attributes.Contains(ContactFields.Id))
+                        {
+                            requestStructure.Email = contact.Attributes[ContactFields.Id].ToString() + "_" + Guid.NewGuid().ToString() + Constants.NoEmailDefaultAddress;
+                        }
+                    }
+                    else
+                    {
+                        if (contact.Attributes.Contains(ContactFields.Email))
+                        {
+                            requestStructure.Email = contact.Attributes[ContactFields.Email].ToString();
+                        }
+                    }
+
 
                     if (contact.Attributes.Contains(ContactFields.Id))
                         requestStructure.user = contact.Attributes[ContactFields.Id].ToString();
@@ -898,25 +935,30 @@ namespace CreateContactAsPatient.Methods
                     request.contactinfo.mobilephone = contact.Attributes[ContactFields.SecondaryPhone].ToString();
                 }
 
-                if (contact.Attributes.Contains(ContactFields.Email))
-                {
-                    bool saveWithoutEmail = false;
-                    if (contact.Attributes.Contains(ContactFields.NoEmail))
-                    {
 
-                        saveWithoutEmail = Convert.ToBoolean(contact.GetAttributeValue<OptionSetValue>(ContactFields.NoEmail).Value);
-                        
-                    }
-                    if (saveWithoutEmail)
+
+                bool saveWithoutEmail = false;
+                if (contact.Attributes.Contains(ContactFields.NoEmail))
+                {
+                    saveWithoutEmail = Convert.ToBoolean(contact.GetAttributeValue<OptionSetValue>(ContactFields.NoEmail).Value);
+                }
+
+                if (saveWithoutEmail)
+                {
+                    //TODO: Cual sera el correo default desde CRM
+                    if (contact.Attributes.Contains(ContactFields.Id))
                     {
-                        //TODO: Cual sera el correo default desde CRM
-                        request.contactinfo.email = Constants.NoEmailDefaultAddress;
-                    }
-                    else
+                        request.contactinfo.email = contact.Attributes[ContactFields.Id].ToString() + "_" + Guid.NewGuid().ToString() + Constants.NoEmailDefaultAddress;
+                    }                 
+                }
+                else
+                {
+                    if (contact.Attributes.Contains(ContactFields.Email))
                     {
                         request.contactinfo.email = contact.Attributes[ContactFields.Email].ToString();
                     }
                 }
+
 
                 if (contact.Attributes.Contains(ContactFields.Country))
                 {

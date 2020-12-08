@@ -76,7 +76,7 @@ namespace CreateContactAsPatient
 
                             //contactMethods = new ContactMethods();
 
-                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.Province, ContactFields.Canton, ContactFields.District, ContactFields.Interests, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate, ContactFields.ContactxContactLookup, ContactFields.Phone, ContactFields.SecondaryPhone, ContactFields.Email,ContactFields.IsChildContact };
+                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.Province, ContactFields.Canton, ContactFields.District, ContactFields.Interests, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate, ContactFields.ContactxContactLookup, ContactFields.Phone, ContactFields.SecondaryPhone, ContactFields.Email,ContactFields.IsChildContact,ContactFields.NoEmail };
                             var columnSet = new ColumnSet(columnsToGet);
                             Entity contactData = service.Retrieve(contactEntity.EntitySingularName, contactUpdated.Id, columnSet);
 
@@ -141,7 +141,7 @@ namespace CreateContactAsPatient
                             {
                                 /*Validar si es un usuario tipo Paciente y no tiene un cuidador o tutor, se utilizara el servicio
                                  *de update patient*/
-                                if (userType == "01" || (contactData.Attributes.Contains(ContactFields.ContactxContactLookup)))
+                                if (contactData.Attributes.Contains(ContactFields.ContactxContactLookup))
                                 {
                                     updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service, trace);
                                 }

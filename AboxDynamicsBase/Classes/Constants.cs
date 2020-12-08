@@ -43,7 +43,7 @@
 
         public const int MaxNameLength = 30;
         public const int MinNameLength = 3;
-        public const string NoEmailDefaultAddress= "defaultCrm@loymark.com";
+        public const string NoEmailDefaultAddress= "@aboxplan.com";
 
 
 

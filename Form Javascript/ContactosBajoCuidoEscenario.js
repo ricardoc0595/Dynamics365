@@ -177,9 +177,24 @@ Abox.ContactFunctions = {
         }
 
         var isChildContactControl = formContext.getControl(this.ContactFields.IsChildContact);
+        var isChildContactField = formContext.getAttribute(this.ContactFields.IsChildContact);
         if (isChildContactControl !== null) {
 
             isChildContactControl.setVisible(false);
+        }
+
+        var relatedContactsControl = formContext.getControl(Abox.SharedLogic.Constants.SubGridControls.RelatedContacts);
+        if (relatedContactsControl !== null) {
+            if (isChildContactField !== null) {
+                if (isChildContactField.getValue() !== null) {
+                    var isChildContact = isChildContactField.getValue();
+
+                    if (isChildContact) {
+                        relatedContactsControl.setVisible(false);
+                    }
+
+                }
+            }
         }
 
 

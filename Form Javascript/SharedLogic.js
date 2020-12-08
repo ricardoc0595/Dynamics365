@@ -75,6 +75,9 @@ Abox.SharedLogic = {
         GeneralPluginErrorMessage: "Ocurrió un error en la ejecución de un Plugin interno, por favor intenta nuevamente o comunícate con soporte.",
         ApplicationIdWebAPI: "WEBAPI",
         ApplicationIdPlugin: "PLUGIN",
+        SubGridControls:{
+            RelatedContacts:"RelatedContacts"
+        }
 
     },
 
