@@ -60,5 +60,6 @@ namespace AboxDynamicsBase.Classes.Entities
         public const string DistrictLookup = "new_distrit";
         public const string NoEmail = "new_noemail";
         public const string OtherInterestLookup = "new_otherinterest";
+        public const string IsUserTypeChange = "new_isusertypechange";
     }
 }

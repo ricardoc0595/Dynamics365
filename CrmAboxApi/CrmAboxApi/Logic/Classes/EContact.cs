@@ -63,19 +63,22 @@ namespace CrmAboxApi.Logic.Classes
                         jObject.Add($"{ContactSchemas.Country}@odata.bind", $"/{countryEntity.EntityPluralName}({CountryFields.IdCountry}='{signupProperties.country}')");
                     }
 
-                    if (!(String.IsNullOrEmpty(signupProperties.contactinfo.province)))
+                    if (signupProperties.contactinfo != null)
                     {
-                        jObject.Add($"{ContactSchemas.Province}@odata.bind", $"/{provinceEntity.EntityPluralName}({ProvinceFields.IdProvince}='{signupProperties.contactinfo.province}')");
-                    }
+                        if (!(String.IsNullOrEmpty(signupProperties.contactinfo.province)))
+                        {
+                            jObject.Add($"{ContactSchemas.Province}@odata.bind", $"/{provinceEntity.EntityPluralName}({ProvinceFields.IdProvince}='{signupProperties.contactinfo.province}')");
+                        }
 
-                    if (!(String.IsNullOrEmpty(signupProperties.contactinfo.canton)))
-                    {
-                        jObject.Add($"{ContactSchemas.Canton}@odata.bind", $"/{cantonEntity.EntityPluralName}({CantonFields.IdCanton}='{signupProperties.contactinfo.canton}')");
-                    }
+                        if (!(String.IsNullOrEmpty(signupProperties.contactinfo.canton)))
+                        {
+                            jObject.Add($"{ContactSchemas.Canton}@odata.bind", $"/{cantonEntity.EntityPluralName}({CantonFields.IdCanton}='{signupProperties.contactinfo.canton}')");
+                        }
 
-                    if (!(String.IsNullOrEmpty(signupProperties.contactinfo.district)))
-                    {
-                        jObject.Add($"{ContactSchemas.District}@odata.bind", $"/{districtEntity.EntityPluralName}({DistrictFields.IdDistrict}='{signupProperties.contactinfo.district}')");
+                        if (!(String.IsNullOrEmpty(signupProperties.contactinfo.district)))
+                        {
+                            jObject.Add($"{ContactSchemas.District}@odata.bind", $"/{districtEntity.EntityPluralName}({DistrictFields.IdDistrict}='{signupProperties.contactinfo.district}')");
+                        }
                     }
 
                     if (isChildContact)
@@ -1662,7 +1665,9 @@ namespace CrmAboxApi.Logic.Classes
                                                 TargetEntityId = updateAccountRequest.patientId,
                                                 TargetEntityName = this.EntityPluralName,
                                                 TargetIdKeyToUse = ContactFields.IdAboxPatient,
-                                                RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship
+                                                RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship,
+                                                WrapTargetEntityIdWithQuotes = false,
+                                                WrapRelatedEntityIdWithQuotes = true
                                             };
                                             var disassociateResult = entityDisassociation.Disassociate(connectionString,processId);
 
@@ -1722,7 +1727,9 @@ namespace CrmAboxApi.Logic.Classes
                                             TargetEntityId = updateAccountRequest.patientId,
                                             TargetEntityName = this.EntityPluralName,
                                             TargetIdKeyToUse = ContactFields.IdAboxPatient,
-                                            RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship
+                                            RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship,
+                                            WrapTargetEntityIdWithQuotes=false,
+                                            WrapRelatedEntityIdWithQuotes=true
                                         };
 
                                         var associationResult = entityAssociation.Associate(connectionString,processId);
@@ -1971,7 +1978,9 @@ namespace CrmAboxApi.Logic.Classes
                                             TargetEntityId = updatePatientRequest.patientid,
                                             TargetEntityName = this.EntityPluralName,
                                             TargetIdKeyToUse = ContactFields.IdAboxPatient,
-                                            RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship
+                                            RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship,
+                                            WrapTargetEntityIdWithQuotes=false,
+                                            WrapRelatedEntityIdWithQuotes=true
                                         };
                                         var disassociateResult = entityDisassociation.Disassociate(connectionString,processId);
 
@@ -2031,7 +2040,9 @@ namespace CrmAboxApi.Logic.Classes
                                         TargetEntityId = updatePatientRequest.patientid,
                                         TargetEntityName = this.EntityPluralName,
                                         TargetIdKeyToUse = ContactFields.IdAboxPatient,
-                                        RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship
+                                        RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship,
+                                        WrapTargetEntityIdWithQuotes=false,
+                                        WrapRelatedEntityIdWithQuotes=true
                                     };
 
                                     var associationResult = entityAssociation.Associate(connectionString,processId);
@@ -2157,6 +2168,272 @@ namespace CrmAboxApi.Logic.Classes
             }
 
             return responseObject;
+        }
+
+        /// <summary>
+        /// Actualiza un contacto en el CRM luego de haber cambiado su tipo de perfil. Por ejemplo, cambio de tipo usuario "Otro interes" a usuario
+        /// Paciente o Cuidador/Tutor
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="processId"></param>
+        /// <returns></returns>
+        public OperationResult UpdateContactFromSignIntoAccount(UserTypeChangeRequest request, Guid processId)
+        {
+            OperationResult result = null;
+            JObject jObject = new JObject();
+            try
+            {
+                if (request != null)
+                {
+                    int contactAboxPatientId = request.AboxPatientId;
+                    string userType=request.UserType;
+
+                    if (!(String.IsNullOrEmpty(request.UserType)))
+                    jObject.Add($"{ContactSchemas.UserType}@odata.bind", $"/new_usertypes({sharedMethods.GetUserTypeEntityId(request.UserType)})");
+                    DoseRecord[] dosesArray = null;
+                    string[] dosesCreated = null;
+                    if (request.Medication!=null ) {
+
+                        //
+
+                        int contactId = Int32.Parse(request.AboxPatientId.ToString());
+
+
+
+
+                        /*Este request se deja por fuera del metodo que crea toda la estructura de
+                    * Contacto porque es un proceso individual de crear una entidad de Dosis,
+                    * la cual puede eventualmente fallar o no crearse correctamente, ademas se necesita
+                    * ligar el resultado de esta operacion al request que crea el contacto en el crm
+                    */
+                        bool hasPatientUndercare = false;
+                        string idUnderCarePatient = null;
+                        if (userType=="02"|| userType=="03")
+                        {
+                            hasPatientUndercare = true;
+                        }
+
+
+                        #region --BajoCuido--
+
+                        if (hasPatientUndercare)
+                        {
+                            OperationResult responseFromPatientUnderCareCreate = null;
+                            //Crear paciente bajo cuido como contacto
+
+                            PatientSignup signupPatientUnderCare = null;
+                            signupPatientUnderCare = new PatientSignup
+                            {
+                                country = request.Country,
+                                userType = "",//Si se agrega un tipo de usuario default para usuarios bajo cuido, revisar la asignacion del id de paciente en metodo GetCreateContactJsonStructure
+                                patientid = request.PatientUndercareId,
+                                medication = null,
+                                contactinfo = null,
+                                patientincharge = new PatientSignup.Patientincharge
+                                {
+                                    lastname = request.PatientInCharge.Lastname,
+                                    dateofbirth = request.PatientInCharge.Dateofbirth,
+                                    gender = request.PatientInCharge.Gender,
+                                    id = request.PatientInCharge.Id,
+                                    idtype = request.PatientInCharge.Idtype,
+                                    name = request.PatientInCharge.Name,
+                                    secondlastname = request.PatientInCharge.Secondlastname
+                                },
+                                personalinfo = new PatientSignup.Personalinfo {
+                                    lastname = request.PatientInCharge.Lastname,
+                                    dateofbirth = request.PatientInCharge.Dateofbirth,
+                                    gender = request.PatientInCharge.Gender,
+                                    id = request.PatientInCharge.Id,
+                                    idtype = request.PatientInCharge.Idtype,
+                                    name = request.PatientInCharge.Name,
+                                    secondlastname = request.PatientInCharge.Secondlastname,
+                                    password = ""
+                                },
+                                interests = null,
+                                otherInterest = null,
+                            };
+
+                            responseFromPatientUnderCareCreate = this.CreateAsPatient(signupPatientUnderCare, null, processId, true);
+
+                            if (responseFromPatientUnderCareCreate.IsSuccessful)
+                            {
+                                 idUnderCarePatient = responseFromPatientUnderCareCreate.Data.ToString();
+
+                                #region --Crear Relacion--
+
+                                EntityAssociation entityAssociation = new EntityAssociation
+                                {
+                                    RelatedEntityId = request.PatientUndercareId.ToString(),
+                                    RelatedEntityIdKeyToUse = ContactFields.IdAboxPatient,
+                                    RelatedEntityName = this.EntityPluralName,
+                                    TargetEntityId = contactId.ToString(),
+                                    TargetEntityName = this.EntityPluralName,
+                                    TargetIdKeyToUse = ContactFields.IdAboxPatient,
+                                    RelationshipDefinitionName = ContactFields.ContactxContactRelationship,
+                                    WrapTargetEntityIdWithQuotes=false,
+                                    WrapRelatedEntityIdWithQuotes=false
+                                };
+
+                                var associationResult = entityAssociation.Associate(connectionString, processId);
+
+                                if (!associationResult.IsSuccessful)
+                                {
+                                    return new OperationResult
+                                    {
+                                        IsSuccessful = false,
+                                        Message = "Ocurrió un error relacionando el contacto",
+                                        InternalError = null,
+                                        Code = ""
+                                    };
+                                }
+
+                                #endregion 
+
+                            }
+                            //
+
+                        }
+
+
+                        #endregion
+
+
+                        #region  --Productos--
+
+                        string patientIdToAssignMedication = !hasPatientUndercare ? contactId.ToString() : request.PatientUndercareId.ToString();
+
+
+                        if (request.Medication != null)
+                        {
+                            int dosesLength = request.Medication.Products.Count;
+                            dosesArray = new DoseRecord[dosesLength];
+                            dosesCreated = new string[dosesLength];
+
+                            for (int i = 0; i < dosesLength; i++)
+                            {
+                                string frequency = "";
+                                if (!String.IsNullOrEmpty(request.Medication.Products[i].Other))
+                                    frequency = request.Medication.Products[i].Other;
+                                else
+                                    frequency = request.Medication.Products[i].Frequency;
+
+                                dosesArray[i] = new DoseRecord
+                                {
+                                    Dose = frequency,
+                                    IdProduct = request.Medication.Products[i].ProductId,
+                                    ContactBinding = $"{this.EntityPluralName}({ContactFields.IdAboxPatient}={patientIdToAssignMedication})"
+                                };
+                            }
+
+                            if (dosesArray != null)
+                            {
+                                if (dosesArray.Length > 0)
+                                {
+                                    try
+                                    {
+                                        int length = dosesArray.Length;
+
+                                        for (int i = 0; i < length; i++)
+                                        {
+
+                                            OperationResult doseCreateResult = doseEntity.Create(dosesArray[i], processId);
+
+                                            if (doseCreateResult.IsSuccessful)
+                                            {
+                                                dosesCreated[i] = (string)doseCreateResult.Data;
+                                            }
+
+
+                                        }
+
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                                        log.Properties["ProcessID"] = processId;
+                                        log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                                        log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                                        Logger.Log(log);
+                                        throw ex;
+                                    }
+                                }
+                            }
+                        }
+
+                        #endregion
+
+
+                        #region --Medicos--
+
+                        if (request.Medication != null)
+                        {
+                            if ((request.Medication.Medics != null) && (request.Medication.Medics.Count > 0))
+                            {
+                                var medicsLength = request.Medication.Medics.Count;
+
+                                for (int i = 0; i < medicsLength; i++)
+                                {
+
+                                    EntityAssociation entityAssociation = new EntityAssociation
+                                    {
+                                        RelatedEntityId = request.Medication.Medics[i].Medicid,
+                                        RelatedEntityIdKeyToUse = DoctorFields.DoctorIdKey,
+                                        RelatedEntityName = doctorEntity.EntityPluralName,
+                                        TargetEntityId = patientIdToAssignMedication,
+                                        TargetEntityName = this.EntityPluralName,
+                                        TargetIdKeyToUse = ContactFields.IdAboxPatient,
+                                        RelationshipDefinitionName = ContactFields.ContactxDoctorRelationship,
+                                        WrapRelatedEntityIdWithQuotes=true,
+                                        WrapTargetEntityIdWithQuotes=false
+                                    };
+
+                                    var associationResult = entityAssociation.Associate(connectionString, processId);
+
+                                    if (!associationResult.IsSuccessful)
+                                    {
+                                        return new OperationResult
+                                        {
+                                            IsSuccessful = false,
+                                            Message = "Ocurrió un error relacionando los doctores al contacto",
+                                            InternalError = null,
+                                            Code = ""
+                                        };
+                                    }
+
+
+                                }
+                            }
+                        }
+
+                        #endregion 
+
+                    }
+
+                    result = this.ContactUpdateRequest(jObject, contactAboxPatientId.ToString(), processId);
+                }
+                else
+                {
+                    result.IsSuccessful = false;
+                    result.Message = "Datos de consulta incorrectos";
+                    result.InternalError = null;
+                    result.Code = "";
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
+                result.IsSuccessful = false;
+                result.Message = ex.ToString();
+                result.InternalError = null;
+                result.Code = "";
+                return result;
+            }
         }
 
         #endregion

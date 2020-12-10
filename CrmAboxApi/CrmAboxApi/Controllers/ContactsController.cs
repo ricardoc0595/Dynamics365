@@ -77,6 +77,7 @@ namespace CrmAboxApi.Controllers
 
         //POST api/contacts
 
+        //TODO: Ocultar para produccion
         [HttpGet]
         public IHttpActionResult GetToken()
         {
@@ -88,7 +89,7 @@ namespace CrmAboxApi.Controllers
         }
 
 
-
+        //TODO: Ocultar para produccion
         [HttpGet]
         public IHttpActionResult WhoAmI()
         {
@@ -153,6 +154,11 @@ namespace CrmAboxApi.Controllers
         }
 
 
+        /// <summary>
+        ///  Endpoint que Registra un usuario como Contacto dentro de Dynamics, segun el tipo de usuario cuidador-tutor-paciente-otrointeres
+        /// </summary>
+        /// <param name="signupRequest">JSON exitoso enviado previamente a los servicios de Abox plan, además los ID de pacientes necesarios</param>
+        /// <returns></returns>
         [HttpPost]
         public IHttpActionResult PatientSignup([FromBody] PatientSignup signupRequest)
         {
@@ -231,6 +237,11 @@ namespace CrmAboxApi.Controllers
             }
         }
 
+        /// <summary>
+        /// Actualiza los datos de un paciente que posee una cuenta primaria, es decir, es un Usuario de tipo paciente o Cuidador/Tutor sin ningun paciente a cargo
+        /// </summary>
+        /// <param name="updateRequest">JSON exitoso enviado previamente a los servicios de Abox plan, además los ID de pacientes necesarios</param>
+        /// <returns></returns>
         [HttpPost]
         public IHttpActionResult AccountUpdate([FromBody] UpdateAccountRequest updateRequest)
         {
@@ -288,6 +299,71 @@ namespace CrmAboxApi.Controllers
                 });
             }
         }
+
+        /// <summary>
+        /// Endpoint encargado de actualizar un contacto en el CRM luego de haber cambiado su tipo de perfil. Por ejemplo, cambio de tipo usuario "Otro interes" a usuario
+        /// Paciente o Cuidador/Tutor
+        /// </summary>
+        /// <param name="request">JSON con las propiedades necesarias para la actualizacion</param>
+        /// <returns></returns>
+        [HttpPost]
+        public IHttpActionResult UpdateFromSignIntoAccount([FromBody] UserTypeChangeRequest request)
+        {
+            Guid processId = Guid.NewGuid();
+
+            LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"Request hacia {Request.RequestUri} con el JSON:**START** {JsonConvert.SerializeObject(request)} **END**");
+            log.Properties["ProcessID"] = processId;
+            log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+            log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            Logger.Log(log);
+
+
+            EContact contactProcedures = new EContact();
+            
+            try
+            {
+                if (request != null)
+                {
+                    OperationResult updateResult = contactProcedures.UpdateContactFromSignIntoAccount(request, processId);
+
+                    if (updateResult.IsSuccessful)
+                    {
+                        return Ok(updateResult);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.InternalServerError, updateResult);
+                    }
+                }
+                else
+                {
+                    return Content(HttpStatusCode.BadRequest, new OperationResult
+                    {
+                        Code = "",
+                        IsSuccessful = false,
+                        Data = null,
+                        Message = "La solicitud JSON enviada es incorrecta"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogEventInfo logEx = new LogEventInfo(LogLevel.Error, Logger.Name, null, $"Request hacia {Request.RequestUri} con el JSON:**START** {JsonConvert.SerializeObject(request)} **END**", null, new Exception(ex.ToString()));
+                logEx.Properties["ProcessID"] = processId;
+                logEx.Properties["AppID"] = Constants.ApplicationIdWebAPI;
+                logEx.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(logEx);
+
+                return Content(HttpStatusCode.InternalServerError, new OperationResult
+                {
+                    IsSuccessful = false,
+                    Data = null,
+                    Message = ex.ToString(),
+                    Code = ""
+                });
+            }
+        }
+
 
         [HttpPost]
         public IHttpActionResult UpdatePatient([FromBody] UpdatePatientRequest updateRequest)

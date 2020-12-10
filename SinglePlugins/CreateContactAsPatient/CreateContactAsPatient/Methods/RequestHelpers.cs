@@ -1104,6 +1104,197 @@ namespace CreateContactAsPatient.Methods
             }
         }
 
+
+        public SignupIntoAccountRequest.Request GetSignupPatientIntoAccountRequestObject(Entity contact, IOrganizationService service, ITracingService trace)
+        {
+            var request = new SignupIntoAccountRequest.Request();
+            try
+            {
+                ContactEntity contactEntity = new ContactEntity();
+                CantonEntity cantonEntity = new CantonEntity();
+                DistrictEntity districtEntity = new DistrictEntity();
+                ProvinceEntity provinceEntity = new ProvinceEntity();
+                CountryEntity countryEntity = new CountryEntity();
+
+                bool addPatientInChargeInfo = false;
+
+                if (contact.Attributes.Contains(ContactFields.UserType))
+                {
+                    EntityReference userTypeReference = null;
+                    userTypeReference = (EntityReference)contact.Attributes[ContactFields.UserType];
+                    string userTypeFromContactBeingCreated = userTypeReference.Id.ToString();
+                    // sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
+
+                    if (userTypeFromContactBeingCreated == Constants.CareTakerIdType || userTypeFromContactBeingCreated == Constants.TutorIdType)
+                    {
+                        //Un usuario tutor o cuidador, en aboxplan se guarda como user type 01, el que está bajo cuido si se registra como 02 o 03
+                        request.userType = "01";
+                    }
+                    else
+                    {
+                        request.userType = sharedMethods.GetUserTypeId(userTypeFromContactBeingCreated);
+
+                        if (request.userType == "01" || request.userType == "05")
+                            addPatientInChargeInfo = true;
+                    }
+                }
+
+               
+
+                if (contact.Attributes.Contains(ContactFields.IdAboxPatient))
+                {
+                    request.patientId = Convert.ToString(contact.GetAttributeValue<int>(ContactFields.IdAboxPatient));
+                }
+
+
+
+                request.personalinfo = new SignupIntoAccountRequest.Request.Personalinfo();
+                request.patientincharge = new SignupIntoAccountRequest.Request.Patientincharge();
+
+                #region Personal Info
+
+             
+
+                if (contact.Attributes.Contains(ContactFields.Id))
+                {
+                    request.personalinfo.id = contact.Attributes[ContactFields.Id].ToString();
+                    if (addPatientInChargeInfo)
+                        request.patientincharge.id = contact.Attributes[ContactFields.Id].ToString();
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Firstname))
+                {
+                    request.personalinfo.name = contact.Attributes[ContactFields.Firstname].ToString();
+                    if (addPatientInChargeInfo)
+                        request.patientincharge.name = contact.Attributes[ContactFields.Firstname].ToString();
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Lastname))
+                {
+                    request.personalinfo.lastname = contact.Attributes[ContactFields.Lastname].ToString();
+                    if (addPatientInChargeInfo)
+                        request.patientincharge.lastname = contact.Attributes[ContactFields.Lastname].ToString();
+                }
+
+                if (contact.Attributes.Contains(ContactFields.SecondLastname))
+                {
+                    
+                    if (addPatientInChargeInfo)
+                        request.patientincharge.secondlastname = contact.Attributes[ContactFields.SecondLastname].ToString();
+                }
+
+                if (contact.Attributes.Contains(ContactFields.IdType))
+                {
+                    
+                    if (addPatientInChargeInfo)
+                        request.patientincharge.idtype = "0" + (contact.GetAttributeValue<OptionSetValue>(ContactFields.IdType)).Value;
+                }
+
+
+                #endregion Personal Info
+
+                #region ContactInfo
+                request.contactinfo = new SignupIntoAccountRequest.Request.Contactinfo();
+
+                bool saveWithoutEmail = false;
+                if (contact.Attributes.Contains(ContactFields.NoEmail))
+                {
+                    saveWithoutEmail = Convert.ToBoolean(contact.GetAttributeValue<OptionSetValue>(ContactFields.NoEmail).Value);
+                }
+
+                if (saveWithoutEmail)
+                {
+                    //TODO: Cual sera el correo default desde CRM
+                    if (contact.Attributes.Contains(ContactFields.Id))
+                    {
+                        request.contactinfo.email = contact.Attributes[ContactFields.Id].ToString() + "_" + Guid.NewGuid().ToString() + Constants.NoEmailDefaultAddress;
+                    }
+                }
+                else
+                {
+                    if (contact.Attributes.Contains(ContactFields.Email))
+                    {
+                        request.contactinfo.email = contact.Attributes[ContactFields.Email].ToString();
+                    }
+                }
+
+
+                if (contact.Attributes.Contains(ContactFields.Gender))
+                {
+                    int val = (contact.GetAttributeValue<OptionSetValue>(ContactFields.Gender)).Value;
+                    string gender = sharedMethods.GetGenderValue(val);
+                    if (!String.IsNullOrEmpty(gender))
+                    {
+                        
+                        if (addPatientInChargeInfo)
+                            request.patientincharge.gender = gender;
+                    }
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Birthdate))
+                {
+                    DateTime birthdate = new DateTime();
+                    birthdate = contact.GetAttributeValue<DateTime>(ContactFields.Birthdate);
+                    if (birthdate != null)
+                    {
+                        DateTime today = DateTime.Now;
+
+                        request.personalinfo.dateofbirth = birthdate.ToString("yyyy-MM-dd");
+                        if (addPatientInChargeInfo)
+                            request.patientincharge.dateofbirth = birthdate.ToString("yyyy-MM-dd");
+
+                    }
+                }
+
+                if (contact.Attributes.Contains(ContactFields.Country))
+                {
+                    EntityReference countryReference = null;
+                    countryReference = (EntityReference)contact.Attributes[ContactFields.Country];
+                    if (countryReference != null)
+                    {
+                        var countryRetrieved = service.Retrieve(countryEntity.EntitySingularName, countryReference.Id, new ColumnSet(CountryFields.IdCountry));
+                        if (countryRetrieved.Attributes.Contains(CountryFields.IdCountry))
+                        {
+                            string country = countryRetrieved.GetAttributeValue<string>(CountryFields.IdCountry);
+
+                            if (!String.IsNullOrEmpty(country))
+                            {
+                                request.country = country;
+                            }
+                        }
+                    }
+                }
+
+
+                #endregion ContactInfo
+
+                if (request.medication == null)
+                {
+                    request.medication = null;
+                }
+
+                if (request.medication.products == null)
+                {
+                    request.medication.products = new SignupIntoAccountRequest.Request.Product[0];
+                }
+
+                if (request.medication.medics == null)
+                {
+                    request.medication.medics = new SignupIntoAccountRequest.Request.Medic[0];
+                }
+
+
+
+
+                return request;
+            }
+            catch (Exception ex)
+            {
+                trace.Trace($"MethodName: {new StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw ex;
+            }
+        }
+
         public PatientSignupRequest.Request GetSignupPatientUnderCareRequestObject(Entity childContact, Entity parentContact, IOrganizationService service, ITracingService trace)
         {
             var request = new PatientSignupRequest.Request();

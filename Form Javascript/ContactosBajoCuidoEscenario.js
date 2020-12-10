@@ -27,7 +27,8 @@ Abox.ContactFunctions = {
             this.disableFieldsUntilCountrySelected(formContext);
             this.setUnderCareLogic(formContext);
 
-
+            var fieldNames = [this.ContactFields.IsUserTypeChange];
+            this.setFieldsInvisible(formContext,fieldNames);
 
             //Para poder implementar un mensaje mas amigable, hay que hacer un propio boton de guardar customizado y llamar al metodo save() del api de dynamics
 
@@ -98,6 +99,7 @@ Abox.ContactFunctions = {
         DistrictLookup: "new_distrit",
         NoEmail: "new_noemail",
         OtherInterestLookup: "new_otherinterest",
+        IsUserTypeChange : "new_isusertypechange",
 
     },
 
@@ -129,8 +131,10 @@ Abox.ContactFunctions = {
     }
     ,
 
+
     setUpdateFormLogic: function (formContext) {
 
+        var that=this;
         var passwordField = formContext.getAttribute(this.ContactFields.Password);
         var passwordControl = formContext.getControl(this.ContactFields.Password);
         if (passwordField != null) {
@@ -153,7 +157,7 @@ Abox.ContactFunctions = {
         }
 
 
-    
+
         var countryControl = formContext.getControl(this.ContactFields.CountryLookup);
 
         if (countryControl != null) {
@@ -161,9 +165,58 @@ Abox.ContactFunctions = {
             countryControl.setDisabled(true);
         }
 
+        var userTypeField = formContext.getAttribute(this.ContactFields.UserType);
         var userTypeControl = formContext.getControl(this.ContactFields.UserType);
+        var idUserType = "";
         if (userTypeControl != null) {
-            userTypeControl.setDisabled(true);
+            if (userTypeField !== null) {
+
+                if (userTypeField.getValue() !== null) {
+                    idUserType = userTypeField.getValue()[0].id.slice(1, -1)
+                }
+            }
+
+            //Desactiva el control de tipo de usuario para todos los tipos de usuario menos de otro interes, estos pueden cambiar su tipo de perfil
+            if (idUserType !== "") {
+                if (idUserType.toLowerCase() !== Abox.SharedLogic.Constants.OtherInterestIdType) {
+                    userTypeControl.setDisabled(true);
+
+                    var fields=[this.ContactFields.IsUserTypeChange];
+                    this.setFieldsInvisible(formContext,fields);
+
+                }else{
+                    var isUserTypeChangeControl = formContext.getControl(this.ContactFields.IsUserTypeChange);
+                    if (isUserTypeChangeControl !== null) {
+                        
+                        isUserTypeChangeControl.setVisible(true);
+                    }
+                    var isUserTypeChangeField = formContext.getAttribute(this.ContactFields.IsUserTypeChange);
+
+                    if (isUserTypeChangeField !== null) {
+                        var fieldNames = [this.ContactFields.Firstname, this.ContactFields.Lastname, this.ContactFields.SecondLastname, this.ContactFields.IdType, this.ContactFields.Id, this.ContactFields.NoEmail, this.ContactFields.Email, this.ContactFields.Phone, this.ContactFields.SecondaryPhone, this.ContactFields.Gender, this.ContactFields.Birthdate, this.ContactFields.CityLookup, this.ContactFields.CantonLookup, this.ContactFields.DistrictLookup, this.ContactFields.Interests, this.ContactFields.Password,this.ContactFields.OtherInterestLookup];
+
+                        isUserTypeChangeField.addOnChange(function () {
+
+                            var value = isUserTypeChangeField.getValue();
+                           
+                            if(value){
+                                that.disableFields(formContext,fieldNames);
+
+                            }else{
+                                that.enableFields(formContext,fieldNames);
+                            }
+
+
+                        })
+                    }
+                    
+                }
+
+            }
+
+            
+        
+
         }
 
         var idTypeControl = formContext.getControl(this.ContactFields.IdType);
@@ -183,18 +236,21 @@ Abox.ContactFunctions = {
             isChildContactControl.setVisible(false);
         }
 
+
         var relatedContactsControl = formContext.getControl(Abox.SharedLogic.Constants.SubGridControls.RelatedContacts);
         if (relatedContactsControl !== null) {
+            var isChildContact=false;
             if (isChildContactField !== null) {
                 if (isChildContactField.getValue() !== null) {
-                    var isChildContact = isChildContactField.getValue();
-
-                    if (isChildContact) {
-                        relatedContactsControl.setVisible(false);
-                    }
-
+                     isChildContact = isChildContactField.getValue();
                 }
             }
+
+            
+            if (isChildContact || (idUserType.toLowerCase() === Abox.SharedLogic.Constants.PatientIdType || idUserType.toLowerCase() === Abox.SharedLogic.Constants.OtherInterestIdType)) {
+                relatedContactsControl.setVisible(false);
+            }
+
         }
 
 
@@ -502,6 +558,39 @@ Abox.ContactFunctions = {
 
     },
 
+    setFieldsVisible: function (formContext, fields) {
+        if (typeof fields !== "undefined" && formContext !== "undefined") {
+
+            if (fields.constructor === Array) {
+                fields.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var fieldControl = formContext.getControl(fieldName);
+                    if (fieldControl !== null) {
+                        fieldControl.setVisible(true);
+                    }
+                });
+            }
+
+        }
+    },
+    setFieldsInvisible: function (formContext, fields) {
+        if (typeof fields !== "undefined" && formContext !== "undefined") {
+
+            if (fields.constructor === Array) {
+                fields.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var fieldControl = formContext.getControl(fieldName);
+                    if (fieldControl !== null) {
+                        fieldControl.setVisible(false);
+                    }
+                });
+            }
+
+        }
+    },
+
     setFieldsControlsAndAlerts: function (formContext) {
 
         var that = this;
@@ -528,7 +617,7 @@ Abox.ContactFunctions = {
 
                 var dataFormat = that.getCountryFormat(formContext);
                 var isForeignId = false;
-               
+
                 //identificar si es extranjero
                 var idTypeField = formContext.getAttribute(that.ContactFields.IdType);
 
@@ -557,7 +646,7 @@ Abox.ContactFunctions = {
                         that.setFieldNotification(value, null, idControl, 30, null);
                     } else {
                         that.setFieldNotification(value, null, idControl, dataFormat.MaxID, dataFormat.MinID);
-                        
+
                     }
                 }
 

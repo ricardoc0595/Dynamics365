@@ -19,6 +19,10 @@ namespace CrmAboxApi.Logic.Classes
         public string RelatedEntityId { get; set; }
         public string TargetIdKeyToUse { get; set; }
         public string RelatedEntityIdKeyToUse { get; set; }
+        
+        public bool WrapTargetEntityIdWithQuotes { get; set; }//Algunos Ids en Dynamics estan definidos como String, otros como Int, si es string va con comillas.
+
+        public bool WrapRelatedEntityIdWithQuotes { get; set; }//Algunos Ids en Dynamics estan definidos como String, otros como Int, si es string va con comillas.
 
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -42,14 +46,27 @@ namespace CrmAboxApi.Logic.Classes
                         string relatedQuery = "";
 
                         if (String.IsNullOrEmpty(this.TargetIdKeyToUse))
+                        {
                             targetQuery = $"{this.TargetEntityName}({this.TargetEntityId})";
+                        }
                         else
-                            targetQuery = $"{this.TargetEntityName}({this.TargetIdKeyToUse}={this.TargetEntityId})";
+                        {
+                            if (WrapTargetEntityIdWithQuotes)
+                                targetQuery = $"{this.TargetEntityName}({this.TargetIdKeyToUse}='{this.TargetEntityId}')";
+                            else
+                                targetQuery = $"{this.TargetEntityName}({this.TargetIdKeyToUse}={this.TargetEntityId})";
+
+                        }
 
                         if (String.IsNullOrEmpty(this.RelatedEntityIdKeyToUse))
                             relatedQuery = $"{this.RelationshipDefinitionName}({this.RelatedEntityId})";
                         else
-                            relatedQuery = $"{this.RelationshipDefinitionName}({this.RelatedEntityIdKeyToUse}='{this.RelatedEntityId}')";
+                        {
+                            if (WrapRelatedEntityIdWithQuotes)
+                                relatedQuery = $"{this.RelationshipDefinitionName}({this.RelatedEntityIdKeyToUse}='{this.RelatedEntityId}')";
+                            else
+                                relatedQuery = $"{this.RelationshipDefinitionName}({this.RelatedEntityIdKeyToUse}={this.RelatedEntityId})";
+                        }
 
 
                         string url = $"{targetQuery}/{relatedQuery}/$ref";
@@ -153,7 +170,17 @@ namespace CrmAboxApi.Logic.Classes
                         else
                         {
                             //Se usa el Key alternativo (los de Abox por ejemplo)
-                            jsonObject.Add($"@odata.id", $"{uri}{this.RelatedEntityName}({this.RelatedEntityIdKeyToUse}='{this.RelatedEntityId}')");
+                            //Coon comilla simple entre el Id
+                            if (this.WrapRelatedEntityIdWithQuotes)
+                                jsonObject.Add($"@odata.id", $"{uri}{this.RelatedEntityName}({this.RelatedEntityIdKeyToUse}='{this.RelatedEntityId}')");
+
+                            else
+                                //Sin comilla simple entre el Id
+                                jsonObject.Add($"@odata.id", $"{uri}{this.RelatedEntityName}({this.RelatedEntityIdKeyToUse}={this.RelatedEntityId})");
+                            
+
+
+
                         }
 
                         string targetQuery = "";
@@ -161,7 +188,13 @@ namespace CrmAboxApi.Logic.Classes
                         if (String.IsNullOrEmpty(this.TargetIdKeyToUse))
                             targetQuery = $"{this.TargetEntityName}({this.TargetEntityId})";
                         else
-                            targetQuery = $"{this.TargetEntityName}({this.TargetIdKeyToUse}={this.TargetEntityId})";
+                        {
+                            if (WrapTargetEntityIdWithQuotes)
+                                targetQuery = $"{this.TargetEntityName}({this.TargetIdKeyToUse}='{this.TargetEntityId}')";
+                            else
+                                targetQuery = $"{this.TargetEntityName}({this.TargetIdKeyToUse}={this.TargetEntityId})";
+                            
+                        }
 
                         HttpContent c = new StringContent(jsonObject.ToString(Formatting.None), System.Text.Encoding.UTF8, "application/json");
 

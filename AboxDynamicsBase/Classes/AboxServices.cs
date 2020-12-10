@@ -12,5 +12,6 @@
         public const string CaretakerChildService = "https://apidev.aboxplan.com/member/signup/crm/tutorchild";
         public const string TutorChildService = "https://apidev.aboxplan.com/member/signup/crm/tutorchild";
         public const string WelcomeSendMailService = "https://apidev.aboxplan.com/member/signup/crm/welcome_sendmail";
+        public const string SignIntoAccountService= "https://apidev.aboxplan.com/member/account/patient/signintoaccount";
     }
 }

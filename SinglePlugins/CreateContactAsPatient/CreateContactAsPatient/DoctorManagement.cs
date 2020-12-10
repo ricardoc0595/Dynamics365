@@ -105,6 +105,25 @@ namespace CreateContactAsPatient
 
                             }
 
+
+                            string userType = "";
+
+                            if (contact.Attributes.Contains(ContactFields.UserType))
+                            {
+                                EntityReference userTypeReference = null;
+                                userTypeReference = (EntityReference)contact.Attributes[ContactFields.UserType];
+                                if (userTypeReference != null)
+                                {
+                                    userType = sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
+                                }
+                            }
+
+                            if (userType == "05")
+                            {
+                                Exception serviceEx = new Exception("Es necesario cambiar el tipo de usuario de este contacto para poder agregar médicos.");
+                                serviceEx.Data["HasFeedbackMessage"] = true;
+                                throw serviceEx;
+                            }
                             //updatePatientRequest.personalinfo = new UpdatePatientRequest.Request.Personalinfo();
 
 

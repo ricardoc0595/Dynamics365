@@ -42,6 +42,7 @@ namespace CreateContactAsPatient
                 Entity contactUpdated = null;
                 UpdatePatientRequest.Request updatePatientRequest = null;
                 UpdateAccountRequest.Request updateAccountRequest = null;
+                SignupIntoAccountRequest.Request patientSignupRequest = null;
                 ContactMethods contactMethods = new ContactMethods() ;
 
                 if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is Entity)
@@ -76,7 +77,7 @@ namespace CreateContactAsPatient
 
                             //contactMethods = new ContactMethods();
 
-                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.Province, ContactFields.Canton, ContactFields.District, ContactFields.Interests, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate, ContactFields.ContactxContactLookup, ContactFields.Phone, ContactFields.SecondaryPhone, ContactFields.Email,ContactFields.IsChildContact,ContactFields.NoEmail };
+                            string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country, ContactFields.Province, ContactFields.Canton, ContactFields.District, ContactFields.Interests, ContactFields.UserType, ContactFields.IdType, ContactFields.Id, ContactFields.Firstname, ContactFields.SecondLastname, ContactFields.Lastname, ContactFields.Gender, ContactFields.Birthdate, ContactFields.ContactxContactLookup, ContactFields.Phone, ContactFields.SecondaryPhone, ContactFields.Email,ContactFields.IsChildContact,ContactFields.NoEmail,ContactFields.IsUserTypeChange };
                             var columnSet = new ColumnSet(columnsToGet);
                             Entity contactData = service.Retrieve(contactEntity.EntitySingularName, contactUpdated.Id, columnSet);
 
@@ -134,62 +135,80 @@ namespace CreateContactAsPatient
                                 throw ex;
                             }
 
+                            bool isProfileChange = false;
 
-                            /*Dependiendo del tipo de usuario y si tiene contactos a cargo o no, se utiizan los servicios de
-                             updateAccount o updatePatient*/
-                            if (!string.IsNullOrEmpty(userType))
+                            if (contactData.Attributes.Contains(ContactFields.IsUserTypeChange))
                             {
-                                /*Validar si es un usuario tipo Paciente y no tiene un cuidador o tutor, se utilizara el servicio
-                                 *de update patient*/
-                                if (contactData.Attributes.Contains(ContactFields.ContactxContactLookup))
-                                {
-                                    updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service, trace);
-                                }
-                                else
-                                {
-                                    //Si es cuidador, tutor, o paciente que no está a cargo de nadie se usa el update account
-                                    updateAccountRequest = helperMethods.GetAccountUpdateStructure(contactData, service, trace);
-                                }
+                                isProfileChange = contactData.GetAttributeValue<bool>(ContactFields.IsUserTypeChange);
                             }
+
+                            EntityReference newUserTypeReference = null;
+                            //TODO: Usar algun field para indicar que el usuario esta explicitamente haciendo un cambio de perfil
+                            if (isProfileChange && contactData.Attributes.Contains(ContactFields.UserType))
+                            {
+                                patientSignupRequest = helperMethods.GetSignupPatientIntoAccountRequestObject(contactData, service, trace);
+                                newUserTypeReference = (EntityReference)contactData.Attributes[ContactFields.UserType];
+                            }
+                            /*Validar si es un usuario tipo Paciente y no tiene un cuidador o tutor, se utilizara el servicio
+                            *de update patient*/
                             else if (contactData.Attributes.Contains(ContactFields.ContactxContactLookup))
                             {
                                 updatePatientRequest = helperMethods.GetPatientUpdateStructure(contactData, service, trace);
                             }
                             else
                             {
-                                string contactName = "";
-
-                                if (contactData.Attributes.Contains(ContactFields.Firstname))
-                                    contactName += contactData.GetAttributeValue<string>(ContactFields.Firstname);
-
-                                if (contactData.Attributes.Contains(ContactFields.Lastname))
-                                    contactName += " " + contactData.GetAttributeValue<string>(ContactFields.Lastname);
-
-                                if (contactData.Attributes.Contains(ContactFields.SecondLastname))
-                                    contactName += " " + contactData.GetAttributeValue<string>(ContactFields.SecondLastname);
-
-                                Exception ex = new Exception($"Ocurrió un problema identificando el tipo de usuario del contacto. {(!String.IsNullOrEmpty(contactName) ? "(" + contactName + ")" : "")}");
-                                ex.Data["HasFeedbackMessage"] = true;
-                                throw ex;
+                                //Si es cuidador, tutor, o paciente que no está a cargo de nadie se usa el update account
+                                updateAccountRequest = helperMethods.GetAccountUpdateStructure(contactData, service, trace);
                             }
+
+
+                            //else
+                            //{
+                            //    string contactName = "";
+
+                            //    if (contactData.Attributes.Contains(ContactFields.Firstname))
+                            //        contactName += contactData.GetAttributeValue<string>(ContactFields.Firstname);
+
+                            //    if (contactData.Attributes.Contains(ContactFields.Lastname))
+                            //        contactName += " " + contactData.GetAttributeValue<string>(ContactFields.Lastname);
+
+                            //    if (contactData.Attributes.Contains(ContactFields.SecondLastname))
+                            //        contactName += " " + contactData.GetAttributeValue<string>(ContactFields.SecondLastname);
+
+                            //    Exception ex = new Exception($"Ocurrió un problema identificando el tipo de usuario del contacto. {(!String.IsNullOrEmpty(contactName) ? "(" + contactName + ")" : "")}");
+                            //    ex.Data["HasFeedbackMessage"] = true;
+                            //    throw ex;
+                            //}
 
                             #endregion -> Set request data based on Contact
 
                             DataContractJsonSerializer serializer = null;
                             MemoryStream memoryStream = new MemoryStream();
                             string serviceUrl = "";
-                            if (updatePatientRequest != null)
+
+                            if (isProfileChange)
                             {
-                                serializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.Request));
-                                serializer.WriteObject(memoryStream, updatePatientRequest);
-                                serviceUrl = AboxServices.UpdatePatientService;
+                                serializer = new DataContractJsonSerializer(typeof(SignupIntoAccountRequest.Request));
+                                serializer.WriteObject(memoryStream, patientSignupRequest);
+                                serviceUrl = AboxServices.SignIntoAccountService;
                             }
-                            else if (updateAccountRequest != null)
+                            else
                             {
-                                serializer = new DataContractJsonSerializer(typeof(UpdateAccountRequest.Request));
-                                serializer.WriteObject(memoryStream, updateAccountRequest);
-                                serviceUrl = AboxServices.UpdateAccountService;
+                                if (updatePatientRequest != null)
+                                {
+                                    serializer = new DataContractJsonSerializer(typeof(UpdatePatientRequest.Request));
+                                    serializer.WriteObject(memoryStream, updatePatientRequest);
+                                    serviceUrl = AboxServices.UpdatePatientService;
+                                }
+                                else if (updateAccountRequest != null)
+                                {
+                                    serializer = new DataContractJsonSerializer(typeof(UpdateAccountRequest.Request));
+                                    serializer.WriteObject(memoryStream, updateAccountRequest);
+                                    serviceUrl = AboxServices.UpdateAccountService;
+                                }
                             }
+
+                            
 
                             var jsonObject = Encoding.Default.GetString(memoryStream.ToArray());
                             memoryStream.Dispose();
@@ -205,9 +224,41 @@ namespace CreateContactAsPatient
                             var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
                             UpdatePatientRequest.ServiceResponse updatePatientResponse = null;
                             UpdateAccountRequest.ServiceResponse updateAccountResponse = null;
+                            SignupIntoAccountRequest.ServiceResponse signIntoAccountResponse = null;
                             if (serviceResponse.IsSuccessful)
                             {
-                                if (updatePatientRequest != null)
+                                if (isProfileChange && patientSignupRequest!=null)
+                                {
+                                    //
+
+                                    DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(SignupIntoAccountRequest.ServiceResponse));
+
+                                    using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponse.Data)))
+                                    {
+                                        deserializer = new DataContractJsonSerializer(typeof(SignupIntoAccountRequest.ServiceResponse));
+                                        signIntoAccountResponse = (SignupIntoAccountRequest.ServiceResponse)deserializer.ReadObject(ms);
+                                    }
+
+                                    if (signIntoAccountResponse.response.code.ToString() != "0")
+                                    {
+                                        trace.Trace(Constants.ErrorMessageCodeReturned + signIntoAccountResponse.response.code);
+
+                                        Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + signIntoAccountResponse.response.message);
+                                        serviceEx.Data["HasFeedbackMessage"] = true;
+                                        throw serviceEx;
+                                    }
+                                    else
+                                    {
+                                        //contact.Attributes.Add("new_idaboxpatient", serviceResponseProperties.response.details.idPaciente);
+                                        if (isProfileChange && newUserTypeReference != null)
+                                        {
+                                            contactData.Attributes.Add(ContactFields.UserType, newUserTypeReference);
+                                        }
+                                    }
+
+                                    //
+                                }
+                                else if (updatePatientRequest != null)
                                 {
                                     //Leer respuesta del servicio de Update Patient
 
@@ -228,7 +279,7 @@ namespace CreateContactAsPatient
                                     }
                                     else
                                     {
-                                        //contact.Attributes.Add("new_idaboxpatient", serviceResponseProperties.response.details.idPaciente);
+                                        
                                     }
                                 }
                                 else if (updateAccountRequest != null)
