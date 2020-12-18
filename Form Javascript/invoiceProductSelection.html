@@ -1,0 +1,286 @@
+<html>
+
+<head>
+    <meta>
+    <style>
+        body span,
+        p,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        label {
+            font-family: SegoeUI, 'Segoe UI';
+        }
+
+        table {
+            width: 100%;
+            position: relative;
+            text-align: center;
+            margin-top: 20px;
+            border: solid 1px #eaeaea;
+        }
+
+        table th span {
+            padding: 8px;
+            display: block;
+        }
+
+        table td span {
+            padding: 8px;
+            display: block;
+        }
+
+        table tr {
+            border-right: 1px solid #eaeaea;
+            border-top: 1px solid #eaeaea
+        }
+
+        select[name='productsAvailable'] {
+            display: block;
+            padding: 8px;
+            width: 33.33333333%;
+        }
+
+
+        table tr:hover .btn.remove {
+            background-color: rgb(220, 53, 69);
+            color: white;
+        }
+
+        form .product-data {
+            display: block;
+            position: relative;
+            width: 100%;
+        }
+
+        /* form .product-data label{
+            display:block;
+            position:relative;
+            width:100%;
+        } */
+
+        form .feedback-error {
+            color: red;
+        }
+
+        form.ng-invalid.ng-dirty input {
+            border: solid 1px rgb(220, 53, 69);
+        }
+
+        table tr:hover {
+            background-color: #0000000f;
+        }
+
+        .btn {
+            border-radius: 3px;
+            padding: 3px;
+            width: 78px;
+            border: none;
+            cursor: pointer;
+            color: white;
+        }
+
+        .btn:disabled {
+            background-color: #aad8ec !important;
+        }
+
+        .btn.remove {
+            background-color: #ffffff00;
+            border: solid 1px #d6d6d6;
+            color: #d6d6d6;
+        }
+
+        .btn.default {
+            background-color: #0095d6;
+            border-radius: 3px;
+            padding: 3px;
+            width: 78px;
+
+        }
+    </style>
+</head>
+
+<body style="overflow-wrap: break-word;" ng-app="invoiceProductSelectionApp">
+    <div style="font-family: undefined;" ng-controller="ProductSelectionController">
+
+
+        <label style="font-family: SegoeUI, 'Segoe UI';display: block;margin-bottom: 10px;">Seleccionar
+            productos:</label>
+        <select name="productsAvailable" ng-model="productSelected.id" id="productsAvailable"
+            ng-change="setProductSelected(productSelected.id)">
+            <option ng-attr-value="{{product.id}}" ng-repeat="product in productsAvailable" ng-bind="product.name">
+            </option>
+        </select>
+
+        <form name="productSelectedData" ng-if="productSelected.id!==null">
+            <div class="product-data">
+                <p ng-bind="productSelected.name"></p>
+                <label>Cantidad:</label>
+                <input required type="text" maxlength="2" ng-pattern="/^[0-9]+$/" name="quantity"
+                    ng-model="productSelected.quantity">
+                <button class="btn default" ng-click="addProduct(productSelectedData)"
+                    ng-disabled="!productSelectedData.quantity.$valid">Agregar</button>
+                <p class="feedback-error"
+                    ng-show="(!productSelectedData.quantity.$valid) && (productSelectedData.quantity.$touched)">Es
+                    requerido un valor numérico</p>
+            </div>
+
+        </form>
+
+        <table>
+            <tr>
+                <th><span>Producto</span></th>
+                <th><span>Cantidad</span></th>
+                <th><span></span></th>
+            </tr>
+            <tr ng-repeat="product in productsAdded">
+                <td><span ng-bind="product.name"></span></td>
+                <td><span ng-bind="product.quantity"></span></td>
+                <td><button class="btn remove" ng-click="removeProduct(product)">Eliminar</button></td>
+            </tr>
+        </table>
+
+    </div>
+
+    <script src="/WebResources/new_angularjs"></script>
+    <!-- <script src="angular.min.js"></script> -->
+
+    <script>
+
+        // {"patientId":1017635,"pharmacyId":"112219294","billId":"fasdfadasdf","billDate":"2020-12-17","billImageUrl":"https://apidev.aboxplan.com/files/460ccbaa-0e08-9efe-330a-a0da61e8d3f0.jpg","products":[{"id":"100W085104001","quantity":8},{"id":"15830","quantity":1}]}
+
+
+
+        var invoiceProductSelectionApp = angular.module('invoiceProductSelectionApp', []);
+
+        var formContext = null;
+        var sharedLogic = null;
+        var Xrm = null;
+        var invoiceFields = null;
+
+        function initializeProductSelectionLogic(_formContext, _sharedLogicObject, _Xrm, _invoiceFields) {
+            formContext = _formContext;
+            sharedLogic = _sharedLogicObject;
+            Xrm = _Xrm;
+            invoiceFields = _invoiceFields;
+            
+
+        }
+
+        
+            invoiceProductSelectionApp.controller('ProductSelectionController', function ProductSelectionController($scope, $http, $timeout) {
+
+                $scope.addProduct = function (form) {
+
+                    if (!form.quantity.$valid) {
+                        return;
+                    } else {
+                        $scope.productsAdded.push({
+                            name: $scope.productSelected.name,
+                            quantity: $scope.productSelected.quantity,
+                            id: $scope.productSelected.id
+                        })
+
+                        $scope.productSelected.name = null;
+                        $scope.productSelected.quantity = null;
+                        $scope.productSelected.id = null;
+                    }
+                }
+
+                $scope.setProductSelected = function (idProduct) {
+
+                    var selected = $scope.productsAvailable.find(function (p) { return p.id === idProduct });
+                    if (selected !== null) {
+                        $scope.productSelected.name = selected.name;
+                    }
+
+                }
+
+                $scope.removeProduct = function (productToRemove) {
+
+                    if ($scope.productsAdded.length > 0) {
+                        sharedLogic.deleteItemFromList(productToRemove.id, $scope.productsAdded, "id");
+                    } else {
+                        return;
+                    }
+
+                }
+
+                $scope.productsAvailable =
+                    [
+                        {
+                            name: "Selecciona un producto",
+                            id: ""
+                        },
+                        {
+                            name: "Producto 1",
+                            id: "01"
+                        },
+                        {
+                            name: "Producto 2",
+                            id: "02"
+                        },
+                        {
+                            name: "Producto 3",
+                            id: "03"
+                        }, {
+                            name: "Producto 4",
+                            id: "04"
+                        },
+                        {
+                            name: "Producto 5",
+                            id: "05"
+                        }
+                    ];
+
+                $scope.productSelected = {
+                    name: null,
+                    id: null,
+                    quantity: null
+                }
+
+                $scope.productsAdded = [
+
+                ];
+
+                $scope.$watch("productsAdded", function () {
+
+                    if (formContext !== null) {
+                        var jsonField = formContext.getAttribute(invoiceFields.ProductsSelectedJson);
+                        var productsForService = [];
+                        if ($scope.productsAdded.length) {
+
+                            $scope.productsAdded.forEach(function (product) {
+
+                                productsForService.push({ "id": product.id, "quantity": product.quantity });
+
+                            })
+
+                            if (jsonField !== null) {
+
+                                var value = JSON.stringify(productsForService);
+                                jsonField.setValue(value);
+
+                            }
+                        } else {
+                            jsonField.setValue(null);
+                            productsAdded = [];
+                        }
+                    }
+
+
+                }, true)
+
+            });
+        
+
+
+
+    </script>
+
+</body>
+
+</html>

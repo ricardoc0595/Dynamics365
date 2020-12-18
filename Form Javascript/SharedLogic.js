@@ -77,7 +77,8 @@ Abox.SharedLogic = {
         ApplicationIdPlugin: "PLUGIN",
         SubGridControls:{
             RelatedContacts:"RelatedContacts"
-        }
+        },
+        AboxImageUploadUrl:"https://apidev.aboxplan.com/files/upload"
 
     },
 
@@ -111,6 +112,219 @@ Abox.SharedLogic = {
         },
 
     },
+
+    disableFields: function (formContext, fieldsToDisable) {
+
+        fieldsToDisable.forEach(function (fieldName) {
+
+            //var field = formContext.getAttribute(fieldName);
+            var fieldControl = formContext.getControl(fieldName);
+
+            if (fieldControl !== null) {
+                fieldControl.setDisabled(true);
+            }
+        });
+
+    },
+
+    clearTextFields: function (formContext, fieldsToClear) {
+        if (typeof fieldsToClear !== "undefined" && formContext !== "undefined") {
+
+            if (fieldsToClear.constructor === Array) {
+                fieldsToClear.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var field = formContext.getAttribute(fieldName);
+                    if (field !== null) {
+                        field.setValue("");
+                    }
+                });
+            }
+
+        }
+    },
+
+    enableFields: function (formContext, fieldsToEnable) {
+
+        fieldsToEnable.forEach(function (fieldName) {
+
+            //var field = formContext.getAttribute(fieldName);
+            var fieldControl = formContext.getControl(fieldName);
+
+            if (fieldControl !== null) {
+                fieldControl.setDisabled(false);
+            }
+        });
+
+    },
+
+    setFieldsRequired: function (formContext, fields) {
+        if (typeof fields !== "undefined" && formContext !== "undefined") {
+
+            if (fields.constructor === Array) {
+                fields.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var field = formContext.getAttribute(fieldName);
+                    if (field !== null) {
+                        field.setRequiredLevel("required");
+                    }
+                });
+            }
+
+        }
+    },
+    setFieldsNonRequired: function (formContext, fields) {
+        if (typeof fields !== "undefined" && formContext !== "undefined") {
+
+            if (fields.constructor === Array) {
+                fields.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var field = formContext.getAttribute(fieldName);
+                    if (field !== null) {
+                        field.setRequiredLevel("none");
+                    }
+                });
+            }
+
+        }
+    },
+
+    setFieldsVisible: function (formContext, fields) {
+        if (typeof fields !== "undefined" && formContext !== "undefined") {
+
+            if (fields.constructor === Array) {
+                fields.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var fieldControl = formContext.getControl(fieldName);
+                    if (fieldControl !== null) {
+                        fieldControl.setVisible(true);
+                    }
+                });
+            }
+
+        }
+    },
+    setFieldsInvisible: function (formContext, fields) {
+        if (typeof fields !== "undefined" && formContext !== "undefined") {
+
+            if (fields.constructor === Array) {
+                fields.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var fieldControl = formContext.getControl(fieldName);
+                    if (fieldControl !== null) {
+                        fieldControl.setVisible(false);
+                    }
+                });
+            }
+
+        }
+    },
+
+    elementAlreadyInList: function (idElement, list, idProperty) {
+
+        //Funcion que se llama para verificar si el elemento que intenta agregar el usuario
+        //Ya se encuentra en la lista recibe parametros: id del elemento, lista en donde buscar, nombre de la propiedad del objeto que contiene el id
+
+        var length = list.length;
+        var valueAlreadyExists = false;
+
+        try {
+            for (var i = 0; i < length; i++) {
+                if (list[i][idProperty] === null || typeof list[i][idProperty] === "undefined") {
+                    continue
+                } else {
+                    if (list[i][idProperty] === idElement) {
+                        valueAlreadyExists = true;
+                        break;
+                    }
+
+                }
+
+            }
+            if (valueAlreadyExists) {
+                return true;
+            } else {
+                return false;
+            }
+
+        } catch (e) {
+            return false;
+        }
+
+    },
+
+    deleteItemFromList: function (idItem, list, idProperty) {
+
+        idItem = idItem || null;
+        list = list || [];
+        idProperty = idProperty || null;
+
+        var deleteIndex = null;
+        var deleted = false;
+        var length = list.length;
+
+        try {
+            for (var i = 0; i < length; i++) {
+
+                if (list[i][idProperty].toString() === idItem.toString()) {
+                    deleteIndex = i;
+                    break;
+                }
+
+            }
+
+            if (deleteIndex !== null) {
+                list.splice(deleteIndex, 1);
+                deleted = true;
+            }
+        } catch (e) {
+            console.log("excepcion:" + e);
+        }
+
+
+
+        return deleted;
+
+    },
+    findElement: function (elementId, list, idProperty) {
+        //Funcion que se llama para buscar un elemento en una lista 
+        // recibe parametros: id del elemento, lista en donde buscar, nombre de la propiedad del objeto que contiene el id
+
+
+        elementId = elementId || null;
+        var found = null;
+
+        try {
+            if (elementId !== null) {
+
+                var length = list.length;
+                for (var i = 0; i < length; i++) {
+                    if (list[i][idProperty] === null || typeof list[i][idProperty] === "undefined") {
+                        continue
+                    } else {
+                        if (list[i][idProperty].toString() === elementId.toString()) {
+                            var obj = list[i];
+                            found = obj;
+                            break;
+                        }
+                    }
+
+
+                }
+                return found;
+
+            }
+
+        } catch (e) {
+            return found;
+        }
+
+
+    }
 
 
 };

@@ -147,6 +147,24 @@ Abox.ContactFunctions = {
             // }
         }
 
+
+        var isChildContact=false;
+        var isChildContactControl = formContext.getControl(this.ContactFields.IsChildContact);
+        var isChildContactField = formContext.getAttribute(this.ContactFields.IsChildContact);
+        if (isChildContactControl !== null) {
+
+            isChildContactControl.setVisible(false);
+        }
+
+        if (isChildContactField !== null) {
+            if (isChildContactField.getValue() !== null) {
+                 isChildContact = isChildContactField.getValue();
+            }
+        }
+
+        
+
+
         var clientInterestField = formContext.getAttribute(this.ContactFields.Interests);
 
 
@@ -177,8 +195,8 @@ Abox.ContactFunctions = {
             }
 
             //Desactiva el control de tipo de usuario para todos los tipos de usuario menos de otro interes, estos pueden cambiar su tipo de perfil
-            if (idUserType !== "") {
-                if (idUserType.toLowerCase() !== Abox.SharedLogic.Constants.OtherInterestIdType) {
+            if (idUserType !== "" || isChildContact) {
+                if ((idUserType.toLowerCase() !== Abox.SharedLogic.Constants.OtherInterestIdType) || isChildContact) {
                     userTypeControl.setDisabled(true);
 
                     var fields=[this.ContactFields.IsUserTypeChange];
@@ -219,6 +237,17 @@ Abox.ContactFunctions = {
 
         }
 
+
+        var relatedContactsControl = formContext.getControl(Abox.SharedLogic.Constants.SubGridControls.RelatedContacts);
+        if (relatedContactsControl !== null) {
+            
+            
+            if (isChildContact || (idUserType.toLowerCase() === Abox.SharedLogic.Constants.PatientIdType || idUserType.toLowerCase() === Abox.SharedLogic.Constants.OtherInterestIdType)) {
+                relatedContactsControl.setVisible(false);
+            }
+
+        }
+
         var idTypeControl = formContext.getControl(this.ContactFields.IdType);
         if (idTypeControl != null) {
             idTypeControl.setDisabled(true);
@@ -229,29 +258,10 @@ Abox.ContactFunctions = {
             idControl.setDisabled(true);
         }
 
-        var isChildContactControl = formContext.getControl(this.ContactFields.IsChildContact);
-        var isChildContactField = formContext.getAttribute(this.ContactFields.IsChildContact);
-        if (isChildContactControl !== null) {
-
-            isChildContactControl.setVisible(false);
-        }
+       
 
 
-        var relatedContactsControl = formContext.getControl(Abox.SharedLogic.Constants.SubGridControls.RelatedContacts);
-        if (relatedContactsControl !== null) {
-            var isChildContact=false;
-            if (isChildContactField !== null) {
-                if (isChildContactField.getValue() !== null) {
-                     isChildContact = isChildContactField.getValue();
-                }
-            }
-
-            
-            if (isChildContact || (idUserType.toLowerCase() === Abox.SharedLogic.Constants.PatientIdType || idUserType.toLowerCase() === Abox.SharedLogic.Constants.OtherInterestIdType)) {
-                relatedContactsControl.setVisible(false);
-            }
-
-        }
+       
 
 
 

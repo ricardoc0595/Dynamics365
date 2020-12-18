@@ -1,0 +1,130 @@
+<html>
+
+<head>
+    <meta>
+</head>
+
+<body style="overflow-wrap: break-word;">
+    <span style="font-family: undefined;">
+        
+        <label style="font-family: SegoeUI, 'Segoe UI';display: block;margin-bottom: 10px;">Seleccionar imagen de factura:</label>
+        <input type="file" style="margin-bottom:15px" name="" id="imageUploadInput">
+        <div style="width:100%;position:relative">
+            <img style="width:100%;height:auto" alt="invoice image" id="invoiceImage" title="Invoice image"
+                src="https://aatralcreations.com/wp-content/uploads/2020/05/placeholder-1-2.png" width="60">
+        </div>
+
+    </span>
+
+
+    <script>
+
+        var input = document.getElementById("imageUploadInput");
+        var url_upload = "";
+        var imageUploadedUrl = "";
+        var imageWasUploaded = false;
+        var Xrm=null;
+        function getImageElement() {
+            return document.getElementById("invoiceImage");
+        }
+
+        function setImageElementSrc(imageSource) {
+            var imageElement = getImageElement();
+            imageElement.src = imageSource;
+        }
+
+        function setImageOnChangeLogic(formContext, InvoiceFields, uploadUrl,_Xrm) {
+            
+            var imageUrlTextField = formContext.getAttribute(InvoiceFields.InvoiceImageWebUrl);
+            url_upload = uploadUrl;
+            Xrm=_Xrm;
+
+            input.onchange = function () {
+
+                var value = input.value;
+                var ext = value.replace(/^.*\./, '');
+                ext = ext.toLowerCase();
+                if ((ext === "jpg") || (ext === "png") || (ext === "jpeg") || (ext === "pdf")) {
+                    if ((input.files[0].size / 1024 / 1024) <= 50000) { //bytes !!!
+                        // var fileName = input.files[0].name;//$(this).val();
+                        // $(this).next('.custom-file-label').html(fileName);
+
+
+                        uploadFile().then(function (r) {
+                            //utilities.loadingScreen.Hide();
+                            var promise = r;
+                            imageWasUploaded = true;
+                            imageUploadedUrl = promise.response.filename;
+                            setImageElementSrc(imageUploadedUrl);
+                            if (imageUrlTextField !== null) {
+
+                                imageUrlTextField.setValue(imageUploadedUrl);
+
+                            }
+                            console.log(promise.response);
+
+                        }, function (er) {
+                            imageWasUploaded = false;
+                            imageUploadedUrl = "";
+                            console.error(er);
+                        });
+
+                    }
+                    else {
+                        alert("La imagen que seleccionaste supera el límite de tamaño, por favor selecciona otra.");
+                        return;
+                    }
+                }
+                else {
+                    alert("Por favor seleccionar solamente archivos que contengan las siguientes extensiones: .jpg, .jpeg, .png, .pdf");
+                    input.value = "";
+                    return;
+
+                }
+            };
+
+        }
+
+        function uploadFile() {
+            Xrm.Utility.showProgressIndicator("Cargando imagen, por favor espere...")
+            return new Promise(function (resolve, reject) {
+                var photo = input.files[0];
+                var formData = new FormData();
+                formData.append("sampleFile", photo);
+                try {
+                    if (typeof url_upload !== "undefined") {
+
+                        var r = fetch(
+                            url_upload,
+                            {
+                                method: "POST",
+                                mode: "cors",
+                                body: formData
+                            });
+                        var c = null;
+                        r.then(function (rsp) {
+                            rsp.json().then(function (jrsp) {
+                                c = jrsp;
+                                Xrm.Utility.closeProgressIndicator();
+                                resolve(c);
+
+                            });
+                        });
+                    }
+
+                }
+                catch (err) {
+                    console.log(err);
+                    Xrm.Utility.closeProgressIndicator();
+                    reject("error upload");
+                }
+
+            });
+        }
+
+
+    </script>
+
+</body>
+
+</html>
