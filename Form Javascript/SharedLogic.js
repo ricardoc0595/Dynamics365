@@ -8,6 +8,75 @@ Abox.SharedLogic = {
         alert("test Call");
     },
 
+    Entities:{
+
+        ContactFields:{
+            EntityId: "contactid",
+            IdType: "new_idtype",
+            Id: "new_id",
+            UserType: "new_usertype",
+            Firstname: "firstname",
+            Lastname: "lastname",
+            SecondLastname: "new_secondlastname",
+            Password: "new_password",
+            Email: "emailaddress1",
+            Phone: "telephone2",
+            SecondaryPhone: "mobilephone",
+            Gender: "gendercode",
+            Birthdate: "birthdate",
+            ProductxContactId: "new_productcontactid",
+            RegisterDay: "new_registerday",
+            IdAboxPatient: "new_idaboxpatient",
+            Country: "new_countryid",
+            ContactxDoctorRelationship: "new_contact_new_doctor",
+            ContactxProductRelationship: "new_product_contact",
+            ContactxContactRelationship: "new_contact_contact",
+            ContactxDoseRelationship: "new_contact_new_dose",
+            Canton: "new_canton",
+            District: "new_distrit",
+            Province: "new_cityid",
+            Interests: "new_clientinterest",
+            ContactxContactLookup: "new_contactcontactid",
+            IsChildContact: "new_ischildcontact",
+            CountryLookup: "new_countryid",
+            CityLookup: "new_cityid",
+            CantonLookup: "new_canton",
+            DistrictLookup: "new_distrit",
+            NoEmail: "new_noemail",
+            OtherInterestLookup: "new_otherinterest",
+            IsUserTypeChange : "new_isusertypechange",
+        },
+        ContactSchemas:{
+            UserType : "new_UserType",
+            ContactxDoseRelationship : "",
+            Country : "new_CountryId",
+            Province : "new_CityId",
+            Canton : "new_Canton",
+            District : "new_Distrit",
+        },
+        CountryFields:{
+
+            EntityId : "new_countryid",
+            IdCountry : "new_idcountry",
+            Name : "new_name",
+        },
+        InvoiceFields:{
+            InvoiceImageWebResource:"WebResource_invoiceimage",
+            InvoiceImageWebUrl:"new_aboximageurl",
+            InvoiceNumber:"new_invoicenumber",
+            CaseInvoiceLookup:"new_caseinvoiceid",
+            Customer:"customerid",
+            Contact:"new_contactid",
+            Country:"new_invoiceCountry",
+            Pharmacy:"new_pharmacy",
+            PurchaseDate:"new_purchasedate",
+            EntityId:"invoiceid",
+            ProductSelectionWebResource:"WebResource_invoiceproductselection",
+            ProductsSelectedJson:"new_productsselectedjson"
+        }
+
+    },
+
     GetCountryCodeFromGuid: function (guidCountry) {
 
         var countryCode = "";
@@ -78,8 +147,13 @@ Abox.SharedLogic = {
         SubGridControls:{
             RelatedContacts:"RelatedContacts"
         },
-        AboxImageUploadUrl:"https://apidev.aboxplan.com/files/upload"
+       
 
+    },
+
+    AboxServices:{
+        AboxImageUploadUrl:"https://apidev.aboxplan.com/files/upload",
+        ProductsSearch:"https://apidev.aboxplan.com/products/search",
     },
 
     DataFormats: {
@@ -156,6 +230,61 @@ Abox.SharedLogic = {
             }
         });
 
+    },
+
+    DoPostRequest:async function(url,json,headers){
+
+        try {
+            var myHeaders = new Headers();
+
+            if (headers.constructor === Array) {
+                headers.forEach(function (header) {
+                    myHeaders.append(header.key, header.value);
+                });
+            }
+            // myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InR1dG9yMDIxMjIwMDIiLCJpYXQiOjE2MDg2NTM4ODgsImV4cCI6MTYwODc0MDI4OH0.5_MaCvTvzmMJwCXQ8AmyFcvAlUJkbL3_brKtPlQ_h7w");
+            // myHeaders.append("Content-Type", "application/json");
+
+            var raw = json;
+
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw,
+                // redirect: 'follow'
+            };
+
+            var response = await fetch(url, requestOptions);
+            console.log("respuesta fetch");
+            console.log(response);
+            return response;
+
+        } catch (error) {
+            console.error(error);
+        }
+
+    },
+
+    retrieveRecordFromWebAPI: async function (entityName, entityId, options, Xrm) {
+        Xrm.Utility.showProgressIndicator("");
+        var entityResponse = null;
+        
+
+        return new Promise(function(resolve,reject){
+            Xrm.WebApi.retrieveRecord(entityName, entityId, options).then(function (response) {
+
+                entityResponse = response;
+                // return entityResponse;
+                resolve(entityResponse);
+            }, function (error) {
+                Xrm.Utility.closeProgressIndicator();
+                entityResponse=error;
+                // return error;
+                reject(entityResponse);
+            });
+
+        })
+        
     },
 
     setFieldsRequired: function (formContext, fields) {
