@@ -83,6 +83,11 @@
         table tr:hover .btn.remove {
             background-color: rgb(220, 53, 69);
             color: white;
+            transition: all .5s;
+            -moz-transition: all .5s;
+            -o-transition: all .5s;
+            -ms-transition: all .5s;
+            -webkit-transition: all .5s;
         }
 
         form .product-data {
@@ -169,20 +174,20 @@
 <body style="overflow-wrap: break-word;" ng-app="invoiceProductSelectionApp">
     <div style="font-family: undefined;" ng-controller="ProductSelectionController">
 
-        <!-- <div class="loadingComponent" ng-show="!loadingComplete">
-            <p>Cargando...</p>
-        </div> -->
+        <div class="loadingComponent" ng-show="!loadingComplete">
+            <p>Seleccione un paciente para habilitar la selección de productos</p>
+        </div>
 
 
-        <div ng-show="true">
+        <div ng-show="loadingComplete">
             <!-- <p>ContactID:{{contactId}}</p> -->
 
-
+            
 
 
             <!-- <label style="font-family: SegoeUI, 'Segoe UI';display: block;margin-bottom: 10px;">Seleccionar
                 productos:</label> -->
-            <div style="position:relative;width:100%;display:block">
+            <div style="position:relative;width:100%;display:block" id="productsAvailableContainer">
                 <select name="productsAvailable" class="form-control" ng-model="productSelected.id"
                     id="productsAvailable" ng-change="setProductSelected(productSelected.id)">
                     <option ng-attr-value="{{product.id}}" ng-repeat="product in productsAvailable"
@@ -210,6 +215,8 @@
 
             </form>
 
+            
+            
             <table>
                 <tr>
                     <th><span>Producto</span></th>
@@ -227,8 +234,8 @@
 
     </div>
 
-    <script src="/WebResources/new_angularjs"></script> 
- <script src="/WebResources/new_choicesjs"></script> 
+    <script src="/WebResources/new_angularjs"></script>
+    <script src="/WebResources/new_choicesjs"></script>
     <!-- <script src="choices.min.js"></script>
     <script src="angular.min.js"></script> -->
 
@@ -242,15 +249,30 @@
 
 
 
-        function initializeProductSelectionLogic(_formContext, _sharedLogicObject, _Xrm, _invoiceFields, _contactData) {
+        function initializeProductSelectionLogic(_formContext, _sharedLogicObject, _Xrm, _invoiceFields, _contactData, _invoiceData) {
 
-            var controllerElement = document.querySelector('[ng-controller]');
-            var controllerScope = angular.element(controllerElement).scope();
-            controllerScope.initializeData(_contactData, _formContext, _sharedLogicObject, _Xrm, _invoiceFields);
+            try {
+                _Xrm.Utility.showProgressIndicator("");
+                var controllerElement = document.querySelector('[ng-controller]');
+                var controllerScope = angular.element(controllerElement).scope();
+                controllerScope.initializeData(_contactData, _invoiceData, _formContext, _sharedLogicObject, _Xrm, _invoiceFields);
+            } catch (error) {
+                console.error(error);
+                _Xrm.Utility.closeProgressIndicator();
+                // Xrm.Navigation.openErrorDialog({ details:error.stack,message:_sharedLogic.Constants.GeneralFrontendErrorMessage}).then(
+                //     function (success) {
+                //         console.log(success);
+                //     },
+                //     function (error) {
+                //         console.log(error);
+                //     });
+                _Xrm.Navigation.openErrorDialog({ details: error.stack, message: _sharedLogic.Constants.GeneralFrontendErrorMessage });
+                return;
+            }
         }
 
 
-        invoiceProductSelectionApp.controller('ProductSelectionController', function ProductSelectionController($scope, $http, $timeout) {
+        invoiceProductSelectionApp.controller('ProductSelectionController', function ProductSelectionController($scope, $http, $timeout,$compile) {
 
 
             var formContext = null;
@@ -258,10 +280,12 @@
             var Xrm = null;
             var invoiceFields = null;
             var contactData = null;
-
+            var invoiceData = null;
+            var choicesComponentProductsAvailable=null;
+            var temp=null;
             $scope.loadingComplete = false;
             $scope.productsAvailable = [];
-
+            $scope.productsAdded = [];
             //
 
             // $scope.productsAvailable = [
@@ -281,96 +305,198 @@
 
             //
 
-            $scope.initializeData = function (_contactData, _formContext, _sharedLogicObject, _Xrm, _invoiceFields) {
+           
 
-                formContext = _formContext;
-                sharedLogic = _sharedLogicObject;
-                Xrm = _Xrm;
-                invoiceFields = _invoiceFields;
-                contactData = _contactData;
+            $scope.initializeData = function (_contactData, _invoiceData, _formContext, _sharedLogicObject, _Xrm, _invoiceFields) {
 
-                $scope.contactId = contactData.idPatient;
+                try {
 
-                if (typeof contactData !== "undefined") {
+                    formContext = _formContext;
+                    sharedLogic = _sharedLogicObject;
+                    Xrm = _Xrm;
+                    invoiceFields = _invoiceFields;
+                    contactData = _contactData;
+                    invoiceData = _invoiceData;
 
-                    if (typeof contactData.products !== "undefined") {
 
-                        var length = contactData.products.length;
-                        for (let i = 0; i < length; i++) {
-                            var obj = {};
-                            obj.name = contactData.products[i].Producto;
-                            obj.id = contactData.products[i].idProducto;
-                            obj.description = contactData.products[i].Descripcion;
-                            $scope.productsAvailable.push(obj);
+                    if (typeof contactData !== "undefined" && contactData!==null) {
+
+
+                        if (typeof contactData.products !== "undefined") {
+
+                            var length = contactData.products.length;
+                            for (let i = 0; i < length; i++) {
+                                var obj = {};
+                                obj.name = contactData.products[i].Producto;
+                                obj.id = contactData.products[i].idProducto;
+                                obj.description = contactData.products[i].Descripcion;
+                                $scope.productsAvailable.push(obj);
+                            }
+
+                            $scope.productsAvailable.unshift({ name: "Seleccione un producto", id: "", description: "" });
+
+                        }
+                    }else{
+                        
+                        $scope.productsAvailable=[];
+                        $scope.loadingComplete = false;
+                        $scope.$apply();
+                    }
+
+                    if (typeof invoiceData !== "undefined" && invoiceData !== null && $scope.productsAvailable.length>0) {
+
+                        if (typeof invoiceData.products !== "undefined" && invoiceData.products !== null) {
+
+                            var length = invoiceData.products.length;
+
+                            for (var i = 0; i < length; i++) {
+                                var productInInvoice = invoiceData.products[i];
+
+
+                                //buscar nombre del producto en la lista de productos del paciente
+                                var name = "";
+
+                                var objectFound = sharedLogic.findElement(productInInvoice.id, $scope.productsAvailable, "id");
+                                if (objectFound !== null) {
+                                    name = objectFound.name;
+                                }
+
+                                if(!sharedLogic.elementAlreadyInList(objectFound.id, $scope.productsAdded,"id")){
+                                    $scope.productsAdded.push({
+                                    name: name,
+                                    quantity: productInInvoice.quantity,
+                                    id: productInInvoice.id
+                                });
+                                }
+
+                                
+
+                            }
+
                         }
 
-                        $scope.productsAvailable.unshift({ name: "Seleccione un producto", id: "", description: "" });
-
                     }
-                }
-                
-                $timeout(function () {
-                    
-                    $timeout(function(){
-                        
-                        var c = new Choices(document.getElementById("productsAvailable"));
-                    })
-                    // c.setChoices(
-                    //     $scope.productsAvailable,
-                    //     'id',
-                    //     'name',
-                    //     false,
-                    // );
-                    // $scope.$apply();
 
-                    $scope.loadingComplete = true;
-                })
-                // $scope.contactProducts=contactData.products;
+                    $timeout(function () {
+
+                        if(typeof contactData!=="undefined" && contactData!==null){
+                            $scope.loadingComplete = true;
+                            $timeout(function () {
+                                if(choicesComponentProductsAvailable===null){
+                                    choicesComponentProductsAvailable = new Choices(document.getElementById("productsAvailable"),{silent:true});
+                                    
+                                    $scope.$apply();
+                                }else{
+                                    
+                                    
+                                    choicesComponentProductsAvailable.destroy();
+
+                                    var d = document.getElementById("productsAvailable");
+                                    d.remove();
+                                    
+                                    var selectRemake = "<select name='productsAvailable' class='form-control' ng-model='productSelected.id' id='productsAvailable' ng-change='setProductSelected(productSelected.id)'></select>";
+                                    var optionRemake="<option ng-attr-value='{{product.id}}' ng-repeat='product in productsAvailable' ng-bind='product.name'></option>";
+                                    var container = document.getElementById("productsAvailableContainer");
+                                    angular.element(container).append(selectRemake);
+                                    var select=document.getElementById("productsAvailable");
+                                    angular.element(select).append(optionRemake);
+                                    $compile(document.getElementById("productsAvailable"))($scope);
+                                    // $compile(optionRemake)($scope);
+                                    // $scope.productsAvailable = [];
+                                    $scope.$apply();
+                                        
+                                    $timeout(function(){
+                                        choicesComponentProductsAvailable = new Choices(document.getElementById("productsAvailable"),{silent:true})
+
+
+                                    })
+                                   
+                                }
+                            })
+                        }
+                    });
+
+                 
+
+
+
+
+                       
+                    
+                    // $scope.contactProducts=contactData.products;
+                } catch (error) {
+                    console.error(error);
+                    Xrm.Navigation.openErrorDialog({ details: error.stack, message: sharedLogic.Constants.GeneralFrontendErrorMessage });
+                }
+
             }
 
 
             $scope.addProduct = function (form) {
 
-                if (!form.quantity.$valid) {
-                    return;
-                } else {
+                try {
+                    if (!form.quantity.$valid) {
+                        return;
+                    } else {
 
 
-                    $scope.productsAdded.push({
-                        name: $scope.productSelected.name,
-                        quantity: $scope.productSelected.quantity,
-                        id: $scope.productSelected.id
-                    })
+                        $scope.productsAdded.push({
+                            name: $scope.productSelected.name,
+                            quantity: $scope.productSelected.quantity,
+                            id: $scope.productSelected.id
+                        })
 
-                    $scope.productSelected.name = null;
-                    $scope.productSelected.quantity = null;
-                    $scope.productSelected.id = null;
+                        $scope.productSelected.name = null;
+                        $scope.productSelected.quantity = null;
+                        $scope.productSelected.id = null;
 
+                    }
+                } catch (error) {
+                    console.error(error);
+                    Xrm.Navigation.openErrorDialog({ details: error.stack, message: "Ocurrió un error al agregar el producto, por favor intente nuevamente." });
                 }
+
+
             }
 
             $scope.setProductSelected = function (idProduct) {
 
-                if (!sharedLogic.elementAlreadyInList(idProduct, $scope.productsAdded, "id")) {
-                    var selected = $scope.productsAvailable.find(function (p) { return p.id === idProduct });
-                    if (selected !== null) {
-                        $scope.productSelected.name = selected.name;
+                try {
+
+                    if (!sharedLogic.elementAlreadyInList(idProduct, $scope.productsAdded, "id")) {
+                        var selected = $scope.productsAvailable.find(function (p) { return p.id === idProduct });
+                        if (selected !== null) {
+                            $scope.productSelected.name = selected.name;
+                        }
+
+                    } else {
+                        $scope.productSelected.id = null;
+                        return;
                     }
 
-                } else {
-                    $scope.productSelected.id = null;
-                    return;
+                } catch (error) {
+                    console.error(error);
+                    Xrm.Navigation.openErrorDialog({ details: error.stack, message: "Ocurrió un error al establecer el producto seleccionado, por favor intente nuevamente." });
                 }
+
 
             }
 
             $scope.removeProduct = function (productToRemove) {
 
-                if ($scope.productsAdded.length > 0) {
-                    sharedLogic.deleteItemFromList(productToRemove.id, $scope.productsAdded, "id");
-                } else {
-                    return;
+                try {
+
+                    if ($scope.productsAdded.length > 0) {
+                        sharedLogic.deleteItemFromList(productToRemove.id, $scope.productsAdded, "id");
+                    } else {
+                        return;
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                    Xrm.Navigation.openErrorDialog({ details: error.stack, message: "Ocurrió un error al eliminar el producto de la lista, por favor intente nuevamente." });
                 }
+
 
             }
 
@@ -382,9 +508,7 @@
                 quantity: null
             }
 
-            $scope.productsAdded = [
 
-            ];
 
             $scope.$watch("productsAdded", function () {
 
@@ -403,7 +527,7 @@
 
                             var value = JSON.stringify(productsForService);
                             jsonField.setValue(value);
-
+                            jsonField.fireOnChange();
                         }
                     } else {
                         jsonField.setValue(null);

@@ -72,7 +72,8 @@ Abox.SharedLogic = {
             PurchaseDate:"new_purchasedate",
             EntityId:"invoiceid",
             ProductSelectionWebResource:"WebResource_invoiceproductselection",
-            ProductsSelectedJson:"new_productsselectedjson"
+            ProductsSelectedJson:"new_productsselectedjson",
+            IdAboxInvoice:"new_idaboxinvoice"
         }
 
     },
@@ -138,6 +139,7 @@ Abox.SharedLogic = {
         PACountryIdLookup: "c96fa4f3-2bfc-ea11-a815-000d3a30f195",
         DOCountryIdLookup: "cd6fa4f3-2bfc-ea11-a815-000d3a30f195",
         NICountryIdLookup: "24f43452-b01e-eb11-a813-00224803f71b",
+        GeneralFrontendErrorMessage:"Ha ocurrido un error en alguno de los componentes de este formulario, por favor intente nuevamente o contacte con soporte.",
         GeneralAboxServicesErrorMessage: "Ocurrió un error consultando los servicios de Abox Plan \n",
         ErrorMessageCodeReturned: "Error en transacción, Código de respuesta servicio:",
         ErrorMessageTransactionCodeReturned: "Ocurrió un error al guardar la información en Abox Plan:\n",
