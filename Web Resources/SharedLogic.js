@@ -8,9 +8,16 @@ Abox.SharedLogic = {
         alert("test Call");
     },
 
-    Entities:{
+    Configuration: {
 
-        ContactFields:{
+        Environment: "https://apidev.aboxplan.com",
+        WebAPIEnvironment: "https://aboxcrmapi.aboxplan.com",
+        TokenForAboxServices: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNybV9hYm94YXBpIiwiYXBpIjp0cnVlLCJpYXQiOjE2MDMzMTIzODB9.Cu8FYQoVWDcof_qFZ5CIA6K2OYloOEn9F-b_XahLf9w",
+    },
+
+    Entities: {
+
+        ContactFields: {
             EntityId: "contactid",
             IdType: "new_idtype",
             Id: "new_id",
@@ -44,36 +51,37 @@ Abox.SharedLogic = {
             DistrictLookup: "new_distrit",
             NoEmail: "new_noemail",
             OtherInterestLookup: "new_otherinterest",
-            IsUserTypeChange : "new_isusertypechange",
+            IsUserTypeChange: "new_isusertypechange",
+            ChangePasswordWebResource: "WebResource_changepassword"
         },
-        ContactSchemas:{
-            UserType : "new_UserType",
-            ContactxDoseRelationship : "",
-            Country : "new_CountryId",
-            Province : "new_CityId",
-            Canton : "new_Canton",
-            District : "new_Distrit",
+        ContactSchemas: {
+            UserType: "new_UserType",
+            ContactxDoseRelationship: "",
+            Country: "new_CountryId",
+            Province: "new_CityId",
+            Canton: "new_Canton",
+            District: "new_Distrit",
         },
-        CountryFields:{
+        CountryFields: {
 
-            EntityId : "new_countryid",
-            IdCountry : "new_idcountry",
-            Name : "new_name",
+            EntityId: "new_countryid",
+            IdCountry: "new_idcountry",
+            Name: "new_name",
         },
-        InvoiceFields:{
-            InvoiceImageWebResource:"WebResource_invoiceimage",
-            InvoiceImageWebUrl:"new_aboximageurl",
-            InvoiceNumber:"new_invoicenumber",
-            CaseInvoiceLookup:"new_caseinvoiceid",
-            Customer:"customerid",
-            Contact:"new_contactid",
-            Country:"new_invoiceCountry",
-            Pharmacy:"new_pharmacy",
-            PurchaseDate:"new_purchasedate",
-            EntityId:"invoiceid",
-            ProductSelectionWebResource:"WebResource_invoiceproductselection",
-            ProductsSelectedJson:"new_productsselectedjson",
-            IdAboxInvoice:"new_idaboxinvoice"
+        InvoiceFields: {
+            InvoiceImageWebResource: "WebResource_invoiceimage",
+            InvoiceImageWebUrl: "new_aboximageurl",
+            InvoiceNumber: "new_invoicenumber",
+            CaseInvoiceLookup: "new_caseinvoiceid",
+            Customer: "customerid",
+            Contact: "new_contactid",
+            Country: "new_invoiceCountry",
+            Pharmacy: "new_pharmacy",
+            PurchaseDate: "new_purchasedate",
+            EntityId: "invoiceid",
+            ProductSelectionWebResource: "WebResource_invoiceproductselection",
+            ProductsSelectedJson: "new_productsselectedjson",
+            IdAboxInvoice: "new_idaboxinvoice"
         }
 
     },
@@ -126,7 +134,7 @@ Abox.SharedLogic = {
         FemaleGenderValue: 2,
         NationalIdValue: 1,
         ForeignerIdValue: 2,
-        MinorIdValue : 3,
+        MinorIdValue: 3,
         DoseFrequencyOnePerDay: 1,
         DoseFrequencyTwoPerDay: 2,
         DoseFrequencyThreePerDay: 3,
@@ -139,23 +147,26 @@ Abox.SharedLogic = {
         PACountryIdLookup: "c96fa4f3-2bfc-ea11-a815-000d3a30f195",
         DOCountryIdLookup: "cd6fa4f3-2bfc-ea11-a815-000d3a30f195",
         NICountryIdLookup: "24f43452-b01e-eb11-a813-00224803f71b",
-        GeneralFrontendErrorMessage:"Ha ocurrido un error en alguno de los componentes de este formulario, por favor intente nuevamente o contacte con soporte.",
+        GeneralFrontendErrorMessage: "Ha ocurrido un error en alguno de los componentes de este formulario, por favor intente nuevamente o contacte con soporte.",
         GeneralAboxServicesErrorMessage: "Ocurrió un error consultando los servicios de Abox Plan \n",
         ErrorMessageCodeReturned: "Error en transacción, Código de respuesta servicio:",
         ErrorMessageTransactionCodeReturned: "Ocurrió un error al guardar la información en Abox Plan:\n",
         GeneralPluginErrorMessage: "Ocurrió un error en la ejecución de un Plugin interno, por favor intenta nuevamente o comunícate con soporte.",
         ApplicationIdWebAPI: "WEBAPI",
         ApplicationIdPlugin: "PLUGIN",
-        SubGridControls:{
-            RelatedContacts:"RelatedContacts"
+        SubGridControls: {
+            RelatedContacts: "RelatedContacts"
         },
-       
+
 
     },
 
-    AboxServices:{
-        AboxImageUploadUrl:"https://apidev.aboxplan.com/files/upload",
-        ProductsSearch:"https://apidev.aboxplan.com/products/search",
+    get AboxServices() {
+        return{
+            AboxImageUploadUrl: this.Configuration.Environment + "/files/upload",
+            ProductsSearch: this.Configuration.Environment + "/products/search",
+            ChangePasswordCrm: this.Configuration.Environment + "/security/crm/changepassword"
+        }
     },
 
     DataFormats: {
@@ -234,16 +245,16 @@ Abox.SharedLogic = {
 
     },
 
-    DoPostRequest:async function(url,json,headers){
+    DoPostRequest: async function (url, json, headers) {
 
         try {
             var myHeaders = new Headers();
 
-            if (headers.constructor === Array) {
-                headers.forEach(function (header) {
-                    myHeaders.append(header.key, header.value);
-                });
-            }
+
+            headers.forEach(function (header) {
+                myHeaders.append(header.key, header.value);
+            });
+
             // myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InR1dG9yMDIxMjIwMDIiLCJpYXQiOjE2MDg2NTM4ODgsImV4cCI6MTYwODc0MDI4OH0.5_MaCvTvzmMJwCXQ8AmyFcvAlUJkbL3_brKtPlQ_h7w");
             // myHeaders.append("Content-Type", "application/json");
 
@@ -270,9 +281,9 @@ Abox.SharedLogic = {
     retrieveRecordFromWebAPI: async function (entityName, entityId, options, Xrm) {
         Xrm.Utility.showProgressIndicator("");
         var entityResponse = null;
-        
 
-        return new Promise(function(resolve,reject){
+
+        return new Promise(function (resolve, reject) {
             Xrm.WebApi.retrieveRecord(entityName, entityId, options).then(function (response) {
 
                 entityResponse = response;
@@ -280,13 +291,13 @@ Abox.SharedLogic = {
                 resolve(entityResponse);
             }, function (error) {
                 Xrm.Utility.closeProgressIndicator();
-                entityResponse=error;
+                entityResponse = error;
                 // return error;
                 reject(entityResponse);
             });
 
         })
-        
+
     },
 
     setFieldsRequired: function (formContext, fields) {

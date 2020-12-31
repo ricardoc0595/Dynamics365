@@ -27,8 +27,8 @@ Abox.ContactFunctions = {
             this.disableFieldsUntilCountrySelected(formContext);
             this.setUnderCareLogic(formContext);
 
-            var fieldNames = [this.ContactFields.IsUserTypeChange];
-            this.setFieldsInvisible(formContext,fieldNames);
+            var fieldNames = [Abox.SharedLogic.Entities.ContactFields.IsUserTypeChange,Abox.SharedLogic.Entities.ContactFields.ChangePasswordWebResource];
+            this.setFieldsInvisible(formContext, fieldNames);
 
             //Para poder implementar un mensaje mas amigable, hay que hacer un propio boton de guardar customizado y llamar al metodo save() del api de dynamics
 
@@ -39,10 +39,10 @@ Abox.ContactFunctions = {
 
             this.validateUpdateAvailability(formContext);
 
-            var isChildContactField = formContext.getAttribute(this.ContactFields.IsChildContact);
+            var isChildContactField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IsChildContact);
 
 
-            var idTypeField = formContext.getAttribute(this.ContactFields.IdType);
+            var idTypeField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IdType);
             if (idTypeField !== null) {
                 var isChild = isChildContactField.getValue();
             }
@@ -65,48 +65,11 @@ Abox.ContactFunctions = {
 
     },
 
-    ContactFields: {
-        EntityId: "contactid",
-        IdType: "new_idtype",
-        Id: "new_id",
-        UserType: "new_usertype",
-        Firstname: "firstname",
-        Lastname: "lastname",
-        SecondLastname: "new_secondlastname",
-        Password: "new_password",
-        Email: "emailaddress1",
-        Phone: "telephone2",
-        SecondaryPhone: "mobilephone",
-        Gender: "gendercode",
-        Birthdate: "birthdate",
-        ProductxContactId: "new_productcontactid",
-        RegisterDay: "new_registerday",
-        IdAboxPatient: "new_idaboxpatient",
-        Country: "new_countryid",
-        ContactxDoctorRelationship: "new_contact_new_doctor",
-        ContactxProductRelationship: "new_product_contact",
-        ContactxContactRelationship: "new_contact_contact",
-        ContactxDoseRelationship: "new_contact_new_dose",
-        Canton: "new_canton",
-        District: "new_distrit",
-        Province: "new_cityid",
-        Interests: "new_clientinterest",
-        ContactxContactLookup: "new_contactcontactid",
-        IsChildContact: "new_ischildcontact",
-        CountryLookup: "new_countryid",
-        CityLookup: "new_cityid",
-        CantonLookup: "new_canton",
-        DistrictLookup: "new_distrit",
-        NoEmail: "new_noemail",
-        OtherInterestLookup: "new_otherinterest",
-        IsUserTypeChange : "new_isusertypechange",
-
-    },
 
     validateUpdateAvailability: function (formContext) {
 
 
-        var idPatientField = formContext.getAttribute(this.ContactFields.IdAboxPatient);
+        var idPatientField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IdAboxPatient);
 
         if (idPatientField.getValue() === null || idPatientField.getValue() === "null") {
 
@@ -134,9 +97,9 @@ Abox.ContactFunctions = {
 
     setUpdateFormLogic: function (formContext) {
 
-        var that=this;
-        var passwordField = formContext.getAttribute(this.ContactFields.Password);
-        var passwordControl = formContext.getControl(this.ContactFields.Password);
+        var that = this;
+        var passwordField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.Password);
+        var passwordControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.Password);
         if (passwordField != null) {
 
             // passwordField.setValue("");
@@ -148,9 +111,9 @@ Abox.ContactFunctions = {
         }
 
 
-        var isChildContact=false;
-        var isChildContactControl = formContext.getControl(this.ContactFields.IsChildContact);
-        var isChildContactField = formContext.getAttribute(this.ContactFields.IsChildContact);
+        var isChildContact = false;
+        var isChildContactControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.IsChildContact);
+        var isChildContactField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IsChildContact);
         if (isChildContactControl !== null) {
 
             isChildContactControl.setVisible(false);
@@ -158,14 +121,14 @@ Abox.ContactFunctions = {
 
         if (isChildContactField !== null) {
             if (isChildContactField.getValue() !== null) {
-                 isChildContact = isChildContactField.getValue();
+                isChildContact = isChildContactField.getValue();
             }
         }
 
-        
 
 
-        var clientInterestField = formContext.getAttribute(this.ContactFields.Interests);
+
+        var clientInterestField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.Interests);
 
 
         if (clientInterestField != null) {
@@ -176,15 +139,15 @@ Abox.ContactFunctions = {
 
 
 
-        var countryControl = formContext.getControl(this.ContactFields.CountryLookup);
+        var countryControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.CountryLookup);
 
         if (countryControl != null) {
 
             countryControl.setDisabled(true);
         }
 
-        var userTypeField = formContext.getAttribute(this.ContactFields.UserType);
-        var userTypeControl = formContext.getControl(this.ContactFields.UserType);
+        var userTypeField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.UserType);
+        var userTypeControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.UserType);
         var idUserType = "";
         if (userTypeControl != null) {
             if (userTypeField !== null) {
@@ -199,69 +162,111 @@ Abox.ContactFunctions = {
                 if ((idUserType.toLowerCase() !== Abox.SharedLogic.Constants.OtherInterestIdType) || isChildContact) {
                     userTypeControl.setDisabled(true);
 
-                    var fields=[this.ContactFields.IsUserTypeChange];
-                    this.setFieldsInvisible(formContext,fields);
+                    var fields = [Abox.SharedLogic.Entities.ContactFields.IsUserTypeChange];
+                    this.setFieldsInvisible(formContext, fields);
 
-                }else{
-                    var isUserTypeChangeControl = formContext.getControl(this.ContactFields.IsUserTypeChange);
+                } else {
+                    var isUserTypeChangeControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.IsUserTypeChange);
                     if (isUserTypeChangeControl !== null) {
-                        
+
                         isUserTypeChangeControl.setVisible(true);
                     }
-                    var isUserTypeChangeField = formContext.getAttribute(this.ContactFields.IsUserTypeChange);
+                    var isUserTypeChangeField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IsUserTypeChange);
 
                     if (isUserTypeChangeField !== null) {
-                        var fieldNames = [this.ContactFields.Firstname, this.ContactFields.Lastname, this.ContactFields.SecondLastname, this.ContactFields.IdType, this.ContactFields.Id, this.ContactFields.NoEmail, this.ContactFields.Email, this.ContactFields.Phone, this.ContactFields.SecondaryPhone, this.ContactFields.Gender, this.ContactFields.Birthdate, this.ContactFields.CityLookup, this.ContactFields.CantonLookup, this.ContactFields.DistrictLookup, this.ContactFields.Interests, this.ContactFields.Password,this.ContactFields.OtherInterestLookup];
+                        var fieldNames = [Abox.SharedLogic.Entities.ContactFields.Firstname, Abox.SharedLogic.Entities.ContactFields.Lastname, Abox.SharedLogic.Entities.ContactFields.SecondLastname, Abox.SharedLogic.Entities.ContactFields.IdType, Abox.SharedLogic.Entities.ContactFields.Id, Abox.SharedLogic.Entities.ContactFields.NoEmail, Abox.SharedLogic.Entities.ContactFields.Email, Abox.SharedLogic.Entities.ContactFields.Phone, Abox.SharedLogic.Entities.ContactFields.SecondaryPhone, Abox.SharedLogic.Entities.ContactFields.Gender, Abox.SharedLogic.Entities.ContactFields.Birthdate, Abox.SharedLogic.Entities.ContactFields.CityLookup, Abox.SharedLogic.Entities.ContactFields.CantonLookup, Abox.SharedLogic.Entities.ContactFields.DistrictLookup, Abox.SharedLogic.Entities.ContactFields.Interests, Abox.SharedLogic.Entities.ContactFields.Password, Abox.SharedLogic.Entities.ContactFields.OtherInterestLookup];
 
                         isUserTypeChangeField.addOnChange(function () {
 
                             var value = isUserTypeChangeField.getValue();
-                           
-                            if(value){
-                                that.disableFields(formContext,fieldNames);
 
-                            }else{
-                                that.enableFields(formContext,fieldNames);
+                            if (value) {
+                                that.disableFields(formContext, fieldNames);
+
+                            } else {
+                                that.enableFields(formContext, fieldNames);
                             }
 
 
                         })
                     }
-                    
+
                 }
 
             }
 
-            
-        
+
+
 
         }
 
 
         var relatedContactsControl = formContext.getControl(Abox.SharedLogic.Constants.SubGridControls.RelatedContacts);
         if (relatedContactsControl !== null) {
-            
-            
+
+
             if (isChildContact || (idUserType.toLowerCase() === Abox.SharedLogic.Constants.PatientIdType || idUserType.toLowerCase() === Abox.SharedLogic.Constants.OtherInterestIdType)) {
                 relatedContactsControl.setVisible(false);
             }
 
         }
 
-        var idTypeControl = formContext.getControl(this.ContactFields.IdType);
+        var idTypeControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.IdType);
         if (idTypeControl != null) {
             idTypeControl.setDisabled(true);
         }
 
-        var idControl = formContext.getControl(this.ContactFields.Id);
+        var idControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.Id);
         if (idControl != null) {
             idControl.setDisabled(true);
         }
 
-       
+
+        // var idAboxPatientField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IdAboxPatient);
+
+        // if (idAboxPatientField.getValue() === null || idAboxPatientField.getValue() === "null") {
+
+        //     formContext.ui.setFormNotification("Este contacto no posee un ID de paciente Abox registrado, es posible que haya ocurrido un error y no se haya podido registrar correctamente.", "WARNING", null);
+        // }
+
+        var changePasswordWebResourceControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.ChangePasswordWebResource);
 
 
+        var idField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.Id);
+        var personalIdContact = null;
+        if (idField != null) {
+            if (idField.getValue() !== null) {
+                personalIdContact = idField.getValue();
+            }
+
+            if(personalIdContact!==null){
+                if (changePasswordWebResourceControl) {
+                    changePasswordWebResourceControl.getContentWindow().then(
+                        function (contentWindow) {
+                            try {
+                                contentWindow.initializeChangePasswordWebResource(formContext, Abox.SharedLogic, Xrm, personalIdContact);
+                                contentWindow.setComponentSuccess();
+                            } catch (error) {
+                                contentWindow.setComponentFailure();
+                            }
+        
+                        }, function () {
+                            Xrm.Navigation.openErrorDialog({ details: "Error cargando componente de Cambio de contraseña", message: "Ocurrió un error cargando uno de los componentes de este formulario, por favor intente nuevamente." });
+                        }
+                    ).catch(function (error) {
+                        console.error(error);
+                        Xrm.Navigation.openErrorDialog({ details: error.stack, message: "Ocurrió un error cargando uno de los componentes de este formulario, por favor intente nuevamente." });
+                    })
+                }
+            }else{
+                changePasswordWebResourceControl.setVisible(false);
+            }
+            
+
+        }
+
        
+
 
 
 
@@ -269,7 +274,7 @@ Abox.ContactFunctions = {
 
     disableFieldsUntilCountrySelected: function (formContext) {
 
-        var fieldNames = [this.ContactFields.UserType, this.ContactFields.Firstname, this.ContactFields.Lastname, this.ContactFields.SecondLastname, this.ContactFields.IdType, this.ContactFields.Id, this.ContactFields.NoEmail, this.ContactFields.Email, this.ContactFields.Phone, this.ContactFields.SecondaryPhone, this.ContactFields.Gender, this.ContactFields.Birthdate, this.ContactFields.CityLookup, this.ContactFields.CantonLookup, this.ContactFields.DistrictLookup, this.ContactFields.Interests, this.ContactFields.Password];
+        var fieldNames = [Abox.SharedLogic.Entities.ContactFields.UserType, Abox.SharedLogic.Entities.ContactFields.Firstname, Abox.SharedLogic.Entities.ContactFields.Lastname, Abox.SharedLogic.Entities.ContactFields.SecondLastname, Abox.SharedLogic.Entities.ContactFields.IdType, Abox.SharedLogic.Entities.ContactFields.Id, Abox.SharedLogic.Entities.ContactFields.NoEmail, Abox.SharedLogic.Entities.ContactFields.Email, Abox.SharedLogic.Entities.ContactFields.Phone, Abox.SharedLogic.Entities.ContactFields.SecondaryPhone, Abox.SharedLogic.Entities.ContactFields.Gender, Abox.SharedLogic.Entities.ContactFields.Birthdate, Abox.SharedLogic.Entities.ContactFields.CityLookup, Abox.SharedLogic.Entities.ContactFields.CantonLookup, Abox.SharedLogic.Entities.ContactFields.DistrictLookup, Abox.SharedLogic.Entities.ContactFields.Interests, Abox.SharedLogic.Entities.ContactFields.Password];
 
         var that = this;
 
@@ -279,7 +284,7 @@ Abox.ContactFunctions = {
 
                 countryControl.clearNotification();
                 that.enableFields(formContext, fieldNames);
-                var fieldsToClear = [that.ContactFields.Id, that.ContactFields.Phone, that.ContactFields.SecondaryPhone];
+                var fieldsToClear = [Abox.SharedLogic.Entities.ContactFields.Id, Abox.SharedLogic.Entities.ContactFields.Phone, Abox.SharedLogic.Entities.ContactFields.SecondaryPhone];
                 that.clearTextFields(formContext, fieldsToClear);
 
             } else {
@@ -288,8 +293,8 @@ Abox.ContactFunctions = {
             }
         }
 
-        var countryLookupField = formContext.getAttribute(this.ContactFields.CountryLookup);
-        var countryControl = formContext.getControl(this.ContactFields.CountryLookup);
+        var countryLookupField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.CountryLookup);
+        var countryControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.CountryLookup);
 
         if (countryLookupField != null) {
 
@@ -305,7 +310,7 @@ Abox.ContactFunctions = {
 
 
 
-        var idTypeControl = formContext.getControl(that.ContactFields.IdType);
+        var idTypeControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.IdType);
         if (idTypeControl !== null) {
             idTypeControl.setDisabled(true);
 
@@ -318,8 +323,8 @@ Abox.ContactFunctions = {
         var visibility = requiredLevel === "required" ? true : false;
 
         //Access the field on the form
-        var emailField = formContext.getAttribute(this.ContactFields.Email);
-        var emailControl = formContext.getControl(this.ContactFields.Email);
+        var emailField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.Email);
+        var emailControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.Email);
         //Check that field exist on the form before you try to Get/Set its value
         if (emailField != null) {
             // Get the value of the field
@@ -333,8 +338,8 @@ Abox.ContactFunctions = {
             }
         }
 
-        var noEmailField = formContext.getAttribute(this.ContactFields.NoEmail);
-        var noEmailControl = formContext.getControl(this.ContactFields.NoEmail);
+        var noEmailField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.NoEmail);
+        var noEmailControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.NoEmail);
 
         if (noEmailField != null) {
             noEmailField.setValue(false);
@@ -344,8 +349,8 @@ Abox.ContactFunctions = {
             }
         }
 
-        var clientInterestField = formContext.getAttribute(this.ContactFields.Interests);
-        var clientInterestControl = formContext.getControl(this.ContactFields.Interests);
+        var clientInterestField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.Interests);
+        var clientInterestControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.Interests);
 
         if (clientInterestField != null) {
             clientInterestField.setValue(null);
@@ -355,8 +360,8 @@ Abox.ContactFunctions = {
             }
         }
 
-        var userTypeField = formContext.getAttribute(this.ContactFields.UserType);
-        var userTypeControl = formContext.getControl(this.ContactFields.UserType);
+        var userTypeField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.UserType);
+        var userTypeControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.UserType);
 
         if (userTypeField != null) {
             userTypeField.setValue(null);
@@ -366,8 +371,8 @@ Abox.ContactFunctions = {
             }
         }
 
-        var passwordField = formContext.getAttribute(this.ContactFields.Password);
-        var passwordControl = formContext.getControl(this.ContactFields.Password);
+        var passwordField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.Password);
+        var passwordControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.Password);
         if (passwordField != null) {
 
             passwordField.setValue("");
@@ -378,8 +383,8 @@ Abox.ContactFunctions = {
             }
         }
 
-        var phoneField = formContext.getAttribute(this.ContactFields.Phone);
-        var phoneControl = formContext.getControl(this.ContactFields.Phone);
+        var phoneField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.Phone);
+        var phoneControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.Phone);
         if (phoneField != null) {
 
             phoneField.setValue("");
@@ -391,8 +396,8 @@ Abox.ContactFunctions = {
 
         }
 
-        var secondaryPhoneField = formContext.getAttribute(this.ContactFields.SecondaryPhone);
-        var secondaryPhoneControl = formContext.getControl(this.ContactFields.SecondaryPhone);
+        var secondaryPhoneField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.SecondaryPhone);
+        var secondaryPhoneControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.SecondaryPhone);
         if (secondaryPhoneField != null) {
 
             secondaryPhoneField.setValue("");
@@ -405,8 +410,8 @@ Abox.ContactFunctions = {
 
 
 
-        var provinceLookupField = formContext.getAttribute(this.ContactFields.CityLookup);
-        var provinceControl = formContext.getControl(this.ContactFields.CityLookup);
+        var provinceLookupField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.CityLookup);
+        var provinceControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.CityLookup);
         if (provinceLookupField != null) {
             //var provinceValue = provinceLookupField.getValue();
 
@@ -441,8 +446,8 @@ Abox.ContactFunctions = {
 
         }
 
-        var cantonLookupField = formContext.getAttribute(this.ContactFields.CantonLookup);
-        var cantonControl = formContext.getControl(this.ContactFields.CantonLookup);
+        var cantonLookupField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.CantonLookup);
+        var cantonControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.CantonLookup);
         if (cantonLookupField != null) {
 
             cantonLookupField.setValue(null);
@@ -452,8 +457,8 @@ Abox.ContactFunctions = {
 
         }
 
-        var districtLookupField = formContext.getAttribute(this.ContactFields.DistrictLookup);
-        var districtControl = formContext.getControl(this.ContactFields.DistrictLookup);
+        var districtLookupField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.DistrictLookup);
+        var districtControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.DistrictLookup);
         if (districtLookupField != null) {
             districtLookupField.setValue(null);
             districtLookupField.setRequiredLevel(requiredLevel);
@@ -469,7 +474,7 @@ Abox.ContactFunctions = {
 
     getCountryFormat: function (formContext) {
         var countryCode = null;
-        var countryLookupField = formContext.getAttribute(this.ContactFields.CountryLookup);
+        var countryLookupField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.CountryLookup);
 
         var dataFormat = null;
         if (countryLookupField != null) {
@@ -604,19 +609,19 @@ Abox.ContactFunctions = {
     setFieldsControlsAndAlerts: function (formContext) {
 
         var that = this;
-        var idField = formContext.getAttribute(this.ContactFields.Id);
-        var idControl = formContext.getControl(this.ContactFields.Id);
+        var idField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.Id);
+        var idControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.Id);
 
 
-        var idTypeField = formContext.getAttribute(this.ContactFields.IdType);
-        var idTypeControl = formContext.getControl(this.ContactFields.IdType);
+        var idTypeField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IdType);
+        var idTypeControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.IdType);
 
 
         if (idTypeField !== null) {
 
             idTypeField.addOnChange(function () {
 
-                that.clearTextFields(formContext, [that.ContactFields.Id]);
+                that.clearTextFields(formContext, [Abox.SharedLogic.Entities.ContactFields.Id]);
 
             });
         }
@@ -629,7 +634,7 @@ Abox.ContactFunctions = {
                 var isForeignId = false;
 
                 //identificar si es extranjero
-                var idTypeField = formContext.getAttribute(that.ContactFields.IdType);
+                var idTypeField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IdType);
 
                 if (idTypeField != null) {
                     var idTypeValue = idTypeField.getValue();
@@ -664,8 +669,8 @@ Abox.ContactFunctions = {
         }
 
 
-        var phoneField = formContext.getAttribute(this.ContactFields.Phone);
-        var phoneControl = formContext.getControl(this.ContactFields.Phone);
+        var phoneField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.Phone);
+        var phoneControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.Phone);
 
         if (phoneField !== null) {
             phoneField.addOnChange(function () {
@@ -683,8 +688,8 @@ Abox.ContactFunctions = {
             });
         }
 
-        var secondaryPhoneField = formContext.getAttribute(this.ContactFields.SecondaryPhone);
-        var secondaryPhoneControl = formContext.getControl(this.ContactFields.SecondaryPhone);
+        var secondaryPhoneField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.SecondaryPhone);
+        var secondaryPhoneControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.SecondaryPhone);
         if (secondaryPhoneField != null) {
 
             secondaryPhoneField.addOnChange(function () {
@@ -707,13 +712,13 @@ Abox.ContactFunctions = {
     setUnderCareLogic: function (formContext) {
 
         var that = this;
-        var isChildContactField = formContext.getAttribute(this.ContactFields.IsChildContact);
+        var isChildContactField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IsChildContact);
 
 
-        var idTypeField = formContext.getAttribute(that.ContactFields.IdType);
-        var idTypeControl = formContext.getControl(that.ContactFields.IdType);
-        var idField = formContext.getAttribute(that.ContactFields.Id);
-        var idControl = formContext.getControl(that.ContactFields.Id);
+        var idTypeField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IdType);
+        var idTypeControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.IdType);
+        var idField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.Id);
+        var idControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.Id);
         if (idTypeField !== null) {
             idTypeField.addOnChange(function () {
 

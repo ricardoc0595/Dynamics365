@@ -1,0 +1,347 @@
+body span, p, h1, h2, h3, h4, h5, h6, label {
+    font-family: SegoeUI, 'Segoe UI';
+}
+
+body, html {
+    position: relative;
+    margin: 0;
+    width: 100%;
+    height: 100%
+}
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale
+}
+
+*, :after, :before {
+    box-sizing: border-box
+}
+
+.form-group {
+    display: block;
+    position: relative;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.form-group.inline {
+    display: inline-block;
+    position: relative;
+}
+
+.form-group.inline label {
+    display: inline-block;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    position: relative;
+    width: 100%;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    background-color: #ffffff;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 2.5px;
+    font-size: 14px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin-bottom: 24px
+}
+
+.mtop-10 {
+    margin-top: 10px;
+}
+
+.mtop-5 {
+    margin-top: 5px;
+}
+
+.mtop-15 {
+    margin-top: 15px;
+}
+
+.mbottom-10 {
+    margin-bottom: 10px;
+}
+
+.mbottom-5 {
+    margin-bottom: 5px;
+}
+
+.mbottom-15 {
+    margin-bottom: 15px;
+}
+
+.mleft-10 {
+    margin-left: 10px;
+}
+
+.mleft-5 {
+    margin-left: 5px;
+}
+
+.mleft-15 {
+    margin-left: 15px;
+}
+
+.mright-10 {
+    margin-right: 10px;
+}
+
+.mright-5 {
+    margin-right: 5px;
+}
+
+.mright-15 {
+    margin-right: 15px;
+}
+
+.btn {
+    border-radius: 3px;
+    padding: 3px;
+    width: 78px;
+    height: 30px;
+    border: none;
+    cursor: pointer;
+    color: white;
+}
+
+.btn.half {
+    display: inline-block;
+    width: 49%;
+}
+
+.btn:disabled {
+    background-color: #aad8ec !important;
+}
+
+/* .loadingComponent {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+} */
+
+/* // */
+
+.loadingComponent {
+    display: block;
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+}
+
+.loadingComponent div {
+    animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    transform-origin: 40px 40px;
+}
+
+.loadingComponent div:after {
+    content: " ";
+    display: block;
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #0095d6;
+    margin: -4px 0 0 -4px;
+}
+
+.loadingComponent div:nth-child(1) {
+    animation-delay: -0.036s;
+}
+
+.loadingComponent div:nth-child(1):after {
+    top: 63px;
+    left: 63px;
+}
+
+.loadingComponent div:nth-child(2) {
+    animation-delay: -0.072s;
+}
+
+.loadingComponent div:nth-child(2):after {
+    top: 68px;
+    left: 56px;
+}
+
+.loadingComponent div:nth-child(3) {
+    animation-delay: -0.108s;
+}
+
+.loadingComponent div:nth-child(3):after {
+    top: 71px;
+    left: 48px;
+}
+
+.loadingComponent div:nth-child(4) {
+    animation-delay: -0.144s;
+}
+
+.loadingComponent div:nth-child(4):after {
+    top: 72px;
+    left: 40px;
+}
+
+.loadingComponent div:nth-child(5) {
+    animation-delay: -0.18s;
+}
+
+.loadingComponent div:nth-child(5):after {
+    top: 71px;
+    left: 32px;
+}
+
+.loadingComponent div:nth-child(6) {
+    animation-delay: -0.216s;
+}
+
+.loadingComponent div:nth-child(6):after {
+    top: 68px;
+    left: 24px;
+}
+
+.loadingComponent div:nth-child(7) {
+    animation-delay: -0.252s;
+}
+
+.loadingComponent div:nth-child(7):after {
+    top: 63px;
+    left: 17px;
+}
+
+.loadingComponent div:nth-child(8) {
+    animation-delay: -0.288s;
+}
+
+.loadingComponent div:nth-child(8):after {
+    top: 56px;
+    left: 12px;
+}
+
+@keyframes lds-roller {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* // */
+
+.componentLoadingFailed {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.btn.remove {
+    background-color: #ffffff00;
+    border: solid 1px #d6d6d6;
+    color: #d6d6d6;
+}
+
+.btn.primary {
+    background-color: #0095d6;
+}
+
+.btn.default {
+    background-color: #ffffff;
+    color: black;
+    border: solid 1px black;
+}
+
+/* checkbox custom */
+
+.container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    /* font-size: 22px; */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Hide the browser's default checkbox */
+
+.container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* Create a custom checkbox */
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+}
+
+/* On mouse-over, add a grey background color */
+
+.container:hover input~.checkmark {
+    background-color: #ccc;
+}
+
+/* When the checkbox is checked, add a blue background */
+
+.container input:checked~.checkmark {
+    background-color: #2196F3;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the checkmark when checked */
+
+.container input:checked~.checkmark:after {
+    display: block;
+}
+
+/* Style the checkmark/indicator */
+
+.container .checkmark:after {
+    left: 9px;
+    top: 5px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}

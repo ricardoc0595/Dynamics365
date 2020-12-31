@@ -210,7 +210,7 @@ namespace CreateContactAsPatient.Classes
             public class Header
             {
                 [DataMember]
-                public int code { get; set; }
+                public string code { get; set; }
 
                 [DataMember]
                 public string message { get; set; }
