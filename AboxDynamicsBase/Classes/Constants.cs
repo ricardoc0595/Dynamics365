@@ -16,8 +16,6 @@
         public const int DoseFrequencyThreePerDay = 3;
         public const int DoseFrequencyFourPerDay = 4;
         public const int DoseFrequencyOther = 5;
-        public const string TokenForAboxServices = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNybV9hYm94YXBpIiwiYXBpIjp0cnVlLCJpYXQiOjE2MDMzMTIzODB9.Cu8FYQoVWDcof_qFZ5CIA6K2OYloOEn9F-b_XahLf9w";
-
         public const string CRCountryIdLookup = "c76fa4f3-2bfc-ea11-a815-000d3a30f195";
         public const string HNCountryIdLookup = "cf6fa4f3-2bfc-ea11-a815-000d3a30f195";
         public const string GTCountryIdLookup = "cb6fa4f3-2bfc-ea11-a815-000d3a30f195";
@@ -43,7 +41,7 @@
 
         public const int MaxNameLength = 30;
         public const int MinNameLength = 3;
-        public const string NoEmailDefaultAddress= "@aboxplan.com";
+        
 
 
 

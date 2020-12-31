@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\AboxServices.cs" />
+    <Compile Include="Classes\Configuration.cs" />
     <Compile Include="Classes\Constants.cs" />
     <Compile Include="Classes\Entities\CantonEntity.cs" />
     <Compile Include="Classes\Entities\ContactEntity.cs" />

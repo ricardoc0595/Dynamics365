@@ -112,7 +112,7 @@ namespace CreateContactAsPatient
                         if (userTypeFromContactBeingCreated == Constants.CareTakerIdType || userTypeFromContactBeingCreated == Constants.TutorIdType)
                         {
                             wrData.Url = AboxServices.MainPatientForTutorOrCaretakerService;
-                            wrData.Authorization = Constants.TokenForAboxServices;
+                            wrData.Authorization = Configuration.TokenForAboxServices;
                         }
                         else if (userTypeFromContactBeingCreated == Constants.OtherInterestIdType)
                         {

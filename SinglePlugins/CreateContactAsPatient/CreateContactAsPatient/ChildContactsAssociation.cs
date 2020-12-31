@@ -153,7 +153,7 @@ namespace CreateContactAsPatient
                                     wrData.InputData = jsonObject;
 
                                     wrData.ContentType = "application/json";
-                                    wrData.Authorization = Constants.TokenForAboxServices;
+                                    wrData.Authorization = Configuration.TokenForAboxServices;
 
                                     if (userType == "02")
                                         wrData.Url = AboxServices.CaretakerChildService;
@@ -244,7 +244,7 @@ namespace CreateContactAsPatient
                                             WebRequestData wrDataWelcomeMail = new WebRequestData();
                                             wrDataWelcomeMail.InputData = jsonObjectForWelcomeMail;
                                             wrDataWelcomeMail.ContentType = "application/json";
-                                            wrDataWelcomeMail.Authorization = Constants.TokenForAboxServices;
+                                            wrDataWelcomeMail.Authorization = Configuration.TokenForAboxServices;
                                             wrDataWelcomeMail.Url = AboxServices.WelcomeSendMailService;
 
                                             var serviceResponseWelcome = sharedMethods.DoPostRequest(wrDataWelcomeMail, trace);

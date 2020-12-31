@@ -320,7 +320,7 @@ namespace CreateContactAsPatient.Methods
                         //TODO: Cual sera el correo default desde CRM
                         if (contact.Attributes.Contains(ContactFields.Id))
                         {
-                            requestStructure.Email = contact.Attributes[ContactFields.Id].ToString() + "_" + Guid.NewGuid().ToString() + Constants.NoEmailDefaultAddress;
+                            requestStructure.Email = contact.Attributes[ContactFields.Id].ToString() + "_" + Guid.NewGuid().ToString() + Configuration.NoEmailDefaultAddress;
                         }
                     }
                     else
@@ -948,7 +948,7 @@ namespace CreateContactAsPatient.Methods
                     //TODO: Cual sera el correo default desde CRM
                     if (contact.Attributes.Contains(ContactFields.Id))
                     {
-                        request.contactinfo.email = contact.Attributes[ContactFields.Id].ToString() + "_" + Guid.NewGuid().ToString() + Constants.NoEmailDefaultAddress;
+                        request.contactinfo.email = contact.Attributes[ContactFields.Id].ToString() + "_" + Guid.NewGuid().ToString() + Configuration.NoEmailDefaultAddress;
                     }                 
                 }
                 else
@@ -1207,7 +1207,7 @@ namespace CreateContactAsPatient.Methods
                     //TODO: Cual sera el correo default desde CRM
                     if (contact.Attributes.Contains(ContactFields.Id))
                     {
-                        request.contactinfo.email = contact.Attributes[ContactFields.Id].ToString() + "_" + Guid.NewGuid().ToString() + Constants.NoEmailDefaultAddress;
+                        request.contactinfo.email = contact.Attributes[ContactFields.Id].ToString() + "_" + Guid.NewGuid().ToString() + Configuration.NoEmailDefaultAddress;
                     }
                 }
                 else

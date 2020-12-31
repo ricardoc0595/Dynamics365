@@ -217,7 +217,7 @@ namespace CreateContactAsPatient
                             WebRequestData wrData = new WebRequestData();
                             wrData.InputData = jsonObject;
                             wrData.ContentType = "application/json";
-                            wrData.Authorization = "Bearer " + Constants.TokenForAboxServices;
+                            wrData.Authorization = "Bearer " + Configuration.TokenForAboxServices;
 
                             wrData.Url = serviceUrl;
 
