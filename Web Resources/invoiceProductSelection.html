@@ -305,6 +305,25 @@
 
             //
 
+            function restartChoicesComponent(){
+                $timeout(function(){
+
+                    choicesComponentProductsAvailable.destroy();
+
+                    var d = document.getElementById("productsAvailable");
+                    d.remove();
+
+                    var selectRemake = "<select name='productsAvailable' class='form-control' ng-model='productSelected.id' id='productsAvailable' ng-change='setProductSelected(productSelected.id)'></select>";
+                    var optionRemake = "<option ng-attr-value='{{product.id}}' ng-repeat='product in productsAvailable' ng-bind='product.name'></option>";
+                    var container = document.getElementById("productsAvailableContainer");
+                    angular.element(container).append(selectRemake);
+                    var select = document.getElementById("productsAvailable");
+                    angular.element(select).append(optionRemake);
+                    $compile(document.getElementById("productsAvailable"))($scope);
+
+                })
+               
+            }
            
 
             $scope.initializeData = function (_contactData, _invoiceData, _formContext, _sharedLogicObject, _Xrm, _invoiceFields) {
@@ -375,46 +394,40 @@
 
                         }
 
+                    }else{
+                        $scope.productsAdded=[];
                     }
 
-                    $timeout(function () {
+                   $timeout(function(){
 
-                        if(typeof contactData!=="undefined" && contactData!==null){
-                            $scope.loadingComplete = true;
-                            $timeout(function () {
-                                if(choicesComponentProductsAvailable===null){
-                                    choicesComponentProductsAvailable = new Choices(document.getElementById("productsAvailable"),{silent:true});
-                                    
-                                    $scope.$apply();
-                                }else{
-                                    
-                                    
-                                    choicesComponentProductsAvailable.destroy();
+                       if (typeof contactData !== "undefined" && contactData !== null) {
 
-                                    var d = document.getElementById("productsAvailable");
-                                    d.remove();
-                                    
-                                    var selectRemake = "<select name='productsAvailable' class='form-control' ng-model='productSelected.id' id='productsAvailable' ng-change='setProductSelected(productSelected.id)'></select>";
-                                    var optionRemake="<option ng-attr-value='{{product.id}}' ng-repeat='product in productsAvailable' ng-bind='product.name'></option>";
-                                    var container = document.getElementById("productsAvailableContainer");
-                                    angular.element(container).append(selectRemake);
-                                    var select=document.getElementById("productsAvailable");
-                                    angular.element(select).append(optionRemake);
-                                    $compile(document.getElementById("productsAvailable"))($scope);
-                                    // $compile(optionRemake)($scope);
-                                    // $scope.productsAvailable = [];
-                                    $scope.$apply();
-                                        
-                                    $timeout(function(){
-                                        choicesComponentProductsAvailable = new Choices(document.getElementById("productsAvailable"),{silent:true})
+                           $timeout(function () {
+                               if (choicesComponentProductsAvailable === null) {
+                                   choicesComponentProductsAvailable = new Choices(document.getElementById("productsAvailable"), { silent: true });
+                                   $scope.loadingComplete = true;
+                               } else {
 
 
-                                    })
+                                restartChoicesComponent();
                                    
-                                }
-                            })
-                        }
-                    });
+                                   // $compile(optionRemake)($scope);
+                                   // $scope.productsAvailable = [];
+
+
+                                   $timeout(function () {
+                                       choicesComponentProductsAvailable = new Choices(document.getElementById("productsAvailable"), { silent: true });
+                                       $scope.loadingComplete = true;
+                                   })
+
+                               }
+                           })
+                       }
+
+                   })
+
+                    
+
 
                  
 

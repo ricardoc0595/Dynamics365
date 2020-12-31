@@ -6,6 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AboxDynamicsBase.Classes.Entities;
+using Microsoft.Xrm.Sdk.Query;
+using InvoiceManagement.Methods;
+using InvoiceManagement.Classes;
+using System.Runtime.Serialization.Json;
+using System.IO;
+using AboxCrmPlugins.Classes;
 
 namespace InvoiceManagement
 {
@@ -45,9 +52,108 @@ namespace InvoiceManagement
                     }
                     else
                     {
+                        ContactEntity contactEntity = new ContactEntity();
+                        RequestHelpers reqHelpers = new RequestHelpers();
+                        InvoiceMethods invoiceMethods = new InvoiceMethods();
 
-                        Entity fullInvoice = service.Retrieve("invoice",invoice.Id,new Microsoft.Xrm.Sdk.Query.ColumnSet(true));
-                        var k = "";
+
+                        var validationStatusMessages = invoiceMethods.GetEntityValidationStatus(invoice, service, trace);
+
+                        if (validationStatusMessages.Count > 0)
+                        {
+                            string messageRows = "";
+
+
+                            //foreach (var message in validationStatusMessages)
+                            //{
+                            //    messageRows += message+"\n";
+                            //}
+
+                            /*El mensaje que se envia al usuario a Dynamics es poco amigable y si se envia un mensaje muy largo, la forma en que lo muestra es completamente
+                            ilegible, por esto solo se muestra un mensaje a la vez
+                            Para mostrar un mensaje mas amigable, hay que implementar un propio boton de Save en el Ribbon*/
+                            messageRows = validationStatusMessages[0];
+                            Exception ex = new Exception($"{messageRows}");
+                            ex.Data["HasFeedbackMessage"] = true;
+                            throw ex;
+                        }
+
+
+                        ///
+
+                        InvoiceCreateRequest.Request request = reqHelpers.GetInvoiceCreateRequestObject(invoice, service, trace);
+                        DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(InvoiceCreateRequest.Request));
+                        MemoryStream memoryStream = new MemoryStream();
+                        serializer.WriteObject(memoryStream, request);
+                        var jsonObject = Encoding.Default.GetString(memoryStream.ToArray());
+                        memoryStream.Dispose();
+
+                        //Valores necesarios para hacer el Post Request
+                        WebRequestData wrData = new WebRequestData();
+                        wrData.InputData = jsonObject;
+                        trace.Trace("Objeto Json:" + jsonObject);
+                        wrData.ContentType = "application/json";
+
+                        // sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
+
+                        wrData.Url = AboxServices.CreateInvoice;
+                        wrData.Authorization = Configuration.TokenForAboxServices;
+
+                        trace.Trace("Url:" + wrData.Url);
+
+                        var serviceResponse = sharedMethods.DoPostRequest(wrData, trace);
+                        InvoiceCreateRequest.ServiceResponse serviceResponseProperties = null;
+                        if (serviceResponse.IsSuccessful)
+                        {
+                            DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(InvoiceCreateRequest.ServiceResponse));
+
+                            using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponse.Data)))
+                            {
+                                deserializer = new DataContractJsonSerializer(typeof(InvoiceCreateRequest.ServiceResponse));
+                                serviceResponseProperties = (InvoiceCreateRequest.ServiceResponse)deserializer.ReadObject(ms);
+                            }
+
+
+                            //TODO:Revisar si viene como 0 string o null desde el servicio
+                            if (serviceResponseProperties.response.code.ToString() != "0")
+                            {
+                                trace.Trace(Constants.ErrorMessageCodeReturned + serviceResponseProperties.response.code);
+
+                                Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
+                                serviceEx.Data["HasFeedbackMessage"] = true;
+                                throw serviceEx;
+                            }
+                            else
+                            {
+                                invoice.Attributes.Add(InvoiceFields.IdAboxInvoice, serviceResponseProperties.response.details.idFactura);
+                            }
+                        }
+                        else
+                        {
+                            DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(InvoiceCreateRequest.ServiceResponse));
+
+                            using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponse.Data)))
+                            {
+                                deserializer = new DataContractJsonSerializer(typeof(InvoiceCreateRequest.ServiceResponse));
+                                serviceResponseProperties = (InvoiceCreateRequest.ServiceResponse)deserializer.ReadObject(ms);
+                            }
+
+                            if (serviceResponseProperties != null && !String.IsNullOrEmpty(serviceResponseProperties.response.message))
+                            {
+                                Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
+                                serviceEx.Data["HasFeedbackMessage"] = true;
+                                throw serviceEx;
+                            }
+                            else
+                            {
+                                Exception ex = new Exception(Constants.GeneralAboxServicesErrorMessage);
+                                ex.Data["HasFeedbackMessage"] = true;
+                                throw ex;
+                            }
+                        }
+
+                        ///
+
                     }
 
                 }

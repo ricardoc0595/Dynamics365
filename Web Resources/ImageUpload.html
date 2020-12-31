@@ -11,7 +11,7 @@
         <input type="file" style="margin-bottom:15px" name="" id="imageUploadInput">
         <div style="width:100%;position:relative">
             <img style="width:100%;height:auto" alt="invoice image" id="invoiceImage" title="Invoice image"
-                src="https://aatralcreations.com/wp-content/uploads/2020/05/placeholder-1-2.png" width="60">
+                src="/WebResources/new_imageuploadplaceholder" width="60">
         </div>
 
     </span>
@@ -59,7 +59,7 @@
                             if (imageUrlTextField !== null) {
 
                                 imageUrlTextField.setValue(imageUploadedUrl);
-
+                                imageUrlTextField.fireOnChange();
                             }
                             console.log(promise.response);
 
@@ -71,7 +71,7 @@
 
                     }
                     else {
-                        alert("La imagen que seleccionaste supera el límite de tamaño, por favor selecciona otra.");
+                        alert("La imagen seleccionada supera el límite de tamaño, por favor seleccione otra.");
                         return;
                     }
                 }
