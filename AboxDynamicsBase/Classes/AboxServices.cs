@@ -16,5 +16,7 @@
         public const string SignIntoAccountService = Configuration.Environment + "/member/account/patient/signintoaccount";
         public const string CreateInvoice = Configuration.Environment + "/purchases/create";
         public const string ChangePasswordCrm = Configuration.Environment + "/security/crm/changepassword";
+        public const string CheckInvoiceNumber = Configuration.Environment + "/purchases/checkpurchasenumber";
+
     }
 }

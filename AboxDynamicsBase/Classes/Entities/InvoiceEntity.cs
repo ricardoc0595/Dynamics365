@@ -21,7 +21,8 @@ namespace AboxDynamicsBase.Classes.Entities
     {
         public const string Pharmacy = "new_Pharmacy";
         public const string Country = "new_InvoiceCountry";
-        public const string CustomerContactSchema = "customerid_contact";
+        public const string CustomerIdSchema = "customerid_contact";
+        public const string CustomerContactSchema = "new_Customer_contact";
     }
 
     public static class InvoiceFields
@@ -39,6 +40,7 @@ namespace AboxDynamicsBase.Classes.Entities
         public const string ProductSelectionWebResource = "WebResource_invoiceproductselection";
         public const string ProductsSelectedJson = "new_productsselectedjson";
         public const string IdAboxInvoice="new_idaboxinvoice";
+        public const string InvoiceXContactRelationship = "invoice_customer_contacts";
     }
 
 

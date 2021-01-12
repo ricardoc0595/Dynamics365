@@ -242,7 +242,7 @@
     <Compile Include="Logic\Methods\MShared.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="TestLayout.cs" />
+    
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />

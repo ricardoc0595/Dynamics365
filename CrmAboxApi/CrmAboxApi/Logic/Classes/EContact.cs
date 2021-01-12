@@ -285,7 +285,7 @@ namespace CrmAboxApi.Logic.Classes
 
                     if (!(String.IsNullOrEmpty(updateProperties.Email)))
                     {
-                        if (updateProperties.Email.Contains(Constants.NoEmailDefaultAddress))
+                        if (updateProperties.Email.Contains(AboxDynamicsBase.Classes.Configuration.NoEmailDefaultAddress))
                         {
                             jObject.Add(ContactFields.NoEmail, 1);
                         }

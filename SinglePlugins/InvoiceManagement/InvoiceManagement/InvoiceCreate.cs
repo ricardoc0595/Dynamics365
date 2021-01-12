@@ -56,6 +56,8 @@ namespace InvoiceManagement
                         RequestHelpers reqHelpers = new RequestHelpers();
                         InvoiceMethods invoiceMethods = new InvoiceMethods();
 
+                        
+
 
                         var validationStatusMessages = invoiceMethods.GetEntityValidationStatus(invoice, service, trace);
 
@@ -79,7 +81,68 @@ namespace InvoiceManagement
                         }
 
 
-                        ///
+                        #region Verificar número de factura
+
+                        //Verificar numero de factura
+
+                        InvoiceNumberCheckRequest.Request checkInvoiceRequest = reqHelpers.CheckInvoiceNumberRequest(invoice, service, trace);
+
+                        DataContractJsonSerializer serializerCheckNumber = new DataContractJsonSerializer(typeof(InvoiceNumberCheckRequest.Request));
+                        MemoryStream memoryStreamCheckNumber = new MemoryStream();
+                        serializerCheckNumber.WriteObject(memoryStreamCheckNumber, checkInvoiceRequest);
+                        var jsonObjectCheckRequest = Encoding.Default.GetString(memoryStreamCheckNumber.ToArray());
+                        memoryStreamCheckNumber.Dispose();
+
+                        //Valores necesarios para hacer el Post Request
+                        WebRequestData wrDataCheckNumber = new WebRequestData();
+                        wrDataCheckNumber.InputData = jsonObjectCheckRequest;
+                        
+                        wrDataCheckNumber.ContentType = "application/json";
+
+                        // sharedMethods.GetUserTypeId(userTypeReference.Id.ToString());
+
+                        wrDataCheckNumber.Url = AboxServices.CheckInvoiceNumber;
+                        wrDataCheckNumber.Authorization = Configuration.TokenForAboxServices;
+
+                        
+
+                        var serviceResponseCheckNumber = sharedMethods.DoPostRequest(wrDataCheckNumber, trace);
+                        InvoiceNumberCheckRequest.ServiceResponse serviceCheckNumberResponseProperties = null;
+                        if (serviceResponseCheckNumber.IsSuccessful)
+                        {
+                            DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(InvoiceNumberCheckRequest.ServiceResponse));
+
+                            using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(serviceResponseCheckNumber.Data)))
+                            {
+                                deserializer = new DataContractJsonSerializer(typeof(InvoiceNumberCheckRequest.ServiceResponse));
+                                serviceCheckNumberResponseProperties = (InvoiceNumberCheckRequest.ServiceResponse)deserializer.ReadObject(ms);
+                            }
+                        }
+
+                        if (serviceCheckNumberResponseProperties != null)
+                        {
+
+                            if ((serviceCheckNumberResponseProperties.response != null) && (serviceCheckNumberResponseProperties.response.message != null))
+                            {
+
+                                if (serviceCheckNumberResponseProperties.response.code.ToString() != "0")
+                                {
+                                    Exception ex = new Exception($"{serviceCheckNumberResponseProperties.response.message}");
+                                    ex.Data["HasFeedbackMessage"] = true;
+                                    throw ex;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Exception ex = new Exception("Ha ocurrido un error al intentar validar el número de la factura, por favor intente nuevamente.");
+                            ex.Data["HasFeedbackMessage"] = true;
+                            throw ex;
+                        }
+
+                        //end verificar numero de factura
+
+                        #endregion
 
                         InvoiceCreateRequest.Request request = reqHelpers.GetInvoiceCreateRequestObject(invoice, service, trace);
                         DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(InvoiceCreateRequest.Request));

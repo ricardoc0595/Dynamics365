@@ -1,6 +1,7 @@
 ﻿using AboxCrmPlugins.Methods;
 using AboxDynamicsBase.Classes;
 using AboxDynamicsBase.Classes.Entities;
+using InvoiceManagement.Classes;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System;
@@ -11,6 +12,9 @@ namespace InvoiceManagement.Methods
 {
     public class InvoiceMethods
     {
+
+
+        
 
         public List<string> GetEntityValidationStatus(Entity invoice, IOrganizationService service, Microsoft.Xrm.Sdk.ITracingService trace)
         {

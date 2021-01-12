@@ -18,6 +18,7 @@ namespace InvoiceManagement.Methods
         public InvoiceCreateRequest.Request GetInvoiceCreateRequestObject(Entity invoice, IOrganizationService service, ITracingService trace)
         {
             var request = new InvoiceCreateRequest.Request();
+            MShared sharedMethods = new MShared();
             try
             {
                 ContactEntity contactEntity = new ContactEntity();
@@ -97,8 +98,101 @@ namespace InvoiceManagement.Methods
             }
             catch (Exception ex)
             {
+                sharedMethods.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"Error al obtener la estructura para el request",
+                    ProcessId = ""
+                }, trace);
                 trace.Trace($"MethodName: {new StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
                 throw ex;
+            }
+        }
+
+        public InvoiceNumberCheckRequest.Request CheckInvoiceNumberRequest(Entity invoice, IOrganizationService service, ITracingService trace)
+        {
+            InvoiceNumberCheckRequest.Request requestResponse = new InvoiceNumberCheckRequest.Request();
+            MShared sharedMethods = new MShared();
+            ContactEntity contactEntity = new ContactEntity();
+            PharmacyEntity pharmacyEntity = new PharmacyEntity();
+            CountryEntity countryEntity = new CountryEntity();
+            try
+            {
+                Entity contact = null;
+                if (invoice.Attributes.Contains(InvoiceFields.Customer))
+                {
+                    EntityReference contactReference = invoice.GetAttributeValue<EntityReference>(InvoiceFields.Customer);
+
+                    string[] columnsToGet = new string[] { ContactFields.IdAboxPatient, ContactFields.Country };
+                    var columnSet = new ColumnSet(columnsToGet);
+                    contact = service.Retrieve(contactEntity.EntitySingularName, contactReference.Id, columnSet);
+
+                    if (contact != null)
+                    {
+                        if (contact.Attributes.Contains(ContactFields.Country))
+                        {
+                            EntityReference countryReference = null;
+                            countryReference = (EntityReference)contact.Attributes[ContactFields.Country];
+                            if (countryReference != null)
+                            {
+                                var countryRetrieved = service.Retrieve(countryEntity.EntitySingularName, countryReference.Id, new ColumnSet(CountryFields.IdCountry));
+                                if (countryRetrieved.Attributes.Contains(CountryFields.IdCountry))
+                                {
+                                    string country = countryRetrieved.GetAttributeValue<string>(CountryFields.IdCountry);
+
+                                    if (!String.IsNullOrEmpty(country))
+                                    {
+                                        requestResponse.countryId = country;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (invoice.Attributes.Contains(InvoiceFields.Pharmacy)) {
+
+                        EntityReference pharmacyReference = null;
+                        pharmacyReference = (EntityReference)invoice.Attributes[InvoiceFields.Pharmacy];
+                        if (pharmacyReference != null)
+                        {
+                            var pharmacyRetrieved = service.Retrieve(pharmacyEntity.EntitySingularName, pharmacyReference.Id, new ColumnSet(PharmacyFields.Id));
+                            if (pharmacyRetrieved.Attributes.Contains(PharmacyFields.Id))
+                            {
+                                string idPharmacy = pharmacyRetrieved.GetAttributeValue<string>(PharmacyFields.Id);
+
+                                if (!String.IsNullOrEmpty(idPharmacy))
+                                {
+                                    requestResponse.pharmacyId = Convert.ToInt32(idPharmacy);
+                                }
+                            }
+                        }
+
+                    }
+
+                    if (invoice.Attributes.Contains(InvoiceFields.InvoiceNumber))
+                    {
+                        requestResponse.purchaseNumber = invoice.GetAttributeValue<string>(InvoiceFields.InvoiceNumber);
+                    }
+
+                }
+                return requestResponse;
+            }
+            catch (Exception ex)
+            {
+                sharedMethods.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"Error al obtener la estructura para el request",
+                    ProcessId = ""
+                }, trace);
+                trace.Trace($"MethodName: {new StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                return null;
             }
         }
 

@@ -40,7 +40,7 @@ namespace CrmAboxApi.Logic.Classes
         {
             OperationResult result = new OperationResult();
             JObject jObject = new JObject();
-            
+            CountryEntity countryEntity = new CountryEntity();
             try
             {
                 if (invoiceProperties != null)
@@ -49,6 +49,11 @@ namespace CrmAboxApi.Logic.Classes
 
 
                     if (invoiceProperties.patientId>0)
+                    {
+                        jObject.Add($"{InvoiceSchemas.CustomerIdSchema}@odata.bind", $"/{contactEntity.EntityPluralName}({ContactFields.IdAboxPatient}={invoiceProperties.patientId})");
+                    }
+
+                    if (invoiceProperties.patientId > 0)
                     {
                         jObject.Add($"{InvoiceSchemas.CustomerContactSchema}@odata.bind", $"/{contactEntity.EntityPluralName}({ContactFields.IdAboxPatient}={invoiceProperties.patientId})");
                     }
@@ -77,6 +82,11 @@ namespace CrmAboxApi.Logic.Classes
                     if (invoiceProperties.idFromDatabase != null)
                     {
                         jObject.Add($"{InvoiceFields.IdAboxInvoice}", invoiceProperties.idFromDatabase);
+                    }
+
+                    if (!(String.IsNullOrEmpty(invoiceProperties.country)))
+                    {
+                        jObject.Add($"{InvoiceSchemas.Country}@odata.bind", $"/{countryEntity.EntityPluralName}({CountryFields.IdCountry}='{invoiceProperties.country}')");
                     }
 
 
