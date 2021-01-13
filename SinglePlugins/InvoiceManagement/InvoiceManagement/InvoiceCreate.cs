@@ -213,6 +213,12 @@ namespace InvoiceManagement
                                             message = serviceResponseProperties.response.details.validationresults[0].validationresults.validationMessages.ElementAtOrDefault(0).message;
                                         }
                                     }
+
+                                    if (!String.IsNullOrEmpty(serviceResponseProperties.response.details.validationresults[0].message))
+                                    {
+                                        message = serviceResponseProperties.response.details.validationresults[0].message;
+                                    }
+
                                     if (!String.IsNullOrEmpty(message))
                                     {
                                         messageRows = message;

@@ -65,7 +65,9 @@
 
         input[name="quantity"] {
             margin-right: 10%;
-            width: 25%;
+            width: 10%;
+            padding:5px;
+            text-align:center;
         }
 
         table tr {
@@ -90,11 +92,7 @@
             -webkit-transition: all .5s;
         }
 
-        form .product-data {
-            display: block;
-            position: relative;
-            width: 50%;
-        }
+      
 
 
 
@@ -112,7 +110,7 @@
 
         .btn {
             border-radius: 3px;
-            padding: 3px;
+            padding:8px;
             width: 78px;
             border: none;
             cursor: pointer;
@@ -140,8 +138,22 @@
             border: solid 1px black;
         }
 
+        form .product-data {
+            display: block;
+            position: relative;
+            width: 100%;
+            margin-top:20px;
+        }
+
+        .product-data>label {
+            width: 15%;
+            display:inline-block;
+            position:relative;
+        }
+
         .product-data .btn {
             width: 31%;
+            padding:8px;
         }
 
         .loadingComponent {
@@ -202,7 +214,7 @@
             <form name="productSelectedData" novalidate ng-if="productSelected.id!==null && productSelected.id!==''">
                 <div class="product-data">
                     <!-- <p ng-bind="productSelected.name"></p> -->
-                    <p>Cantidad:</p>
+                    <label>Cantidad:</label>
                     <input required type="text" maxlength="2" ng-pattern="/^[0-9]+$/" name="quantity"
                         ng-model="productSelected.quantity">
                     <button class="btn primary" ng-click="addProduct(productSelectedData)"

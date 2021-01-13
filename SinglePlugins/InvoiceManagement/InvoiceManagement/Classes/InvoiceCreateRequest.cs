@@ -87,6 +87,8 @@ namespace InvoiceManagement.Classes
                 public Product product { get; set; }
 
                 public Validationresults validationresults { get; set; }
+                public string message { get; set; }
+                public string validation_type { get; set; }
 
             }
 
