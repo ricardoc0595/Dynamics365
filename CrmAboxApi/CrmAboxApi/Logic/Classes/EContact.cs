@@ -875,7 +875,7 @@ namespace CrmAboxApi.Logic.Classes
                             client.DefaultRequestHeaders.Add("If-Match", "*");
                             MethodBase m = MethodBase.GetCurrentMethod();
 
-                            string url = $"contacts({ContactFields.IdAboxPatient}={idToUpdate})";
+                            string url = $"{this.EntityPluralName}({ContactFields.IdAboxPatient}={idToUpdate})";
                          
 
                             LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"Url:{url} Data:{jsonObject.ToString(Formatting.None)}");

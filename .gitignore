@@ -69,3 +69,5 @@ obj/
 /AboxCrmPlugins/plugin que se creo para asociar dosis, no sirvio porque el subgrid no permite detener la creacion.txt
 /Aboxplan - CRM Dynamics - Signup.zip
 /AboxCrmPlugins/Manual Plugins.docx
+*.csv
+*.xlsx
