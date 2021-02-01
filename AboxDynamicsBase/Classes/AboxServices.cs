@@ -15,6 +15,7 @@
         public const string WelcomeSendMailService = Configuration.Environment + "/member/signup/crm/welcome_sendmail";
         public const string SignIntoAccountService = Configuration.Environment + "/member/account/patient/signintoaccount";
         public const string CreateInvoice = Configuration.Environment + "/purchases/create";
+        public const string UpdateInvoice = Configuration.Environment + "/purchases/update";
         public const string ChangePasswordCrm = Configuration.Environment + "/security/crm/changepassword";
         public const string CheckInvoiceNumber = Configuration.Environment + "/purchases/checkpurchasenumber";
 

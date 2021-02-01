@@ -41,6 +41,7 @@ namespace AboxDynamicsBase.Classes.Entities
         public const string ProductsSelectedJson = "new_productsselectedjson";
         public const string IdAboxInvoice="new_idaboxinvoice";
         public const string InvoiceXContactRelationship = "invoice_customer_contacts";
+        public const string StatusCode = "statuscode";
     }
 
 

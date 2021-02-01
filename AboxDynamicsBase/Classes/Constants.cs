@@ -38,11 +38,12 @@
         public const string RegexAlphanumeric = @"^[a-zA-Z0-9]*$";
 
         public const string RegexEmail = @"^(("")("".+?(\?<!\\)""@)|((((\.(?!\.))|[-!#\$%&'\*\+\/=\?\^`\{\}\|~\w])*)@))((\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$";
-
+        
         public const int MaxNameLength = 30;
         public const int MinNameLength = 3;
-        
-
+        public const int NewStatusInvoiceDropdownValue = 1;
+        public const int ApprovedStatusInvoiceDropdownValue = 2;
+        public const int RejectedStatusInvoiceDropdownValue = 4;
 
 
         //public enum S

@@ -15,6 +15,13 @@ namespace InvoiceManagement.Methods
     public class RequestHelpers
     {
 
+        /// <summary>
+        /// Obtiene un objeto para convertir a JSON y enviarlo a los servicios de Abox Plan.
+        /// </summary>
+        /// <param name="invoice">Entidad factura a la que se le extraen los atributos</param>
+        /// <param name="service"></param>
+        /// <param name="trace"></param>
+        /// <returns></returns>
         public InvoiceCreateRequest.Request GetInvoiceCreateRequestObject(Entity invoice, IOrganizationService service, ITracingService trace)
         {
             var request = new InvoiceCreateRequest.Request();
@@ -111,6 +118,71 @@ namespace InvoiceManagement.Methods
                 throw ex;
             }
         }
+
+        public InvoiceUpdateRequest.Request GetInvoiceUpdateRequestObject(Entity invoice, IOrganizationService service, ITracingService trace)
+        {
+            InvoiceUpdateRequest.Request request = null;
+            MShared sharedMethods = new MShared();
+            try
+            {
+                //Se reutiliza el método porque son casi las mismas propiedades
+                InvoiceCreateRequest.Request objectRequest = this.GetInvoiceCreateRequestObject(invoice,service,trace);
+
+                if (objectRequest!=null)
+                {
+
+
+                    request = new InvoiceUpdateRequest.Request
+                    {
+                        billDate = objectRequest.billDate,
+                        billNumber = objectRequest.billId,
+                        billImageUrl = objectRequest.billImageUrl,
+                        patientId = objectRequest.patientId,
+                        pharmacyId = objectRequest.pharmacyId,
+                        
+                    };
+                    request.products = new InvoiceUpdateRequest.Request.Product[objectRequest.products.Length];
+                    for (int i = 0; i < objectRequest.products.Length; i++)
+                    {
+                        request.products[i] = new InvoiceUpdateRequest.Request.Product
+                        {
+                            id = objectRequest.products[i].id,
+                            quantity = objectRequest.products[i].quantity
+
+                        };
+                    }
+
+                }
+
+                if (request!=null)
+                {
+
+                    if (invoice.Attributes.Contains(InvoiceFields.InvoiceNumber))
+                    {
+                        request.billId = Convert.ToString(invoice.GetAttributeValue<int>(InvoiceFields.IdAboxInvoice));
+                    }
+
+                }
+
+                return request;
+
+            }
+            catch (Exception ex)
+            {
+                sharedMethods.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"Error al obtener la estructura para el request",
+                    ProcessId = ""
+                }, trace);
+                trace.Trace($"MethodName: {new StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                throw ex;
+            }
+        }
+
 
         public InvoiceNumberCheckRequest.Request CheckInvoiceNumberRequest(Entity invoice, IOrganizationService service, ITracingService trace)
         {

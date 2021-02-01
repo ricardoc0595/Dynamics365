@@ -67,9 +67,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\InvoiceUpdateRequest.cs" />
     <Compile Include="Classes\InvoiceCreateRequest.cs" />
     <Compile Include="Classes\InvoiceNumberCheckRequest.cs" />
     <Compile Include="InvoiceCreate.cs" />
+    <Compile Include="InvoiceUpdate.cs" />
     <Compile Include="Methods\InvoiceMethods.cs" />
     <Compile Include="Methods\RequestHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
