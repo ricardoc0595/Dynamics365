@@ -1,123 +1,199 @@
 USE [REPORTES]
-GO
+
+go
+
 /****** Object:  StoredProcedure [dbo].[ContactTest]    Script Date: 01-Feb-21 9:48:06 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-	-- =============================================
-	-- Author:		<Author,,Name>
-	-- Create date: <Create Date,,>
-	-- Description:	<Description,,>
-	-- =============================================
-	ALTER PROCEDURE [dbo].[ContactTest] -- Add the parameters for the stored procedure here
-	AS 
-	BEGIN -- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
-SET
-	NOCOUNT ON;
+SET ansi_nulls ON
 
--- Insert statements for procedure here
-/****** Script for SelectTopNRows command from SSMS  ******/
-Select Interes,Descripcion INTO #TempIntereses from intereses
+go
 
+SET quoted_identifier ON
 
-CREATE TABLE #TEMP (
-[ID_Paciente] [int] NULL,
-[Cedula] [varchar](50) NOT NULL,
-[Nombre] [varchar](50) NOT NULL,
-[Apellido1] [varchar](50) NULL,
-[Apellido2] [varchar](50) NULL,
-[Genero] [varchar](10) NULL,
-[Telefono] [varchar](50) NOT NULL,
-[Telefono2] [varchar](50) NULL,
-[Provincia] [varchar](50) NULL,
-[Canton] [varchar](50) NULL,
-[Distrito] [varchar](50) NULL,
-[Direccion] [varchar](500) NULL,
-[FechaNacimiento] [varchar](50) NULL,
-[Pais] [varchar](50) NOT NULL,
-[Email] [varchar](250) NULL,
-[Registrado] [smalldatetime] NULL,
-[EsMenorDeEdad] [int] NULL,
-[createDate] [smalldatetime] NULL,
-[Categoria] [varchar](45) NULL,
-[TipoTerminosYCondiciones] [varchar](45) NULL,
-[intereses] [varchar](600) NULL,
-[HasNoEmail] [bit] NULL,
-[IsMinor][bit] NULL
-);
+go
 
-INSERT INTO
-	#TEMP ([ID_Paciente],
-	[Cedula],
-	[Nombre],
-	[Apellido1],
-	[Apellido2],
-	[Genero],
-	[Telefono],
-	[Telefono2],
-	[Provincia],
-	[Canton],
-	[Distrito],
-	[Direccion],
-	[FechaNacimiento],
-	[Pais],
-	[Email],
-	[Registrado],
-	[EsMenorDeEdad],
-	[createDate],
-	[Categoria],
-	[TipoTerminosYCondiciones],
-	[intereses],
-	[HasNoEmail],
-	[IsMinor]
-)
+-- =============================================
+-- Author:    
+-- Create date: 
+-- Description:  
+-- =============================================
+ALTER PROCEDURE [dbo].[Contacttest]
+-- Add the parameters for the stored procedure here
+AS
+  BEGIN -- SET NOCOUNT ON added to prevent extra result sets from
+      -- interfering with SELECT statements.
+      SET nocount ON;
 
+      DECLARE @tu VARCHAR(2);
+      DECLARE @k INT;
 
-SELECT 
-[ID_Paciente],
-	[Cedula],
-	[Nombre],
-	[Apellido1],
-	[Apellido2],
-	[Genero],
-	[Telefono],
-	[Telefono2],
-	[Provincia],
-	[Canton],
-	[Distrito],
-	[Direccion],
-	[FechaNacimiento],
-	[Pais],
-	[Email],
-	[Registrado],
-	[EsMenorDeEdad],
-	[createDate],
-	[Categoria],
-	[TipoTerminosYCondiciones], 
-	--STUFF((SELECT DISTINCT ';' + SUBSTRING(Interes, PATINDEX('%[^0]%', Interes+'.'), LEN(Interes)) FROM rm_interesesxpaciente ixp  where ixp.ID_Paciente =p.ID_Paciente FOR XML PATH('')), 1 ,1, '') AS [intereses]
-	STUFF((SELECT DISTINCT ';' + intrsts.Descripcion + '[//]' FROM rm_interesesxpaciente ixp,#TempIntereses intrsts  where ixp.ID_Paciente =p.ID_Paciente and intrsts.Interes=ixp.Interes FOR XML PATH('')), 1 ,1, '') AS [intereses],
+      -- Insert statements for procedure here
+      /****** Script for SelectTopNRows command from SSMS  ******/
+      SELECT interes,
+             descripcion
+      INTO   #tempintereses
+      FROM   intereses
 
-	--Identificar filtros de usuarios, hay repetidos, otros con Cedulas que tienen algo concatenado como "Migracion" a la cedula.
-	--Filtro con Categoria P, hay un usuario de Pikarona que aparece 3 veces, pero el sistema solo utiliza uno.
-	--api_UpdateUserType de que es este userId??
-	--Sacar IdType
-	(SELECT CASE WHEN p.Email like '%@aboxplan.com%' THEN 1 ELSE 0 END) as HasNoEmail,
-	(Select CASE WHEN TRY_CONVERT(UNIQUEIDENTIFIER, p.Cedula) IS NOT NULL THEN 1 ELSE 0 END) as IsMinor
-FROM pacientes p
---where p.Email like '%loymark%'
+      CREATE TABLE #temp
+        (
+           [id_paciente]              [INT] NULL,
+           [cedula]                   [VARCHAR](50) NOT NULL,
+           [nombre]                   [VARCHAR](50) NOT NULL,
+           [apellido1]                [VARCHAR](50) NULL,
+           [apellido2]                [VARCHAR](50) NULL,
+           [genero]                   [VARCHAR](10) NULL,
+           [telefono]                 [VARCHAR](50) NOT NULL,
+           [telefono2]                [VARCHAR](50) NULL,
+           [provincia]                [VARCHAR](50) NULL,
+           [canton]                   [VARCHAR](50) NULL,
+           [distrito]                 [VARCHAR](50) NULL,
+           [direccion]                [VARCHAR](500) NULL,
+           [fechanacimiento]          [VARCHAR](50) NULL,
+           [pais]                     [VARCHAR](50) NOT NULL,
+           [email]                    [VARCHAR](250) NULL,
+           [registrado]               [SMALLDATETIME] NULL,
+           [esmenordeedad]            [INT] NULL,
+           [createdate]               [SMALLDATETIME] NULL,
+           [categoria]                [VARCHAR](45) NULL,
+           [tipoterminosycondiciones] [VARCHAR](45) NULL,
+           [intereses]                [VARCHAR](600) NULL,
+           [hasnoemail]               [BIT] NULL,
+           [ischildcontact]           [BIT] NULL,
+           [usertype]                 [VARCHAR](2) NULL,
+           [idtype]                   INT NULL,
+        );
 
+      INSERT INTO #temp
+                  ([id_paciente],
+                   [cedula],
+                   [nombre],
+                   [apellido1],
+                   [apellido2],
+                   [genero],
+                   [telefono],
+                   [telefono2],
+                   [provincia],
+                   [canton],
+                   [distrito],
+                   [direccion],
+                   [fechanacimiento],
+                   [pais],
+                   [email],
+                   [registrado],
+                   [esmenordeedad],
+                   [createdate],
+                   [categoria],
+                   [tipoterminosycondiciones],
+                   [intereses],
+                   [hasnoemail],
+                   [ischildcontact],
+                   [usertype],
+                   [idtype])
+      SELECT [id_paciente],
+             [cedula],
+             [nombre],
+             [apellido1],
+             [apellido2],
+             [genero],
+             [telefono],
+             [telefono2],
+             [provincia],
+             [canton],
+             [distrito],
+             [direccion],
+             [fechanacimiento],
+             [pais],
+             [email],
+             [registrado],
+             [esmenordeedad],
+             [createdate],
+             [categoria],
+             [tipoterminosycondiciones],
+             --''           AS intereses,
+             STUFF((SELECT DISTINCT ';' + intrsts.Descripcion + '[//]' FROM rm_interesesxpaciente ixp,#TempIntereses intrsts  where ixp.ID_Paciente =p.ID_Paciente and intrsts.Interes=ixp.Interes FOR XML PATH('')), 1 ,1, '') AS [intereses],
+             (SELECT CASE
+                       WHEN p.email LIKE '%@aboxplan.com%' THEN 1
+                       ELSE 0
+                     END) AS HasNoEmail,
+             (SELECT CASE
+                       WHEN p.categoria = 'S' THEN 1
+                       ELSE 0
+                     END) AS [IsChildContact],
+             --(Select CASE WHEN p.Categoria='P' and (Select Count(Usuario) from rm_pacientesxusuario where Usuario=p.Cedula)>1
+             --and ((SELECT TOP 1 TipoUsuario from rm_pacientesxusuario where ID_Paciente=p.ID_Paciente)='01') THEN 'CU' ELSE 'TU' END)  as [UserType]
+             (SELECT CASE
+                       WHEN p.categoria = 'P'
+                            AND (SELECT Count(usuario)
+                                 FROM   rm_pacientesxusuario
+                                 WHERE  usuario = p.cedula) > 1
+                            AND ( (SELECT TOP 1 tipousuario
+                                   FROM   rm_pacientesxusuario
+                                   WHERE  id_paciente = p.id_paciente) = '01' )
+                     THEN
+                       'TU'
+                       -- en la tabla rm_pacientesxusuario el usuario tutor tiene valor 01 y el que tiene bajo cuido es el que tiene el valor de 03
+                       WHEN p.categoria = 'P'
+                            AND (SELECT Count(usuario)
+                                 FROM   rm_pacientesxusuario
+                                 WHERE  usuario = p.cedula) > 1
+                            AND ( (SELECT TOP 1 tipousuario
+                                   FROM   rm_pacientesxusuario
+                                   WHERE  id_paciente = p.id_paciente) = '02' )
+                     THEN
+                       'CU'
+                       WHEN p.categoria = 'P'
+                            AND (SELECT Count(usuario)
+                                 FROM   rm_pacientesxusuario
+                                 WHERE  usuario = p.cedula) > 1
+                            AND ( (SELECT TOP 1 tipousuario
+                                   FROM   rm_pacientesxusuario
+                                   WHERE  id_paciente = p.id_paciente) = '03' )
+                     THEN
+                       'TU'
+                       WHEN p.categoria = 'P'
+                            AND ( (SELECT TOP 1 tipousuario
+                                   FROM   rm_pacientesxusuario
+                                   WHERE  id_paciente = p.id_paciente) = '01' )
+                     THEN
+                       'PA'
+                       WHEN p.categoria = 'P'
+                            AND ( (SELECT TOP 1 tipousuario
+                                   FROM   rm_pacientesxusuario
+                                   WHERE  id_paciente = p.id_paciente) = '05' )
+                     THEN
+                       'OI'
+                       WHEN p.categoria = 'S' THEN 'BC'
+                     END) AS [UserType],
+             (SELECT CASE
+                       WHEN Isnumeric(p.cedula) = 1 THEN 1
+                       WHEN Try_convert(uniqueidentifier, p.cedula) IS NOT NULL
+                             OR p.cedula LIKE '%PME%' THEN 3
+                       ELSE 2
+                     END) AS [IdType]
+      FROM   pacientes p
+      WHERE  EXISTS (SELECT uc.usuario
+                     FROM   usuarios_cuentas uc
+                     WHERE  uc.usuario = p.cedula
+                            AND p.id_paciente IN
+                                (SELECT p.id_paciente
+                                 FROM   usuarios_cuentas uc
+                                 WHERE  uc.usuario = p.cedula
+                                        AND
+                                p.cedula = uc.usuario
+                                        AND EXISTS
+                                        (SELECT p.id_paciente
+                                         FROM
+                                            rm_pacientesxusuario
+                                            pxu
+                                                   WHERE
+             pxu.id_paciente = p.id_paciente)))
+              OR EXISTS (SELECT pxu.id_paciente
+                         FROM   rm_pacientesxusuario pxu
+                         WHERE  pxu.id_paciente = p.id_paciente
+                                AND pxu.status = 'AC')
 
-	Drop table #TempIntereses
-	
-	Select * from #TEMP ;
+      --where p.Email like '%loymark%'
+      DROP TABLE #tempintereses
 
-
-	--Buscar en pacientesxusuario si hay mas de una ocurrencia de un tipo de usuario
---	SELECT  ID_Paciente, TipoUsuario, COUNT(*)
---FROM rm_pacientesxusuario
---GROUP BY ID_Paciente, TipoUsuario
---HAVING COUNT(*) > 1
-
-END
+      SELECT *
+      FROM   #temp --where Cedula='1006'
+  END 
