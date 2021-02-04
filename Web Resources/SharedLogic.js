@@ -10,7 +10,7 @@ Abox.SharedLogic = {
 
     Configuration: {
 
-        Environment: "https://apidev.aboxplan.com",
+        Environment: "https://stagingapi.aboxplan.com",
         WebAPIEnvironment: "https://aboxcrmapi.aboxplan.com",
         TokenForAboxServices: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNybV9hYm94YXBpIiwiYXBpIjp0cnVlLCJpYXQiOjE2MDMzMTIzODB9.Cu8FYQoVWDcof_qFZ5CIA6K2OYloOEn9F-b_XahLf9w",
     },
