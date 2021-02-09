@@ -10,7 +10,7 @@ GO
 -- Create date: <Create Date,,>
 -- Description:	<Description,,>
 -- =============================================
-ALTER PROCEDURE [dbo].[ContactsProduct]
+ALTER PROCEDURE [dbo].[ContactsMedics]
 	-- Add the parameters for the stored procedure here
 
 AS
@@ -22,12 +22,11 @@ BEGIN
     -- Insert statements for procedure here
 
 
-
---Select Dosis from	
+--Select * from	
 --(
-Select   mxp.Medicamento, mxp.Dosis,mxp.ID_Paciente from paciente_medicamento mxp 
+Select  mxp.Medico, mxp.ID_PacienteMedico from paciente_medico mxp 
 inner join pacientes p 
-On p.ID_Paciente=mxp.ID_Paciente
+On p.ID_Paciente=mxp.ID_PacienteMedico
  WHERE   EXISTS (SELECT uc.usuario
                      FROM   usuarios_cuentas uc
                      WHERE  uc.usuario = p.cedula
@@ -51,7 +50,7 @@ On p.ID_Paciente=mxp.ID_Paciente
 								
 								
 								--) k
-								--group by Dosis
+								--where k.ID_PacienteMedico='53319'
 
 
 
