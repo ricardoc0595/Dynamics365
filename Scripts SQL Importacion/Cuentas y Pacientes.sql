@@ -26,6 +26,18 @@ AS
       DECLARE @tu VARCHAR(2);
       DECLARE @k INT;
 
+	  DECLARE @IdDynamicsPatientUserType VARCHAR(36);
+	   DECLARE @IdDynamicsTutorUserType VARCHAR(36);
+	    DECLARE @IdDynamicsCaretakerUserType VARCHAR(36);
+		 DECLARE @IdDynamicsOtherInterestUserType VARCHAR(36);
+		  DECLARE @IdDynamicsPatientUndercareUserType VARCHAR(36);
+
+		 SET @IdDynamicsPatientUserType='15810a1e-c8d1-ea11-a812-000d3a33f637';
+		 SET @IdDynamicsTutorUserType='f4761324-c8d1-ea11-a812-000d3a33f637';
+		 SET @IdDynamicsCaretakerUserType='fab60b2a-c8d1-ea11-a812-000d3a33f637';
+		 SET @IdDynamicsOtherInterestUserType='30f90330-c8d1-ea11-a812-000d3a33f637';
+		 SET @IdDynamicsPatientUndercareUserType='dc9a7b9d-5366-eb11-a812-002248029573';
+
       -- Insert statements for procedure here
       /****** Script for SelectTopNRows command from SSMS  ******/
       SELECT interes,
@@ -51,14 +63,12 @@ AS
            [pais]                     [VARCHAR](50) NOT NULL,
            [email]                    [VARCHAR](250) NULL,
            [registrado]               [SMALLDATETIME] NULL,
-           [esmenordeedad]            [INT] NULL,
            [createdate]               [SMALLDATETIME] NULL,
            [categoria]                [VARCHAR](45) NULL,
-           [tipoterminosycondiciones] [VARCHAR](45) NULL,
            [intereses]                [VARCHAR](600) NULL,
            [hasnoemail]               [BIT] NULL,
            [ischildcontact]           [BIT] NULL,
-           [usertype]                 [VARCHAR](2) NULL,
+           [usertype]                 [VARCHAR](36) NULL,
            [idtype]                   INT NULL,
         );
 
@@ -79,10 +89,8 @@ AS
                    [pais],
                    [email],
                    [registrado],
-                   [esmenordeedad],
                    [createdate],
                    [categoria],
-                   [tipoterminosycondiciones],
                    [intereses],
                    [hasnoemail],
                    [ischildcontact],
@@ -96,20 +104,19 @@ AS
              [genero],
              [telefono],
              [telefono2],
-             [provincia],
-             [canton],
-             [distrito],
+             --(Select case when isnumeric(p.Provincia)=1 then p.Provincia else '' end)
+			(Select case when isnumeric(p.Provincia)=1 then p.Provincia else '' end) as [provincia],
+             (Select case when isnumeric(p.Canton)=1 then p.Canton else '' end) as [canton],
+              (Select case when isnumeric(p.Distrito)=1 then p.Distrito else '' end) as [distrito],
              [direccion],
              [fechanacimiento],
              [pais],
              [email],
              [registrado],
-             [esmenordeedad],
              [createdate],
              [categoria],
-             [tipoterminosycondiciones],
-             --''           AS intereses,
-             STUFF((SELECT DISTINCT ';' + intrsts.Descripcion + '[//]' FROM rm_interesesxpaciente ixp,#TempIntereses intrsts  where ixp.ID_Paciente =p.ID_Paciente and intrsts.Interes=ixp.Interes FOR XML PATH('')), 1 ,1, '') AS [intereses],
+             ''           AS intereses,
+             --STUFF((SELECT DISTINCT ';' + intrsts.Descripcion + '[//]' FROM rm_interesesxpaciente ixp,#TempIntereses intrsts  where ixp.ID_Paciente =p.ID_Paciente and intrsts.Interes=ixp.Interes FOR XML PATH('')), 1 ,1, '') AS [intereses],
              (SELECT CASE
                        WHEN p.email LIKE '%@aboxplan.com%' THEN 1
                        ELSE 0
@@ -119,8 +126,11 @@ AS
                        ELSE 0
                      END) AS [IsChildContact],
              --(Select CASE WHEN p.Categoria='P' and (Select Count(Usuario) from rm_pacientesxusuario where Usuario=p.Cedula)>1
-             --and ((SELECT TOP 1 TipoUsuario from rm_pacientesxusuario where ID_Paciente=p.ID_Paciente)='01') THEN 'CU' ELSE 'TU' END)  as [UserType]
+             --and ((SELECT TOP 1 TipoUsuario from rm_pacientesxusuario where ID_Paciente=p.ID_Paciente)='01') THEN @IdDynamicsCaretakerUserType ELSE @IdDynamicsTutorUserType END)  as [UserType]
              (SELECT CASE
+
+
+					   --Si es un usuario categoria P, que es dueño de una cuenta y en la tabla de rm_pacientesxusuario existe más de un registro con la misma cedula, es un usuario cuidador o tutor, donde uno es el dueño de la cuenta (tutor o cuidador) y el otro el paciente
                        WHEN p.categoria = 'P'
                             AND (SELECT Count(usuario)
                                  FROM   rm_pacientesxusuario
@@ -129,7 +139,7 @@ AS
                                    FROM   rm_pacientesxusuario
                                    WHERE  id_paciente = p.id_paciente) = '01' )
                      THEN
-                       'TU'
+                       @IdDynamicsTutorUserType
                        -- en la tabla rm_pacientesxusuario el usuario tutor tiene valor 01 y el que tiene bajo cuido es el que tiene el valor de 03
                        WHEN p.categoria = 'P'
                             AND (SELECT Count(usuario)
@@ -139,7 +149,8 @@ AS
                                    FROM   rm_pacientesxusuario
                                    WHERE  id_paciente = p.id_paciente) = '02' )
                      THEN
-                       'CU'
+                       @IdDynamicsCaretakerUserType
+					   --Si es un usuario categoria P, que es dueño de una cuenta y en la tabla de rm_pacientesxusuario existe más de un registro con la misma cedula, es un usuario cuidador o tutor, donde uno es el dueño de la cuenta (tutor o cuidador) y el otro el paciente
                        WHEN p.categoria = 'P'
                             AND (SELECT Count(usuario)
                                  FROM   rm_pacientesxusuario
@@ -148,20 +159,23 @@ AS
                                    FROM   rm_pacientesxusuario
                                    WHERE  id_paciente = p.id_paciente) = '03' )
                      THEN
-                       'TU'
+                       @IdDynamicsTutorUserType
+					   --Si es un usuario categoria P que es dueño de una cuenta, y en la tabla de rm_pacientesxusuario al buscar por ID de paciente retorna que el tipo de usuario es 01, entonces es un usuario de cuenta de tipo paciente sin ningun paciente bajo su cuido
                        WHEN p.categoria = 'P'
                             AND ( (SELECT TOP 1 tipousuario
                                    FROM   rm_pacientesxusuario
                                    WHERE  id_paciente = p.id_paciente) = '01' )
                      THEN
-                       'PA'
+                       @IdDynamicsPatientUserType
+					   --Si es un usuario categoria P que es dueño de una cuenta, y en la tabla de rm_pacientesxusuario al buscar por ID de paciente retorna que el tipo de usuario es 05, entonces es un usuario de cuenta de tipo otro interes sin ningun paciente bajo su cuido
                        WHEN p.categoria = 'P'
                             AND ( (SELECT TOP 1 tipousuario
                                    FROM   rm_pacientesxusuario
                                    WHERE  id_paciente = p.id_paciente) = '05' )
                      THEN
-                       'OI'
-                       WHEN p.categoria = 'S' THEN 'BC'
+                       @IdDynamicsOtherInterestUserType
+					   --Si es un paciente con categoria S, es un paciente bajo cuido de alguien, a nivel de Dynamics se tomarán todos como el tipo "paciente bajo cuido"
+                       WHEN p.categoria = 'S' THEN @IdDynamicsPatientUndercareUserType
                      END) AS [UserType],
              (SELECT CASE
                        WHEN Isnumeric(p.cedula) = 1 THEN 1
@@ -170,7 +184,10 @@ AS
                        ELSE 2
                      END) AS [IdType]
       FROM   pacientes p
-      WHERE  EXISTS (SELECT uc.usuario
+      WHERE 
+	  --Buscar usuarios que se encuentran tanto en la tabla de cuentas como la de pacientes y que a su vez, ese mismo usuario se encuentre dentro de la tabla 
+	  --de relacion pacientesxusuario
+	  EXISTS (SELECT uc.usuario
                      FROM   usuarios_cuentas uc
                      WHERE  uc.usuario = p.cedula
                             AND p.id_paciente IN
@@ -180,20 +197,28 @@ AS
                                         AND
                                 p.cedula = uc.usuario
                                         AND EXISTS
+										--Buscar que exista en la tabla de rm_pacientesxusuario, esto confirma que es un usuario dueño de una cuenta y que es paciente activo
                                         (SELECT p.id_paciente
                                          FROM
                                             rm_pacientesxusuario
                                             pxu
                                                    WHERE
              pxu.id_paciente = p.id_paciente)))
+			 --Si no existe dentro de los usuarios que son duenos de cuenta y a su vez pacientes, traer los datos si es solamente un paciente que existe en la tabla de rm_pacientesxusuario, lo que indica que es un paciente bajo cuido de alguien
               OR EXISTS (SELECT pxu.id_paciente
                          FROM   rm_pacientesxusuario pxu
                          WHERE  pxu.id_paciente = p.id_paciente
                                 AND pxu.status = 'AC')
 
-      --where p.Email like '%loymark%'
+
+      
       DROP TABLE #tempintereses
 
       SELECT *
-      FROM   #temp --where Cedula='1006'
+      FROM   #temp --where id_paciente='6136'
   END 
+
+  
+
+  --448556 con AP
+ 
