@@ -404,7 +404,7 @@ namespace AboxCrmPlugins.Methods
                 memoryStream.Dispose();
                 wrData.InputData = jsonObject;
                 wrData.ContentType = "application/json";
-                // wrData.Authorization = "Bearer " + Constants.TokenForAboxServices;
+                wrData.Authorization = "Bearer " + Configuration.TokenForWebAPI;
                 wrData.Url = AboxServices.CrmWebAPILog;
 
                 try

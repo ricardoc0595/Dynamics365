@@ -30,8 +30,8 @@ namespace CrmAboxApi.Security
                 audience: audienceToken,
                 issuer: issuerToken,
                 subject: claimsIdentity,
-                notBefore: DateTime.UtcNow,
-                expires: DateTime.UtcNow.AddYears(60),
+                //notBefore: DateTime.UtcNow,
+                //expires: DateTime.UtcNow.AddYears(30),
                 signingCredentials: signingCredentials);
 
             var jwtTokenString = tokenHandler.WriteToken(jwtSecurityToken);
