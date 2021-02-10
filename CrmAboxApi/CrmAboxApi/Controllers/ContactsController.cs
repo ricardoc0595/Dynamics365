@@ -78,6 +78,7 @@ namespace CrmAboxApi.Controllers
         //POST api/contacts
 
         //TODO: Ocultar para produccion
+        [Authorize]
         [HttpGet]
         public IHttpActionResult GetToken()
         {

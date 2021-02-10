@@ -216,10 +216,12 @@
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\ContactsController.cs" />
     <Compile Include="Controllers\InvoicesController.cs" />
+    <Compile Include="Controllers\SecurityController.cs" />
     <Compile Include="Logic\Classes\Deserializing\InvoiceUpdate.cs" />
     <Compile Include="Logic\Classes\Deserializing\InvoiceCreate.cs" />
     <Compile Include="Logic\Classes\Deserializing\UpdatePatientRequest.cs" />
     <Compile Include="Logic\Classes\Deserializing\UserTypeChangeRequest.cs" />
+    <Compile Include="Logic\Classes\Deserializing\WebApiLogin.cs" />
     <Compile Include="Logic\Classes\Doctor.cs" />
     <Compile Include="Logic\Classes\DoseRecord.cs" />
     <Compile Include="Logic\Classes\EContact.cs" />
@@ -242,6 +244,9 @@
     <Compile Include="Logic\Methods\MDynamicsWebApiFunctions.cs" />
     <Compile Include="Logic\Methods\MShared.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Security\HashGenerator.cs" />
+    <Compile Include="Security\TokenGenerator.cs" />
+    <Compile Include="Security\TokenValidationHandler.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -305,6 +310,7 @@
     <Folder Include="App_Data\" />
     <Folder Include="Models\" />
     <Folder Include="Views\Invoices\" />
+    <Folder Include="Views\Security\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />

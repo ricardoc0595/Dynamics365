@@ -1,4 +1,5 @@
-﻿using System.Web.Http;
+﻿using CrmAboxApi.Security;
+using System.Web.Http;
 
 namespace CrmAboxApi
 {
@@ -20,6 +21,8 @@ namespace CrmAboxApi
 
             ////
             ///
+
+            config.MessageHandlers.Add(new TokenValidationHandler());
 
             // Controller Only
             // To handle routes like `/api/VTRouting`
