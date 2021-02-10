@@ -189,6 +189,70 @@ namespace CrmAboxApi.Logic.Classes
             }
         }
 
+        private JObject GetInvoiceApproveJsonStructure(InvoiceApprove invoiceProperties, Guid processId)
+        {
+            OperationResult result = new OperationResult();
+            JObject jObject = new JObject();
+         
+            try
+            {
+                if (invoiceProperties != null)
+                {
+
+                    jObject.Add(InvoiceFields.StatusCode, AboxDynamicsBase.Classes.Constants.ApprovedStatusInvoiceDropdownValue);
+
+                }
+
+                return jObject;
+            }
+            catch (Exception ex)
+            {
+
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
+                jObject = null;
+                return jObject;
+            }
+        }
+
+        private JObject GetInvoiceRejectJsonStructure(InvoiceReject invoiceProperties, Guid processId)
+        {
+            OperationResult result = new OperationResult();
+            JObject jObject = new JObject();
+
+            try
+            {
+                if (invoiceProperties != null)
+                {
+
+                    jObject.Add(InvoiceFields.StatusCode, AboxDynamicsBase.Classes.Constants.RejectedStatusInvoiceDropdownValue);
+
+                    if (!String.IsNullOrEmpty(invoiceProperties.Reason))
+                        jObject.Add(InvoiceFields.StatusReason, invoiceProperties.Reason);
+
+                    
+
+
+                }
+
+                return jObject;
+            }
+            catch (Exception ex)
+            {
+
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
+                jObject = null;
+                return jObject;
+            }
+        }
+
 
         private OperationResult InvoiceCreateRequest(JObject jsonObject, Guid processId)
         {
@@ -394,6 +458,7 @@ namespace CrmAboxApi.Logic.Classes
             }
         }
 
+       
 
         public OperationResult CreateInvoice(InvoiceCreate invoiceCreateRequest, Guid processId)
         {
@@ -447,6 +512,72 @@ namespace CrmAboxApi.Logic.Classes
 
 
                     responseObject = this.InvoiceUpdateRequest(invoiceUpdateObject,invoiceCreateRequest.idFromDatabase, processId);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
+
+                //Logger.Error(ex,"");
+                responseObject.Code = "";
+                responseObject.Message = ex.ToString();
+                responseObject.IsSuccessful = false;
+                responseObject.Data = null;
+            }
+
+            return responseObject;
+        }
+
+        public OperationResult ApproveInvoice(InvoiceApprove invoiceApproveRequest, Guid processId)
+        {
+            OperationResult responseObject = new OperationResult();
+
+            try
+            {
+                
+
+                if (invoiceApproveRequest != null)
+                {
+
+
+                    JObject invoiceUpdateObject = this.GetInvoiceApproveJsonStructure(invoiceApproveRequest, processId);
+
+
+                    responseObject = this.InvoiceUpdateRequest(invoiceUpdateObject, invoiceApproveRequest.InvoiceId, processId);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogEventInfo log = new LogEventInfo(LogLevel.Error, Logger.Name, null, "", null, new Exception(ex.ToString()));
+                log.Properties["ProcessID"] = processId;
+                log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+                log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(log);
+
+                //Logger.Error(ex,"");
+                responseObject.Code = "";
+                responseObject.Message = ex.ToString();
+                responseObject.IsSuccessful = false;
+                responseObject.Data = null;
+            }
+
+            return responseObject;
+        }
+
+        public OperationResult RejectInvoice(InvoiceReject invoiceRejectRequest, Guid processId)
+        {
+            OperationResult responseObject = new OperationResult();
+
+            try
+            {
+                if (invoiceRejectRequest != null)
+                {
+                    JObject invoiceUpdateObject = this.GetInvoiceRejectJsonStructure(invoiceRejectRequest, processId);
+                    responseObject = this.InvoiceUpdateRequest(invoiceUpdateObject, invoiceRejectRequest.InvoiceId, processId);
                 }
             }
             catch (Exception ex)
