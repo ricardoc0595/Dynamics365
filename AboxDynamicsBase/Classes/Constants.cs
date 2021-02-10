@@ -41,10 +41,9 @@
         
         public const int MaxNameLength = 30;
         public const int MinNameLength = 3;
-        public const int NewStatusInvoiceDropdownValue = 1;
-        public const int ApprovedStatusInvoiceDropdownValue = 2;
-        public const int RejectedStatusInvoiceDropdownValue = 4;
-
+        public const int PendingInvoiceDropdownValue = 3;
+        public const int ApprovedStatusInvoiceDropdownValue = 1;
+        public const int RejectedStatusInvoiceDropdownValue = 2;
 
         //public enum S
         //{

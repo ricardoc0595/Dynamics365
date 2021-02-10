@@ -106,6 +106,7 @@ AS
       --having count(*)>1
       ----------------------
       ------------------
+	  --
       --Select * from #PatientsAndLookups
       DROP TABLE #temp
 
