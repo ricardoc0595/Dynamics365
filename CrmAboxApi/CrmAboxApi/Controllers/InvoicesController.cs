@@ -33,6 +33,7 @@ namespace CrmAboxApi.Controllers
         /// <param name="invoiceCreateRequest">JSON exitoso enviado previamente a los servicios de Abox plan, además el ID creado en Base de datos para esta factura</param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         public IHttpActionResult Create([FromBody] InvoiceCreate invoiceCreateRequest)
         {
             Guid processId = Guid.NewGuid();
@@ -92,7 +93,7 @@ namespace CrmAboxApi.Controllers
             }
         }
 
-
+        [Authorize]
         [HttpPost]
         public IHttpActionResult Update([FromBody] InvoiceUpdate invoiceUpdateRequest)
         {

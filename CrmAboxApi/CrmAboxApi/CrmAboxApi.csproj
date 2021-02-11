@@ -53,12 +53,24 @@
     <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms, Version=2.29.0.1078, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.2.29.0\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.6.8.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Logging.6.8.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Tokens, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.6.8.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
+    </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.7.4\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.6.8.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+    </Reference>
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Transactions" />
@@ -218,10 +230,12 @@
     <Compile Include="Controllers\InvoicesController.cs" />
     <Compile Include="Logic\Classes\Deserializing\InvoiceApprove.cs" />
     <Compile Include="Logic\Classes\Deserializing\InvoiceReject.cs" />
+    <Compile Include="Controllers\SecurityController.cs" />
     <Compile Include="Logic\Classes\Deserializing\InvoiceUpdate.cs" />
     <Compile Include="Logic\Classes\Deserializing\InvoiceCreate.cs" />
     <Compile Include="Logic\Classes\Deserializing\UpdatePatientRequest.cs" />
     <Compile Include="Logic\Classes\Deserializing\UserTypeChangeRequest.cs" />
+    <Compile Include="Logic\Classes\Deserializing\WebApiLogin.cs" />
     <Compile Include="Logic\Classes\Doctor.cs" />
     <Compile Include="Logic\Classes\DoseRecord.cs" />
     <Compile Include="Logic\Classes\EContact.cs" />
@@ -244,6 +258,9 @@
     <Compile Include="Logic\Methods\MDynamicsWebApiFunctions.cs" />
     <Compile Include="Logic\Methods\MShared.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Security\HashGenerator.cs" />
+    <Compile Include="Security\TokenGenerator.cs" />
+    <Compile Include="Security\TokenValidationHandler.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -307,6 +324,7 @@
     <Folder Include="App_Data\" />
     <Folder Include="Models\" />
     <Folder Include="Views\Invoices\" />
+    <Folder Include="Views\Security\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
