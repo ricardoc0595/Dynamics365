@@ -94,6 +94,8 @@ namespace CrmAboxApi.Logic.Classes
                         jObject.Add($"{InvoiceSchemas.Country}@odata.bind", $"/{countryEntity.EntityPluralName}({CountryFields.IdCountry}='{invoiceProperties.country}')");
                     }
 
+                    jObject.Add(InvoiceFields.StatusCode, AboxDynamicsBase.Classes.Constants.PendingInvoiceDropdownValue);
+
 
                     ////////////
 
@@ -168,6 +170,8 @@ namespace CrmAboxApi.Logic.Classes
                     {
                         jObject.Add($"{InvoiceSchemas.Country}@odata.bind", $"/{countryEntity.EntityPluralName}({CountryFields.IdCountry}='{invoiceProperties.country}')");
                     }
+
+                    jObject.Add(InvoiceFields.StatusCode, AboxDynamicsBase.Classes.Constants.PendingInvoiceDropdownValue);
 
 
                     ////////////
