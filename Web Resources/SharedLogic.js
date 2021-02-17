@@ -13,7 +13,7 @@ Abox.SharedLogic = {
         Environment: "https://apidev.aboxplan.com",
         WebAPIEnvironment: "https://aboxcrmapidev.aboxplan.com",
         TokenForAboxServices: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNybV9hYm94YXBpIiwiYXBpIjp0cnVlLCJpYXQiOjE2MDMzMTIzODB9.Cu8FYQoVWDcof_qFZ5CIA6K2OYloOEn9F-b_XahLf9w",
-        TokenForWebAPI: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFkbWluIiwibmJmIjoxNjEzMDg0NjYwLCJleHAiOjE2MTMwODgyNjAsImlhdCI6MTYxMzA4NDY2MCwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo1NTg1OC8iLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjU1ODU4LyJ9.y-wxrFGdYg0my9bv3qQENuv5JyytL-4aXxHnECsrN0w"
+        TokenForWebAPI: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFkbWluIiwibmJmIjoxNjEzMTY0NDk4LCJleHAiOjE2MTMxNjgwOTgsImlhdCI6MTYxMzE2NDQ5OCwiaXNzIjoiaHR0cHM6Ly9hYm94Y3JtYXBpZGV2LmFib3hwbGFuLmNvbSIsImF1ZCI6Imh0dHBzOi8vYWJveGNybWFwaWRldi5hYm94cGxhbi5jb20ifQ.7LpSNn63t4SxRMpm5sd8S1CElClefPY48wguzTHCGJk"
     },
 
     Entities: {
@@ -82,7 +82,14 @@ Abox.SharedLogic = {
             EntityId: "invoiceid",
             ProductSelectionWebResource: "WebResource_invoiceproductselection",
             ProductsSelectedJson: "new_productsselectedjson",
-            IdAboxInvoice: "new_idaboxinvoice"
+            IdAboxInvoice: "new_idaboxinvoice",
+            InvoiceXContactRelationship : "invoice_customer_contacts",
+            StatusCode: "new_invoicestatus",
+            StatusReason: "new_statusreason",
+            TotalAmount: "totalamount",  
+            RevisionTime1: "new_revisiontime1",
+            RevisionTime2: "new_revisiontime2",
+            PurchaseMethod: "new_purchasemethod"
         }
 
     },
@@ -131,6 +138,7 @@ Abox.SharedLogic = {
         CareTakerIdType: "fab60b2a-c8d1-ea11-a812-000d3a33f637",
         TutorIdType: "f4761324-c8d1-ea11-a812-000d3a33f637",
         OtherInterestIdType: "30f90330-c8d1-ea11-a812-000d3a33f637",
+        PatientUndercareIdType : "15810a1e-c8d1-ea11-a812-000d3a33f63",
         MaleGenderValue: 1,
         FemaleGenderValue: 2,
         NationalIdValue: 1,
@@ -166,7 +174,8 @@ Abox.SharedLogic = {
         return{
             AboxImageUploadUrl: this.Configuration.Environment + "/files/upload",
             ProductsSearch: this.Configuration.Environment + "/products/search",
-            ChangePasswordCrm: this.Configuration.Environment + "/security/crm/changepassword"
+            ChangePasswordCrm: this.Configuration.Environment + "/security/crm/changepassword",
+            
         }
     },
 
@@ -243,6 +252,39 @@ Abox.SharedLogic = {
                 fieldControl.setDisabled(false);
             }
         });
+
+    },
+
+    DoGetRequest: async function (url, headers) {
+
+        try {
+            var myHeaders = new Headers();
+
+
+            headers.forEach(function (header) {
+                myHeaders.append(header.key, header.value);
+            });
+
+            // myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InR1dG9yMDIxMjIwMDIiLCJpYXQiOjE2MDg2NTM4ODgsImV4cCI6MTYwODc0MDI4OH0.5_MaCvTvzmMJwCXQ8AmyFcvAlUJkbL3_brKtPlQ_h7w");
+            // myHeaders.append("Content-Type", "application/json");
+
+            //var raw = json;
+
+            var requestOptions = {
+                method: 'GET',
+                headers: myHeaders
+                // body: raw,
+                // redirect: 'follow'
+            };
+
+            var response = await fetch(url, requestOptions);
+            console.log("respuesta fetch");
+            console.log(response);
+            return response;
+
+        } catch (error) {
+            console.error(error);
+        }
 
     },
 
