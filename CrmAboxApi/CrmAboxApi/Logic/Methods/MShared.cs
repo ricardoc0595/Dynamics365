@@ -176,5 +176,36 @@ namespace CrmAboxApi.Logic.Methods
             }
             return result;
         }
+
+        public int GetInvoiceStatusValue(string value)
+        {
+            int returnValue = -1;
+            try
+            {
+                if (value.ToLower() == "aprobado" || value.ToLower() == "aprovado" || value.ToLower() == "aprobada" || value.ToLower().Contains("aprobad"))
+                {
+                    returnValue = Constants.ApprovedStatusInvoiceDropdownValue;
+                }
+                else if (value.ToLower() == "rechazado" || value.ToLower() == "rechazada")
+                {
+                    returnValue = Constants.RejectedStatusInvoiceDropdownValue;
+                }
+                else if (value.ToLower() == "pendiente")
+                {
+                    returnValue = Constants.PendingInvoiceDropdownValue;
+                }else if (value.ToLower()=="anulada")
+                {
+                    returnValue = Constants.CanceledStatusInvoiceDropdownValue;
+                }
+                return returnValue;
+
+            }
+            catch (Exception ex)
+            {
+                return returnValue;
+                throw;
+            }
+
+        }
     }
 }

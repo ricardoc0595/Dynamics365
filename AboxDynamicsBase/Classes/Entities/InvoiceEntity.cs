@@ -41,8 +41,12 @@ namespace AboxDynamicsBase.Classes.Entities
         public const string ProductsSelectedJson = "new_productsselectedjson";
         public const string IdAboxInvoice="new_idaboxinvoice";
         public const string InvoiceXContactRelationship = "invoice_customer_contacts";
-        public const string StatusCode = "new_invoicestatus";
-        public const string StatusReason = "new_statusreason";
+        public const string StatusCode      = "new_invoicestatus";
+        public const string StatusReason    = "new_statusreason";
+        public const string TotalAmount     = "totalamount";
+        public const string RevisionTime1   = "new_revisiontime1";
+        public const string RevisionTime2   = "new_revisiontime2";
+        public const string PurchaseMethod  = "new_purchasemethod";
     }
 
 

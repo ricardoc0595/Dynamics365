@@ -9,13 +9,18 @@ namespace CrmAboxApi.Logic.Classes.Deserializing
     {
         public string country { get; set; }
         public string idFromDatabase { get; set; }
-        public int patientId { get; set; }
+        public int? patientId { get; set; }
         public string pharmacyId { get; set; }
         public string billId { get; set; }
         public string billDate { get; set; }
         public string billImageUrl { get; set; }
         public Product[] products { get; set; }
-
+        public string status { get; set; }
+        public string statusReason { get; set; }
+        public int? totalAmount { get; set; }
+        public int? revisionTime1 { get; set; }
+        public int? revisionTime2 { get; set; }
+        public string purchaseMethod { get; set; }
 
         public class Product
         {
