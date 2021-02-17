@@ -19,9 +19,11 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace CrmAboxApi.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class InvoicesController : ApiController
     {
         // GET: Invoices

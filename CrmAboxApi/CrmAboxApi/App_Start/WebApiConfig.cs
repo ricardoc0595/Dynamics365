@@ -11,7 +11,7 @@ namespace CrmAboxApi
 
             // Web API routes
             config.MapHttpAttributeRoutes();
-
+            config.EnableCors();
             //Default
             //config.Routes.MapHttpRoute(
             //    name: "DefaultApi",

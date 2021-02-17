@@ -8,9 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace CrmAboxApi.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class ContactsController : ApiController
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
