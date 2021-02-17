@@ -51,8 +51,9 @@ namespace CrmAboxApi.Security
                 {
                     ValidAudience = audienceToken,
                     ValidIssuer = issuerToken,
-                    //ValidateLifetime = true,
+                    ValidateLifetime = false,
                     ValidateIssuerSigningKey = true,
+                    RequireExpirationTime=false,
                     //LifetimeValidator = this.LifetimeValidator,
                     IssuerSigningKey = securityKey
                 };
