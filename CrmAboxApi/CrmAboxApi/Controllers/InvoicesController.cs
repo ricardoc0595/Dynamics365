@@ -218,7 +218,7 @@ namespace CrmAboxApi.Controllers
         }
 
         [HttpGet]
-        public IHttpActionResult GetInvoiceByGuid(string idToRequest)
+        public IHttpActionResult GetByGuid(string idToRequest)
         {
             Guid processId = Guid.NewGuid();
            
@@ -243,7 +243,7 @@ namespace CrmAboxApi.Controllers
                     }
                     else
                     {
-                        return Content(HttpStatusCode.InternalServerError, response);
+                        return Content(HttpStatusCode.NotFound, response);
                     }
 
                 }
@@ -279,7 +279,7 @@ namespace CrmAboxApi.Controllers
         }
 
         [HttpGet]
-        public IHttpActionResult GetInvoiceByAboxId(string idToRequest)
+        public IHttpActionResult GetByAboxId(string idToRequest)
         {
             Guid processId = Guid.NewGuid();
 
@@ -304,7 +304,7 @@ namespace CrmAboxApi.Controllers
                     }
                     else
                     {
-                        return Content(HttpStatusCode.InternalServerError, response);
+                        return Content(HttpStatusCode.NotFound, response);
                     }
 
                 }

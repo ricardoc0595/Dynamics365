@@ -27,7 +27,7 @@ Abox.ContactFunctions = {
             this.disableFieldsUntilCountrySelected(formContext);
             this.setUnderCareLogic(formContext);
 
-            var fieldNames = [Abox.SharedLogic.Entities.ContactFields.IsUserTypeChange,Abox.SharedLogic.Entities.ContactFields.ChangePasswordWebResource];
+            var fieldNames = [Abox.SharedLogic.Entities.ContactFields.IsUserTypeChange, Abox.SharedLogic.Entities.ContactFields.ChangePasswordWebResource];
             this.setFieldsInvisible(formContext, fieldNames);
 
             //Para poder implementar un mensaje mas amigable, hay que hacer un propio boton de guardar customizado y llamar al metodo save() del api de dynamics
@@ -52,8 +52,230 @@ Abox.ContactFunctions = {
             }
 
             this.setFieldsControlsAndAlerts(formContext);
-            this.setUpdateFormLogic(formContext);
+            this.setUpdateFormLogic(formContext, Xrm);
+
+
         }
+
+    },
+
+
+    insertInvoiceInCrm: async function (formContext, invoiceToCreate) {
+
+
+        /////
+        try {
+
+            var url = Abox.SharedLogic.AboxCrmAPIServices.CreateInvoice;
+            var headers = [
+                {
+                    key: "Authorization",
+                    value: "Bearer " + Abox.SharedLogic.Configuration.TokenForWebAPI
+                },
+                {
+                    key: "Content-Type",
+                    value: "application/json"
+                }
+            ];
+
+            var products = [];
+
+            invoiceToCreate.products.forEach(function (prod) {
+                products.push({ "id": prod.id, "quantity": prod.quantity });
+            });
+
+
+
+
+
+            var json = JSON.stringify({
+                "patientId": invoiceToCreate.patientId,
+                "pharmacyId": invoiceToCreate.pharmacyId,
+                "billId": invoiceToCreate.purchaseNumber,
+                "idFromDatabase": invoiceToCreate.purchaseId,
+                "billDate": invoiceToCreate.purchaseDate,
+                "billImageUrl": invoiceToCreate.purchaseImage,
+                "products": products,
+                "country": invoiceToCreate.country,
+                "status": invoiceToCreate.status,
+                "totalAmount": invoiceToCreate.totalAmount,
+                "revisionTime1": invoiceToCreate.revisionTime1,
+                "revisionTime2": invoiceToCreate.revisionTime2,
+                "purchaseMethod": invoiceToCreate.purchaseMethod,
+
+            });
+
+            var response = await Abox.SharedLogic.DoPostRequest(url, json, headers);
+            return response;
+
+
+        } catch (error) {
+
+            console.error(error);
+            return null;
+        }
+
+
+
+
+    },
+
+
+    loadPatientInvoicesOnDemand: async function (formContext, Xrm) {
+
+
+        var currentContact=formContext.data.entity;
+        var currentContactAttributes=currentContact.attributes._collection;
+        //validar si el usuario es paciente o bajo cuido, pues solo a estos se le registran las compras
+        var processSuccessful = false;
+        var userTypeField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.UserType);
+        var userTypeControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.UserType);
+        var idUserType = "";
+        if (userTypeField !== null) {
+
+            if (userTypeField.getValue() !== null) {
+                idUserType = userTypeField.getValue()[0].id.slice(1, -1)
+            }
+        }
+
+        var invoicesAlreadyImported = false;
+        var attribute = currentContactAttributes[Abox.SharedLogic.Entities.ContactFields.InvoicesAlreadyImported];
+        if (attribute !== null) {
+            invoicesAlreadyImported = !!attribute.getValue();
+        }
+
+        if ((idUserType.toLowerCase() === Abox.SharedLogic.Constants.PatientIdType) || (idUserType.toLowerCase() === Abox.SharedLogic.Constants.PatientUndercareIdType)) {
+
+            //ejecutar la importacion solo la primera vez
+            if (!invoicesAlreadyImported) {
+
+                var patientAboxId = -1;
+                var patientAboxIdField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IdAboxPatient);
+                if (patientAboxIdField !== null) {
+                    if (patientAboxIdField.getValue() !== null) {
+                        patientAboxId = patientAboxIdField.getValue();
+                    }
+                }
+
+
+                try {
+                    var patientPurchases = [];
+
+                    //obtener las facturas que ya tiene el usuario y evitar llamar el crm Web api
+
+                    var response = await Abox.SharedLogic.DoGetRequest("https://api.jsonbin.io/b/6028ba733b303d3d96505f86/5", [
+                        {
+                            key: "Content-Type",
+                            value: "application/json"
+                        }
+                    ]);
+
+                    if (response !== null) {
+
+                        var obj = await response.json();
+
+                        console.table(obj.Purchases);
+
+                        for (let i = 0; i < obj.Purchases.length; i++) {
+                            const purchase = obj.Purchases[i];
+
+                            var invoiceFound = false;
+                            var error = false;
+
+
+                            // var urlx = Xrm.Page.context.getClientUrl() + "/api/data/v9.1/invoices(new_idaboxinvoice=" + parseInt(purchase.purchaseId) + ")?$select=new_idaboxinvoice";
+
+                            var urlx = Abox.SharedLogic.AboxCrmAPIServices.GetInvoiceByAboxId + purchase.purchaseId;
+                            var responsex = await Abox.SharedLogic.DoGetRequest(urlx, []);
+
+                            console.log(responsex);
+
+                            if (responsex !== null) {
+
+                                if (responsex.status === 404) {
+                                    invoiceFound = false;
+                                } else if (responsex.status === 200) {
+                                    invoiceFound = true;
+                                } else {
+                                    invoiceFound = false;
+                                    error = true;
+                                }
+
+                                if (!error) {
+
+                                    if (!invoiceFound) {
+
+                                        try {
+                                            var inv = await this.insertInvoiceInCrm(formContext, purchase);
+                                        } catch (error) {
+                                            console.error(error);
+                                            continue;
+                                        }
+
+
+                                    }
+                                } else {
+                                    continue;
+                                }
+                            } else {
+                                // Xrm.Navigation.openErrorDialog({ details: `Error consultando ${urlx} para traer una factura`, message: "Ocurrió un error al consultar las facturas de este paciente." });
+                                continue;
+                            }
+
+                        }
+
+                        //Actualizar el field de invoicesAlreadyImported para que no vuelva a ejecutarse este proceso
+                        debugger;
+                        // define the data to update a record
+                        var data ={};
+                        data[Abox.SharedLogic.Entities.ContactFields.InvoicesAlreadyImported]=true;
+                        // update the record
+
+                        var urlUpdateDynamicsWebAPI = Xrm.Page.context.getClientUrl() + `/api/data/v9.1/contacts(${currentContact._entityId.guid})`;
+
+                        var headers = [
+                            { key:"OData-MaxVersion",value: "4.0" },
+                            { key:"OData-Version",value: "4.0" },
+                            { key:"Accept",value: "application/json" },
+                            { key:"Content-Type",value: "application/json; charset=utf-8" },
+                            { key:"Prefer",value: "odata.include-annotations=\"*\"" },
+                            { key:"MSCRMCallerID",value: "7dbf49f3-8be8-ea11-a817-002248029f77" }
+                        ];
+
+                        var json=JSON.stringify(data);
+                        try {
+                            var response = await Abox.SharedLogic.DoPatchRequest(urlUpdateDynamicsWebAPI, json, headers);
+
+                        } catch (error) {
+                            console.error(error);
+                        }
+                       
+
+                    } else {
+                        return null;
+                    }
+
+
+                    console.log("Fin patientPurchasesOnDemand");
+
+                    return true;
+
+                } catch (error) {
+                    console.log(error);
+                    // Xrm.Navigation.openErrorDialog({ details: `stacktrace: ${error.stack}`, message: "Ocurrió un error consul"});
+                    return null;
+                }
+
+
+            }
+
+            
+
+
+        }else{
+            return;
+        }
+        //llamar al servicio que trae las compras del paciente
 
     },
 
@@ -80,26 +302,15 @@ Abox.ContactFunctions = {
 
     },
 
-    setInitialData: function (formContext) {
 
 
 
-    },
+    setUpdateFormLogic: function (formContext, Xrm) {
 
-    setCreateFormLogic: function (formContext) {
-
-
-
-
-    }
-    ,
-
-
-    setUpdateFormLogic: function (formContext) {
-
+        var contactFields = Abox.SharedLogic.Entities.ContactFields;
         var that = this;
-        var passwordField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.Password);
-        var passwordControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.Password);
+        var passwordField = formContext.getAttribute(contactFields.Password);
+        var passwordControl = formContext.getControl(contactFields.Password);
         if (passwordField != null) {
 
             // passwordField.setValue("");
@@ -112,8 +323,8 @@ Abox.ContactFunctions = {
 
 
         var isChildContact = false;
-        var isChildContactControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.IsChildContact);
-        var isChildContactField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IsChildContact);
+        var isChildContactControl = formContext.getControl(contactFields.IsChildContact);
+        var isChildContactField = formContext.getAttribute(contactFields.IsChildContact);
         if (isChildContactControl !== null) {
 
             isChildContactControl.setVisible(false);
@@ -128,7 +339,7 @@ Abox.ContactFunctions = {
 
 
 
-        var clientInterestField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.Interests);
+        var clientInterestField = formContext.getAttribute(contactFields.Interests);
 
 
         if (clientInterestField != null) {
@@ -139,15 +350,15 @@ Abox.ContactFunctions = {
 
 
 
-        var countryControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.CountryLookup);
+        var countryControl = formContext.getControl(contactFields.CountryLookup);
 
         if (countryControl != null) {
 
             countryControl.setDisabled(true);
         }
 
-        var userTypeField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.UserType);
-        var userTypeControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.UserType);
+        var userTypeField = formContext.getAttribute(contactFields.UserType);
+        var userTypeControl = formContext.getControl(contactFields.UserType);
         var idUserType = "";
         if (userTypeControl != null) {
             if (userTypeField !== null) {
@@ -162,19 +373,19 @@ Abox.ContactFunctions = {
                 if ((idUserType.toLowerCase() !== Abox.SharedLogic.Constants.OtherInterestIdType) || isChildContact) {
                     userTypeControl.setDisabled(true);
 
-                    var fields = [Abox.SharedLogic.Entities.ContactFields.IsUserTypeChange];
+                    var fields = [contactFields.IsUserTypeChange];
                     this.setFieldsInvisible(formContext, fields);
 
                 } else {
-                    var isUserTypeChangeControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.IsUserTypeChange);
+                    var isUserTypeChangeControl = formContext.getControl(contactFields.IsUserTypeChange);
                     if (isUserTypeChangeControl !== null) {
 
                         isUserTypeChangeControl.setVisible(true);
                     }
-                    var isUserTypeChangeField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IsUserTypeChange);
+                    var isUserTypeChangeField = formContext.getAttribute(contactFields.IsUserTypeChange);
 
                     if (isUserTypeChangeField !== null) {
-                        var fieldNames = [Abox.SharedLogic.Entities.ContactFields.Firstname, Abox.SharedLogic.Entities.ContactFields.Lastname, Abox.SharedLogic.Entities.ContactFields.SecondLastname, Abox.SharedLogic.Entities.ContactFields.IdType, Abox.SharedLogic.Entities.ContactFields.Id, Abox.SharedLogic.Entities.ContactFields.NoEmail, Abox.SharedLogic.Entities.ContactFields.Email, Abox.SharedLogic.Entities.ContactFields.Phone, Abox.SharedLogic.Entities.ContactFields.SecondaryPhone, Abox.SharedLogic.Entities.ContactFields.Gender, Abox.SharedLogic.Entities.ContactFields.Birthdate, Abox.SharedLogic.Entities.ContactFields.CityLookup, Abox.SharedLogic.Entities.ContactFields.CantonLookup, Abox.SharedLogic.Entities.ContactFields.DistrictLookup, Abox.SharedLogic.Entities.ContactFields.Interests, Abox.SharedLogic.Entities.ContactFields.Password, Abox.SharedLogic.Entities.ContactFields.OtherInterestLookup];
+                        var fieldNames = [contactFields.Firstname, contactFields.Lastname, contactFields.SecondLastname, contactFields.IdType, contactFields.Id, contactFields.NoEmail, contactFields.Email, contactFields.Phone, contactFields.SecondaryPhone, contactFields.Gender, contactFields.Birthdate, contactFields.CityLookup, contactFields.CantonLookup, contactFields.DistrictLookup, contactFields.Interests, contactFields.Password, contactFields.OtherInterestLookup];
 
                         isUserTypeChangeField.addOnChange(function () {
 
@@ -201,7 +412,7 @@ Abox.ContactFunctions = {
         }
 
 
-        var relatedContactsControl = formContext.getControl(Abox.SharedLogic.Constants.SubGridControls.RelatedContacts);
+        var relatedContactsControl = formContext.getControl(contactFields.SubGridControls.RelatedContacts);
         if (relatedContactsControl !== null) {
 
 
@@ -211,35 +422,78 @@ Abox.ContactFunctions = {
 
         }
 
-        var idTypeControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.IdType);
+        var onLoadFunction = function () {
+            
+            Xrm.Utility.showProgressIndicator("Obteniendo facturas del paciente, por favor espere...");
+            //si no viene el Id de paciente abox no hacer este llamado
+            that.loadPatientInvoicesOnDemand(formContext, Xrm).then(function (success) {
+                Xrm.Utility.closeProgressIndicator();
+                
+
+                if(success!==null){
+                    if (success) {
+                        //remover evento on Load
+                        relatedInvoicesControl.removeOnLoad(onLoadFunctionReference)
+                        relatedInvoicesControl.refresh();
+
+                    }
+                }
+
+             
+
+
+            }, function (error) {
+                Xrm.Navigation.openErrorDialog({ details: error.stack, message: "No ha sido posible obtener las facturas de este paciente en este momento." });
+                Xrm.Utility.closeProgressIndicator();
+                console.log(error);
+            });
+        }
+
+        //Se guarda referencia en esta variable para poder remover el eventoOnLoad del grid con esta referencia
+        var onLoadFunctionReference = onLoadFunction;
+
+        //Capturar evento on load del subgrid de facturas
+        var relatedInvoicesControl = formContext.getControl(contactFields.SubGridControls.InvoicesGrid);
+        if (relatedInvoicesControl !== null) {
+
+            
+            relatedInvoicesControl.addOnLoad(onLoadFunction);
+
+
+        }
+
+
+
+
+        var idTypeControl = formContext.getControl(contactFields.IdType);
         if (idTypeControl != null) {
             idTypeControl.setDisabled(true);
         }
 
-        var idControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.Id);
+        var idControl = formContext.getControl(contactFields.Id);
         if (idControl != null) {
             idControl.setDisabled(true);
         }
 
 
-        // var idAboxPatientField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.IdAboxPatient);
+        // var idAboxPatientField = formContext.getAttribute(contactFields.IdAboxPatient);
 
         // if (idAboxPatientField.getValue() === null || idAboxPatientField.getValue() === "null") {
 
         //     formContext.ui.setFormNotification("Este contacto no posee un ID de paciente Abox registrado, es posible que haya ocurrido un error y no se haya podido registrar correctamente.", "WARNING", null);
         // }
 
-        var changePasswordWebResourceControl = formContext.getControl(Abox.SharedLogic.Entities.ContactFields.ChangePasswordWebResource);
+        var changePasswordWebResourceControl = formContext.getControl(contactFields.ChangePasswordWebResource);
 
 
-        var idField = formContext.getAttribute(Abox.SharedLogic.Entities.ContactFields.Id);
+        var idField = formContext.getAttribute(contactFields.Id);
         var personalIdContact = null;
         if (idField != null) {
             if (idField.getValue() !== null) {
                 personalIdContact = idField.getValue();
             }
 
-            if(personalIdContact!==null){
+            if (personalIdContact !== null) {
                 if (changePasswordWebResourceControl) {
                     changePasswordWebResourceControl.getContentWindow().then(
                         function (contentWindow) {
@@ -249,7 +503,7 @@ Abox.ContactFunctions = {
                             } catch (error) {
                                 contentWindow.setComponentFailure();
                             }
-        
+
                         }, function () {
                             Xrm.Navigation.openErrorDialog({ details: "Error cargando componente de Cambio de contraseña", message: "Ocurrió un error cargando uno de los componentes de este formulario, por favor intente nuevamente." });
                         }
@@ -258,14 +512,14 @@ Abox.ContactFunctions = {
                         Xrm.Navigation.openErrorDialog({ details: error.stack, message: "Ocurrió un error cargando uno de los componentes de este formulario, por favor intente nuevamente." });
                     })
                 }
-            }else{
+            } else {
                 changePasswordWebResourceControl.setVisible(false);
             }
-            
+
 
         }
 
-       
+
 
 
 

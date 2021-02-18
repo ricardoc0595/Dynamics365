@@ -53,7 +53,14 @@ Abox.SharedLogic = {
             NoEmail: "new_noemail",
             OtherInterestLookup: "new_otherinterest",
             IsUserTypeChange: "new_isusertypechange",
-            ChangePasswordWebResource: "WebResource_changepassword"
+            ChangePasswordWebResource: "WebResource_changepassword",
+            InvoicesAlreadyImported:"new_invoicesalreadyimported",
+            get  SubGridControls() {
+                return{
+                    RelatedContacts: "RelatedContacts",
+                    InvoicesGrid:"contactinvoicesgrid"
+                }
+            }
         },
         ContactSchemas: {
             UserType: "new_UserType",
@@ -163,11 +170,8 @@ Abox.SharedLogic = {
         GeneralPluginErrorMessage: "Ocurrió un error en la ejecución de un Plugin interno, por favor intenta nuevamente o comunícate con soporte.",
         ApplicationIdWebAPI: "WEBAPI",
         ApplicationIdPlugin: "PLUGIN",
-        SubGridControls: {
-            RelatedContacts: "RelatedContacts"
-        },
-
-
+        GeneralErrorWebRequest:"Ha ocurrido un error de comunicación, por favor intenta nuevamente o comunícate con soporte."
+        
     },
 
     get AboxServices() {
@@ -175,6 +179,14 @@ Abox.SharedLogic = {
             AboxImageUploadUrl: this.Configuration.Environment + "/files/upload",
             ProductsSearch: this.Configuration.Environment + "/products/search",
             ChangePasswordCrm: this.Configuration.Environment + "/security/crm/changepassword",
+            
+        }
+    },
+    get AboxCrmAPIServices() {
+        return{
+            GetInvoiceByAboxId: this.Configuration.WebAPIEnvironment + "/api/invoices/GetByAboxId?idtorequest=",
+            GetInvoiceByGuid: this.Configuration.WebAPIEnvironment + "/api/invoices/GetByGuid?idtorequest=",
+            CreateInvoice:this.Configuration.WebAPIEnvironment + "/api/invoices/create"
             
         }
     },
@@ -278,12 +290,15 @@ Abox.SharedLogic = {
             };
 
             var response = await fetch(url, requestOptions);
+
             console.log("respuesta fetch");
             console.log(response);
             return response;
 
         } catch (error) {
             console.error(error);
+            // Xrm.Navigation.openErrorDialog({ details: `stacktrace: ${error.stack} -- url:${url}`, message: this.Constants.GeneralErrorWebRequest});
+            return null;
         }
 
     },
@@ -317,11 +332,69 @@ Abox.SharedLogic = {
 
         } catch (error) {
             console.error(error);
+            // Xrm.Navigation.openErrorDialog({ details: `stacktrace: ${error.stack} -- url:${url}`, message: this.Constants.GeneralErrorWebRequest});
+            return null;
+        }
+
+    },
+    DoPatchRequest: async function (url, json, headers) {
+
+        try {
+            var myHeaders = new Headers();
+
+
+            headers.forEach(function (header) {
+                myHeaders.append(header.key, header.value);
+            });
+
+            // myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InR1dG9yMDIxMjIwMDIiLCJpYXQiOjE2MDg2NTM4ODgsImV4cCI6MTYwODc0MDI4OH0.5_MaCvTvzmMJwCXQ8AmyFcvAlUJkbL3_brKtPlQ_h7w");
+            // myHeaders.append("Content-Type", "application/json");
+
+            var raw = json;
+
+            var requestOptions = {
+                method: 'PATCH',
+                headers: myHeaders,
+                body: raw,
+                // redirect: 'follow'
+            };
+
+            var response = await fetch(url, requestOptions);
+            console.log("respuesta fetch");
+            console.log(response);
+            return response;
+
+        } catch (error) {
+            console.error(error);
+            // Xrm.Navigation.openErrorDialog({ details: `stacktrace: ${error.stack} -- url:${url}`, message: this.Constants.GeneralErrorWebRequest});
+            return null;
         }
 
     },
 
     retrieveRecordFromWebAPI: async function (entityName, entityId, options, Xrm) {
+        Xrm.Utility.showProgressIndicator("");
+        var entityResponse = null;
+
+
+        return new Promise(function (resolve, reject) {
+            Xrm.WebApi.retrieveRecord(entityName, entityId, options).then(function (response) {
+
+                entityResponse = response;
+                // return entityResponse;
+                resolve(entityResponse);
+            }, function (error) {
+                Xrm.Utility.closeProgressIndicator();
+                entityResponse = error;
+                // return error;
+                reject(entityResponse);
+            });
+
+        })
+
+    },
+
+    updateRecordUsingDynamicsWebAPI: async function (entityName, entityId, options,data, Xrm) {
         Xrm.Utility.showProgressIndicator("");
         var entityResponse = null;
 
