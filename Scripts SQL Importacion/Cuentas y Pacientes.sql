@@ -224,7 +224,7 @@ AS
       DROP TABLE #tempintereses
 
       SELECT *
-      FROM   #temp --where cedula='LOYMARKADMIN001'
+      FROM   #temp --where categoria='s'
   END 
 
   

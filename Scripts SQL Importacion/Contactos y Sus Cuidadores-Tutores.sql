@@ -57,7 +57,8 @@ AS
                                 FROM   rm_pacientesxusuario
                                        pxu
                                 WHERE  pxu.id_paciente =
-                               p.id_paciente)))
+                               p.id_paciente
+							   AND pxu.status = 'AC')))
          --Si no existe dentro de los usuarios que son duenos de cuenta y a su vez pacientes, traer los datos si es solamente un paciente que existe en la tabla de rm_pacientesxusuario, lo que indica que es un paciente bajo cuido de alguien
          OR EXISTS (SELECT pxu.id_paciente
                     FROM   rm_pacientesxusuario pxu
@@ -100,6 +101,7 @@ AS
                                 ON pxu.id_paciente = t2.id_paciente
                      ON pxu.usuario = t1.cedula
       WHERE  t2.id_paciente = pxu.id_paciente
+	  AND pxu.status = 'AC'
 
       --)k
       --group by idPaciente,idACargo

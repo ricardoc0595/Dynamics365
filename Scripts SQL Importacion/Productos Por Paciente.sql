@@ -43,7 +43,8 @@ On p.ID_Paciente=mxp.ID_Paciente
                                             rm_pacientesxusuario
                                             pxu
                                                    WHERE
-             pxu.id_paciente = p.id_paciente)))
+             pxu.id_paciente = p.id_paciente
+			 AND pxu.status = 'AC')))
               OR EXISTS (SELECT pxu.id_paciente
                          FROM   rm_pacientesxusuario pxu
                          WHERE  pxu.id_paciente = p.id_paciente
