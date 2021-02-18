@@ -134,44 +134,52 @@ AS
                        WHEN p.categoria = 'P'
                             AND (SELECT Count(usuario)
                                  FROM   rm_pacientesxusuario
-                                 WHERE  usuario = p.cedula) > 1
+                                 WHERE  usuario = p.cedula
+								 and status='AC') > 1
                             AND ( (SELECT TOP 1 tipousuario
                                    FROM   rm_pacientesxusuario
-                                   WHERE  id_paciente = p.id_paciente) = '01' )
+                                   WHERE  id_paciente = p.id_paciente
+								   and status='AC') = '01' )
                      THEN
                        @IdDynamicsTutorUserType
                        -- en la tabla rm_pacientesxusuario el usuario tutor tiene valor 01 y el que tiene bajo cuido es el que tiene el valor de 03
                        WHEN p.categoria = 'P'
                             AND (SELECT Count(usuario)
                                  FROM   rm_pacientesxusuario
-                                 WHERE  usuario = p.cedula) > 1
+                                 WHERE  usuario = p.cedula
+								 and status='AC') > 1
                             AND ( (SELECT TOP 1 tipousuario
                                    FROM   rm_pacientesxusuario
-                                   WHERE  id_paciente = p.id_paciente) = '02' )
+                                   WHERE  id_paciente = p.id_paciente
+								   and status='AC') = '02' )
                      THEN
                        @IdDynamicsCaretakerUserType
 					   --Si es un usuario categoria P, que es dueño de una cuenta y en la tabla de rm_pacientesxusuario existe más de un registro con la misma cedula, es un usuario cuidador o tutor, donde uno es el dueño de la cuenta (tutor o cuidador) y el otro el paciente
                        WHEN p.categoria = 'P'
                             AND (SELECT Count(usuario)
                                  FROM   rm_pacientesxusuario
-                                 WHERE  usuario = p.cedula) > 1
+                                 WHERE  usuario = p.cedula
+								 and status='AC') > 1
                             AND ( (SELECT TOP 1 tipousuario
                                    FROM   rm_pacientesxusuario
-                                   WHERE  id_paciente = p.id_paciente) = '03' )
+                                   WHERE  id_paciente = p.id_paciente
+								   and status='AC') = '03' )
                      THEN
                        @IdDynamicsTutorUserType
 					   --Si es un usuario categoria P que es dueño de una cuenta, y en la tabla de rm_pacientesxusuario al buscar por ID de paciente retorna que el tipo de usuario es 01, entonces es un usuario de cuenta de tipo paciente sin ningun paciente bajo su cuido
                        WHEN p.categoria = 'P'
                             AND ( (SELECT TOP 1 tipousuario
                                    FROM   rm_pacientesxusuario
-                                   WHERE  id_paciente = p.id_paciente) = '01' )
+                                   WHERE  id_paciente = p.id_paciente
+								   and status='AC') = '01' )
                      THEN
                        @IdDynamicsPatientUserType
 					   --Si es un usuario categoria P que es dueño de una cuenta, y en la tabla de rm_pacientesxusuario al buscar por ID de paciente retorna que el tipo de usuario es 05, entonces es un usuario de cuenta de tipo otro interes sin ningun paciente bajo su cuido
                        WHEN p.categoria = 'P'
                             AND ( (SELECT TOP 1 tipousuario
                                    FROM   rm_pacientesxusuario
-                                   WHERE  id_paciente = p.id_paciente) = '05' )
+                                   WHERE  id_paciente = p.id_paciente
+								   and status='AC') = '05' )
                      THEN
                        @IdDynamicsOtherInterestUserType
 					   --Si es un paciente con categoria S, es un paciente bajo cuido de alguien, a nivel de Dynamics se tomarán todos como el tipo "paciente bajo cuido"
@@ -203,7 +211,8 @@ AS
                                             rm_pacientesxusuario
                                             pxu
                                                    WHERE
-             pxu.id_paciente = p.id_paciente)))
+             pxu.id_paciente = p.id_paciente
+			 AND pxu.status = 'AC')))
 			 --Si no existe dentro de los usuarios que son duenos de cuenta y a su vez pacientes, traer los datos si es solamente un paciente que existe en la tabla de rm_pacientesxusuario, lo que indica que es un paciente bajo cuido de alguien
               OR EXISTS (SELECT pxu.id_paciente
                          FROM   rm_pacientesxusuario pxu
@@ -215,7 +224,7 @@ AS
       DROP TABLE #tempintereses
 
       SELECT *
-      FROM   #temp --where id_paciente='6136'
+      FROM   #temp --where cedula='LOYMARKADMIN001'
   END 
 
   
