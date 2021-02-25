@@ -83,7 +83,7 @@ Abox.SharedLogic = {
             CaseInvoiceLookup: "new_caseinvoiceid",
             Customer: "customerid",
             Contact: "new_contactid",
-            Country: "new_invoiceCountry",
+            Country: "new_invoicecountry",
             Pharmacy: "new_pharmacy",
             PurchaseDate: "new_purchasedate",
             EntityId: "invoiceid",
@@ -93,10 +93,11 @@ Abox.SharedLogic = {
             InvoiceXContactRelationship : "invoice_customer_contacts",
             StatusCode: "new_invoicestatus",
             StatusReason: "new_statusreason",
-            TotalAmount: "totalamount",  
+            TotalAmount: "new_totalamount",  
             RevisionTime1: "new_revisiontime1",
             RevisionTime2: "new_revisiontime2",
-            PurchaseMethod: "new_purchasemethod"
+            PurchaseMethod: "new_purchasemethod",
+            NonAboxProductsSelectedJson:"new_nonaboxproductsselectedjson"
         }
 
     },
@@ -145,7 +146,7 @@ Abox.SharedLogic = {
         CareTakerIdType: "fab60b2a-c8d1-ea11-a812-000d3a33f637",
         TutorIdType: "f4761324-c8d1-ea11-a812-000d3a33f637",
         OtherInterestIdType: "30f90330-c8d1-ea11-a812-000d3a33f637",
-        PatientUndercareIdType : "15810a1e-c8d1-ea11-a812-000d3a33f63",
+        PatientUndercareIdType: "dc9a7b9d-5366-eb11-a812-002248029573",
         MaleGenderValue: 1,
         FemaleGenderValue: 2,
         NationalIdValue: 1,
@@ -170,8 +171,9 @@ Abox.SharedLogic = {
         GeneralPluginErrorMessage: "Ocurrió un error en la ejecución de un Plugin interno, por favor intenta nuevamente o comunícate con soporte.",
         ApplicationIdWebAPI: "WEBAPI",
         ApplicationIdPlugin: "PLUGIN",
-        GeneralErrorWebRequest:"Ha ocurrido un error de comunicación, por favor intenta nuevamente o comunícate con soporte."
-        
+        GeneralErrorWebRequest:"Ha ocurrido un error de comunicación, por favor intenta nuevamente o comunícate con soporte.",
+        PharmacyPurchaseMethodForInvoice : 1,
+        AtHomePurchaseMethodForInvoice : 2,
     },
 
     get AboxServices() {
@@ -413,6 +415,29 @@ Abox.SharedLogic = {
             });
 
         })
+
+    },
+
+    setFieldNotification: function (value, message, control, maxLength, minLength) {
+
+        value.toString();
+
+        if (typeof maxLength === "undefined") {
+            maxLength = null;
+        }
+
+        if (typeof minLength === "undefined") {
+            minLength = null;
+        }
+
+        if ((value.length > maxLength) && (maxLength !== null)) {
+            control.setNotification("El valor debe ser de máximo " + maxLength + " caracteres");
+        }
+        else if ((value.length < minLength) && (minLength !== null)) {
+            control.setNotification("El valor debe ser de mínimo " + minLength + " caracteres");
+        } else {
+            control.clearNotification();
+        }
 
     },
 

@@ -126,7 +126,12 @@ namespace CrmAboxApi.Logic.Classes
 
                     if (!String.IsNullOrEmpty(invoiceProperties.purchaseMethod))
                     {
-                        jObject.Add(InvoiceFields.PurchaseMethod, invoiceProperties.purchaseMethod);
+                        int purchaseMethodCode = sharedMethods.GetInvoicePurchaseMethodValue(invoiceProperties.purchaseMethod);
+                        if (purchaseMethodCode > -1)
+                        {
+                            jObject.Add(InvoiceFields.PurchaseMethod, purchaseMethodCode);
+                                                        
+                        }
                     }
 
 
@@ -369,6 +374,9 @@ namespace CrmAboxApi.Logic.Classes
                             }
                             else
                             {
+                                sharedMethods.RemoveCacheIfStatusIsUnauthorized(response.StatusCode);
+                                
+
                                 //Get the response content and parse it.
                                 JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
                                 //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
@@ -472,6 +480,7 @@ namespace CrmAboxApi.Logic.Classes
                             }
                             else
                             {
+                                sharedMethods.RemoveCacheIfStatusIsUnauthorized(response.StatusCode);
                                 //Get the response content and parse it.
                                 JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
                                 //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
@@ -759,6 +768,7 @@ namespace CrmAboxApi.Logic.Classes
                             }
                             else
                             {
+                                sharedMethods.RemoveCacheIfStatusIsUnauthorized(response.StatusCode);
                                 //Get the response content and parse it.
                                 JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
                                 //CrmWebAPIError userId = (CrmWebAPIError)body["error"];

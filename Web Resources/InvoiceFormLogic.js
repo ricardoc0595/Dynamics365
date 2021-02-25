@@ -49,7 +49,7 @@ Abox.InvoiceFunctions = {
         var that = this;
         if (formType === 1) { // Create
 
-            Abox.SharedLogic.disableFields(formContext, [Abox.SharedLogic.Entities.InvoiceFields.InvoiceImageWebUrl, Abox.SharedLogic.Entities.InvoiceFields.ProductsSelectedJson]);
+            Abox.SharedLogic.disableFields(formContext, [Abox.SharedLogic.Entities.InvoiceFields.InvoiceImageWebUrl, Abox.SharedLogic.Entities.InvoiceFields.ProductsSelectedJson,Abox.SharedLogic.Entities.InvoiceFields.Country,Abox.SharedLogic.Entities.InvoiceFields.Pharmacy]);
             Abox.SharedLogic.setFieldsRequired(formContext, [Abox.SharedLogic.Entities.InvoiceFields.InvoiceImageWebUrl, Abox.SharedLogic.Entities.InvoiceFields.ProductsSelectedJson]);
             // Abox.SharedLogic.setFieldsInvisible(formContext,[Abox.SharedLogic.Entities.InvoiceFields.ProductSelectionWebResource]);
             this.setInvoiceImageControl(formContext);
@@ -58,10 +58,12 @@ Abox.InvoiceFunctions = {
 
             var contactField = formContext.getAttribute(Abox.SharedLogic.Entities.InvoiceFields.Customer);
             if (contactField !== null) {
+                that.loadAndEnableProductSection(formContext);
+                that.setInvoiceCountryBasedOnContact(formContext);
                 contactField.addOnChange(function () {
 
                     that.loadAndEnableProductSection(formContext);
-
+                    that.setInvoiceCountryBasedOnContact(formContext);
                 });
             }
 
@@ -69,13 +71,49 @@ Abox.InvoiceFunctions = {
         } else if (formType === 2) { //Update
 
             this.validateUpdateAvailability(formContext);
-            Abox.SharedLogic.disableFields(formContext, [Abox.SharedLogic.Entities.InvoiceFields.InvoiceImageWebUrl, Abox.SharedLogic.Entities.InvoiceFields.ProductsSelectedJson, Abox.SharedLogic.Entities.InvoiceFields.Customer]);
+            Abox.SharedLogic.disableFields(formContext, [Abox.SharedLogic.Entities.InvoiceFields.InvoiceImageWebUrl, Abox.SharedLogic.Entities.InvoiceFields.ProductsSelectedJson, Abox.SharedLogic.Entities.InvoiceFields.Customer,Abox.SharedLogic.Entities.InvoiceFields.Country,Abox.SharedLogic.Entities.InvoiceFields.Pharmacy]);
             Abox.SharedLogic.setFieldsRequired(formContext, [Abox.SharedLogic.Entities.InvoiceFields.InvoiceImageWebUrl, Abox.SharedLogic.Entities.InvoiceFields.ProductsSelectedJson]);
             Abox.SharedLogic.setFieldsInvisible(formContext, [Abox.SharedLogic.Entities.InvoiceFields.InvoiceImageWebUrl, Abox.SharedLogic.Entities.InvoiceFields.ProductsSelectedJson]);
             this.setInvoiceImageControl(formContext);
             this.loadAndEnableProductSection(formContext);
+            this.setInvoiceCountryBasedOnContact(formContext);
 
+        }
 
+    },
+
+    setInvoiceCountryBasedOnContact:function(formContext){
+
+        try {
+            var contactData=this.getContactInfo(formContext);
+
+            contactData.then(function (data) {
+
+                var invoiceCountryField=formContext.getAttribute(Abox.SharedLogic.Entities.InvoiceFields.Country);
+
+                if(invoiceCountryField!==null){
+
+                    if(data!==null){
+                        var lookupValue = [];
+                        lookupValue[0] = {};
+                        lookupValue[0].id = data.countryId; // GUID of the lookup id
+                        lookupValue[0].name = data.countryName; // Name of the lookup
+                        lookupValue[0].entityType = "new_country"; //Entity Type of the lookup entity
+                        invoiceCountryField.setValue(lookupValue); // You need to replace the lookup field Name..
+                        Abox.SharedLogic.enableFields(formContext,[Abox.SharedLogic.Entities.InvoiceFields.Pharmacy]);
+                    }else{
+                        invoiceCountryField.setValue(null);
+                        Abox.SharedLogic.disableFields(formContext,[Abox.SharedLogic.Entities.InvoiceFields.Pharmacy]);
+                    }
+                   
+
+                }
+                
+            }, function (error) {
+                console.error(error);
+            });
+        } catch (error) {
+            
         }
 
     },
@@ -151,6 +189,8 @@ Abox.InvoiceFunctions = {
             
             var idPatient = null;
             var countryCode = null; 
+            var countryId=null;
+            var countryName=null;
 
             if(contact[Abox.SharedLogic.Entities.ContactFields.IdAboxPatient]!==null){
                idPatient= contact[Abox.SharedLogic.Entities.ContactFields.IdAboxPatient];
@@ -158,6 +198,8 @@ Abox.InvoiceFunctions = {
 
             if (contact[Abox.SharedLogic.Entities.ContactSchemas.Country] !== null) {
                 countryCode = contact[Abox.SharedLogic.Entities.ContactSchemas.Country][Abox.SharedLogic.Entities.CountryFields.IdCountry];
+                countryId = contact[Abox.SharedLogic.Entities.ContactSchemas.Country][Abox.SharedLogic.Entities.CountryFields.EntityId];
+                countryName = contact[Abox.SharedLogic.Entities.ContactSchemas.Country][Abox.SharedLogic.Entities.CountryFields.Name];
             }
             
             if (idPatient === null || idPatient === "" || typeof idPatient === "undefined") {
@@ -175,6 +217,8 @@ Abox.InvoiceFunctions = {
             return {
                 idPatient: idPatient,
                 countryCode: countryCode,
+                countryId:countryId,
+                countryName:countryName,
                 products: products
             }
         } catch (error) {
@@ -379,7 +423,7 @@ Abox.InvoiceFunctions = {
                     console.info("consultando contacto webapi...");
 
                     //?$select=new_idaboxpatient&$expand=new_CountryId($select=new_idcountry)
-                    contactRetrieved = await Abox.SharedLogic.retrieveRecordFromWebAPI(entityName, id, "?$select=" + Abox.SharedLogic.Entities.ContactFields.IdAboxPatient + "&$expand=" + Abox.SharedLogic.Entities.ContactSchemas.Country + "($select=" + Abox.SharedLogic.Entities.CountryFields.IdCountry + ")", Xrm);
+                    contactRetrieved = await Abox.SharedLogic.retrieveRecordFromWebAPI(entityName, id, "?$select=" + Abox.SharedLogic.Entities.ContactFields.IdAboxPatient + "&$expand=" + Abox.SharedLogic.Entities.ContactSchemas.Country + "($select=" + Abox.SharedLogic.Entities.CountryFields.IdCountry + ","+Abox.SharedLogic.Entities.CountryFields.EntityId+","+Abox.SharedLogic.Entities.CountryFields.Name+")", Xrm);
                     console.log(contactRetrieved);
                     Xrm.Utility.closeProgressIndicator();
 
