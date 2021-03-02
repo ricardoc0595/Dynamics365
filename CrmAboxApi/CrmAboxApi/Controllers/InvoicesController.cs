@@ -19,9 +19,11 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace CrmAboxApi.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class InvoicesController : ApiController
     {
         // GET: Invoices
@@ -33,6 +35,7 @@ namespace CrmAboxApi.Controllers
         /// <param name="invoiceCreateRequest">JSON exitoso enviado previamente a los servicios de Abox plan, además el ID creado en Base de datos para esta factura</param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         public IHttpActionResult Create([FromBody] InvoiceCreate invoiceCreateRequest)
         {
             Guid processId = Guid.NewGuid();
@@ -92,7 +95,7 @@ namespace CrmAboxApi.Controllers
             }
         }
 
-
+        [Authorize]
         [HttpPost]
         public IHttpActionResult Update([FromBody] InvoiceUpdate invoiceUpdateRequest)
         {
@@ -138,6 +141,251 @@ namespace CrmAboxApi.Controllers
             {
 
                 LogEventInfo logEx = new LogEventInfo(LogLevel.Error, Logger.Name, null, $"Request hacia {Request.RequestUri} con el JSON:**START** {JsonConvert.SerializeObject(invoiceUpdateRequest)} **END**", null, new Exception(ex.ToString()));
+                logEx.Properties["ProcessID"] = processId;
+                logEx.Properties["AppID"] = Constants.ApplicationIdWebAPI;
+                logEx.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(logEx);
+
+                return Content(HttpStatusCode.InternalServerError, new OperationResult
+                {
+                    IsSuccessful = false,
+                    Data = null,
+                    Message = ex.ToString(),
+                    Code = ""
+                });
+            }
+        }
+
+
+        [HttpPost]
+        public IHttpActionResult ApproveInvoice([FromBody] InvoiceApprove invoiceApproveRequest)
+        {
+            Guid processId = Guid.NewGuid();
+
+            LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"ProcessID: {processId} Request hacia {Request.RequestUri} con el JSON:**START** {JsonConvert.SerializeObject(invoiceApproveRequest)} **END**");
+            log.Properties["ProcessID"] = processId;
+            log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+            log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            Logger.Log(log);
+
+            EInvoice invoiceProcedures = new EInvoice();
+            OperationResult response = null;
+            try
+            {
+                if (invoiceApproveRequest != null)
+                {
+                    response = invoiceProcedures.ApproveInvoice(invoiceApproveRequest, processId);
+
+                    if (response.IsSuccessful)
+                    {
+                        return Ok(response);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.InternalServerError, response);
+                    }
+
+                }
+                else
+                {
+
+                    return Content(HttpStatusCode.BadRequest, new OperationResult
+                    {
+                        Code = "",
+                        IsSuccessful = false,
+                        Data = null,
+                        Message = "La solicitud JSON enviada es incorrecta"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+
+                LogEventInfo logEx = new LogEventInfo(LogLevel.Error, Logger.Name, null, $"Request hacia {Request.RequestUri} con el JSON:**START** {JsonConvert.SerializeObject(invoiceApproveRequest)} **END**", null, new Exception(ex.ToString()));
+                logEx.Properties["ProcessID"] = processId;
+                logEx.Properties["AppID"] = Constants.ApplicationIdWebAPI;
+                logEx.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(logEx);
+
+                return Content(HttpStatusCode.InternalServerError, new OperationResult
+                {
+                    IsSuccessful = false,
+                    Data = null,
+                    Message = ex.ToString(),
+                    Code = ""
+                });
+            }
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IHttpActionResult GetByGuid(string idToRequest)
+        {
+            Guid processId = Guid.NewGuid();
+           
+            
+            LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"ProcessID: {processId} Request hacia {Request.RequestUri} con parámetros:**START** {idToRequest} **END**");
+            log.Properties["ProcessID"] = processId;
+            log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+            log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            Logger.Log(log);
+
+            EInvoice invoiceProcedures = new EInvoice();
+            OperationResult response = null;
+            try
+            {
+                if (idToRequest != null)
+                {
+                    response = invoiceProcedures.GetInvoice(idToRequest,InvoiceFields.EntityId , processId);
+
+                    if (response.IsSuccessful)
+                    {
+                        return Ok(response);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.NotFound, response);
+                    }
+
+                }
+                else
+                {
+
+                    return Content(HttpStatusCode.BadRequest, new OperationResult
+                    {
+                        Code = "",
+                        IsSuccessful = false,
+                        Data = null,
+                        Message = "La solicitud JSON enviada es incorrecta"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+
+                LogEventInfo logEx = new LogEventInfo(LogLevel.Error, Logger.Name, null, $"Request hacia {Request.RequestUri} con parámetros:**START** {idToRequest} **END**", null, new Exception(ex.ToString()));
+                logEx.Properties["ProcessID"] = processId;
+                logEx.Properties["AppID"] = Constants.ApplicationIdWebAPI;
+                logEx.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(logEx);
+
+                return Content(HttpStatusCode.InternalServerError, new OperationResult
+                {
+                    IsSuccessful = false,
+                    Data = null,
+                    Message = ex.ToString(),
+                    Code = ""
+                });
+            }
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IHttpActionResult GetByAboxId(string idToRequest)
+        {
+            Guid processId = Guid.NewGuid();
+
+
+            LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"ProcessID: {processId} Request hacia {Request.RequestUri} con parámetros:**START** {idToRequest} **END**");
+            log.Properties["ProcessID"] = processId;
+            log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+            log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            Logger.Log(log);
+
+            EInvoice invoiceProcedures = new EInvoice();
+            OperationResult response = null;
+            try
+            {
+                if (idToRequest != null)
+                {
+                    response = invoiceProcedures.GetInvoice(idToRequest, InvoiceFields.IdAboxInvoice, processId);
+
+                    if (response.IsSuccessful)
+                    {
+                        return Ok(response);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.NotFound, response);
+                    }
+
+                }
+                else
+                {
+
+                    return Content(HttpStatusCode.BadRequest, new OperationResult
+                    {
+                        Code = "",
+                        IsSuccessful = false,
+                        Data = null,
+                        Message = "La solicitud JSON enviada es incorrecta"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+
+                LogEventInfo logEx = new LogEventInfo(LogLevel.Error, Logger.Name, null, $"Request hacia {Request.RequestUri} con parámetros:**START** {idToRequest} **END**", null, new Exception(ex.ToString()));
+                logEx.Properties["ProcessID"] = processId;
+                logEx.Properties["AppID"] = Constants.ApplicationIdWebAPI;
+                logEx.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                Logger.Log(logEx);
+
+                return Content(HttpStatusCode.InternalServerError, new OperationResult
+                {
+                    IsSuccessful = false,
+                    Data = null,
+                    Message = ex.ToString(),
+                    Code = ""
+                });
+            }
+        }
+
+        [HttpPost]
+        public IHttpActionResult RejectInvoice([FromBody] InvoiceReject invoiceRejectRequest)
+        {
+            Guid processId = Guid.NewGuid();
+
+            LogEventInfo log = new LogEventInfo(LogLevel.Debug, Logger.Name, $"ProcessID: {processId} Request hacia {Request.RequestUri} con el JSON:**START** {JsonConvert.SerializeObject(invoiceRejectRequest)} **END**");
+            log.Properties["ProcessID"] = processId;
+            log.Properties["AppID"] = AboxDynamicsBase.Classes.Constants.ApplicationIdWebAPI;
+            log.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            Logger.Log(log);
+
+            EInvoice invoiceProcedures = new EInvoice();
+            OperationResult response = null;
+            try
+            {
+                if (invoiceRejectRequest != null)
+                {
+                    response = invoiceProcedures.RejectInvoice(invoiceRejectRequest, processId);
+
+                    if (response.IsSuccessful)
+                    {
+                        return Ok(response);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.InternalServerError, response);
+                    }
+
+                }
+                else
+                {
+
+                    return Content(HttpStatusCode.BadRequest, new OperationResult
+                    {
+                        Code = "",
+                        IsSuccessful = false,
+                        Data = null,
+                        Message = "La solicitud JSON enviada es incorrecta"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+
+                LogEventInfo logEx = new LogEventInfo(LogLevel.Error, Logger.Name, null, $"Request hacia {Request.RequestUri} con el JSON:**START** {JsonConvert.SerializeObject(invoiceRejectRequest)} **END**", null, new Exception(ex.ToString()));
                 logEx.Properties["ProcessID"] = processId;
                 logEx.Properties["AppID"] = Constants.ApplicationIdWebAPI;
                 logEx.Properties["MethodName"] = System.Reflection.MethodBase.GetCurrentMethod().Name;

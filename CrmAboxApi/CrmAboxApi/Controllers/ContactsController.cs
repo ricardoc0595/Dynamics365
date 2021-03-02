@@ -8,9 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace CrmAboxApi.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class ContactsController : ApiController
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
@@ -78,6 +80,7 @@ namespace CrmAboxApi.Controllers
         //POST api/contacts
 
         //TODO: Ocultar para produccion
+        [Authorize]
         [HttpGet]
         public IHttpActionResult GetToken()
         {
@@ -106,6 +109,7 @@ namespace CrmAboxApi.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public IHttpActionResult LogPluginFeedback([FromBody] LogClass log)
         {
             try
@@ -160,6 +164,7 @@ namespace CrmAboxApi.Controllers
         /// <param name="signupRequest">JSON exitoso enviado previamente a los servicios de Abox plan, además los ID de pacientes necesarios</param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         public IHttpActionResult PatientSignup([FromBody] PatientSignup signupRequest)
         {
             Guid processId = Guid.NewGuid();
@@ -243,6 +248,7 @@ namespace CrmAboxApi.Controllers
         /// <param name="updateRequest">JSON exitoso enviado previamente a los servicios de Abox plan, además los ID de pacientes necesarios</param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         public IHttpActionResult AccountUpdate([FromBody] UpdateAccountRequest updateRequest)
         {
             Guid processId = Guid.NewGuid();
@@ -307,6 +313,7 @@ namespace CrmAboxApi.Controllers
         /// <param name="request">JSON con las propiedades necesarias para la actualizacion</param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         public IHttpActionResult UpdateFromSignIntoAccount([FromBody] UserTypeChangeRequest request)
         {
             Guid processId = Guid.NewGuid();
@@ -366,6 +373,7 @@ namespace CrmAboxApi.Controllers
 
 
         [HttpPost]
+        [Authorize]
         public IHttpActionResult UpdatePatient([FromBody] UpdatePatientRequest updateRequest)
         {
             Guid processId = Guid.NewGuid();
@@ -422,6 +430,7 @@ namespace CrmAboxApi.Controllers
         }
 
         // DELETE api/contacts/5
+        [Authorize]
         public void Delete(int id)
         {
 

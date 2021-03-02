@@ -252,7 +252,17 @@ namespace CreateContactAsPatient
                                         //contact.Attributes.Add("new_idaboxpatient", serviceResponseProperties.response.details.idPaciente);
                                         if (isProfileChange && newUserTypeReference != null)
                                         {
-                                            contactData.Attributes.Add(ContactFields.UserType, newUserTypeReference);
+                                            if (contactData.Attributes.Contains(ContactFields.UserType))
+                                            {
+                                                contactData.Attributes.Remove(ContactFields.UserType);
+                                                contactData.Attributes.Add(ContactFields.UserType, newUserTypeReference);
+                                            }
+                                            else
+                                            {
+                                                contactData.Attributes.Add(ContactFields.UserType, newUserTypeReference);
+
+                                            }
+
                                         }
                                     }
 

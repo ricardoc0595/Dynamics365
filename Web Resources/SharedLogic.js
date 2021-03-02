@@ -13,6 +13,7 @@ Abox.SharedLogic = {
         Environment: "https://stagingapi.aboxplan.com",
         WebAPIEnvironment: "https://aboxcrmapi.aboxplan.com",
         TokenForAboxServices: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNybV9hYm94YXBpIiwiYXBpIjp0cnVlLCJpYXQiOjE2MDMzMTIzODB9.Cu8FYQoVWDcof_qFZ5CIA6K2OYloOEn9F-b_XahLf9w",
+        TokenForWebAPI: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFkbWluIiwibmJmIjoxNjEzMTY0NDk4LCJleHAiOjE2MTMxNjgwOTgsImlhdCI6MTYxMzE2NDQ5OCwiaXNzIjoiaHR0cHM6Ly9hYm94Y3JtYXBpZGV2LmFib3hwbGFuLmNvbSIsImF1ZCI6Imh0dHBzOi8vYWJveGNybWFwaWRldi5hYm94cGxhbi5jb20ifQ.7LpSNn63t4SxRMpm5sd8S1CElClefPY48wguzTHCGJk"
     },
 
     Entities: {
@@ -52,7 +53,16 @@ Abox.SharedLogic = {
             NoEmail: "new_noemail",
             OtherInterestLookup: "new_otherinterest",
             IsUserTypeChange: "new_isusertypechange",
-            ChangePasswordWebResource: "WebResource_changepassword"
+            ChangePasswordWebResource: "WebResource_changepassword",
+            InvoicesAlreadyImported:"new_invoicesalreadyimported",
+            get  SubGridControls() {
+                return{
+                    RelatedContacts: "RelatedContacts",
+                    InvoicesGrid:"contactinvoicesgrid",
+                    RelatedProductsDosesGrid:"RelatedProducts",
+                    RelatedDoctorsGrid:"Doctors"
+                }
+            }
         },
         ContactSchemas: {
             UserType: "new_UserType",
@@ -75,13 +85,22 @@ Abox.SharedLogic = {
             CaseInvoiceLookup: "new_caseinvoiceid",
             Customer: "customerid",
             Contact: "new_contactid",
-            Country: "new_invoiceCountry",
+            Country: "new_invoicecountry",
             Pharmacy: "new_pharmacy",
             PurchaseDate: "new_purchasedate",
             EntityId: "invoiceid",
             ProductSelectionWebResource: "WebResource_invoiceproductselection",
+            NonAboxProductSelectionWebResource: "WebResource_invoicenonaboxproductselection",
             ProductsSelectedJson: "new_productsselectedjson",
-            IdAboxInvoice: "new_idaboxinvoice"
+            IdAboxInvoice: "new_idaboxinvoice",
+            InvoiceXContactRelationship : "invoice_customer_contacts",
+            StatusCode: "new_invoicestatus",
+            StatusReason: "new_statusreason",
+            TotalAmount: "new_totalamount",  
+            RevisionTime1: "new_revisiontime1",
+            RevisionTime2: "new_revisiontime2",
+            PurchaseMethod: "new_purchasemethod",
+            NonAboxProductsSelectedJson:"new_nonaboxproductsselectedjson"
         }
 
     },
@@ -130,6 +149,7 @@ Abox.SharedLogic = {
         CareTakerIdType: "fab60b2a-c8d1-ea11-a812-000d3a33f637",
         TutorIdType: "f4761324-c8d1-ea11-a812-000d3a33f637",
         OtherInterestIdType: "30f90330-c8d1-ea11-a812-000d3a33f637",
+        PatientUndercareIdType: "dc9a7b9d-5366-eb11-a812-002248029573",
         MaleGenderValue: 1,
         FemaleGenderValue: 2,
         NationalIdValue: 1,
@@ -154,18 +174,26 @@ Abox.SharedLogic = {
         GeneralPluginErrorMessage: "Ocurrió un error en la ejecución de un Plugin interno, por favor intenta nuevamente o comunícate con soporte.",
         ApplicationIdWebAPI: "WEBAPI",
         ApplicationIdPlugin: "PLUGIN",
-        SubGridControls: {
-            RelatedContacts: "RelatedContacts"
-        },
-
-
+        GeneralErrorWebRequest:"Ha ocurrido un error de comunicación, por favor intenta nuevamente o comunícate con soporte.",
+        PharmacyPurchaseMethodForInvoice : 1,
+        AtHomePurchaseMethodForInvoice : 2,
     },
 
     get AboxServices() {
         return{
             AboxImageUploadUrl: this.Configuration.Environment + "/files/upload",
             ProductsSearch: this.Configuration.Environment + "/products/search",
-            ChangePasswordCrm: this.Configuration.Environment + "/security/crm/changepassword"
+            ChangePasswordCrm: this.Configuration.Environment + "/security/crm/changepassword",
+            NonAboxProducts: this.Configuration.Environment + "/receipts/ocr/nonabbottproducts",
+            
+        }
+    },
+    get AboxCrmAPIServices() {
+        return{
+            GetInvoiceByAboxId: this.Configuration.WebAPIEnvironment + "/api/invoices/GetByAboxId?idtorequest=",
+            GetInvoiceByGuid: this.Configuration.WebAPIEnvironment + "/api/invoices/GetByGuid?idtorequest=",
+            CreateInvoice:this.Configuration.WebAPIEnvironment + "/api/invoices/create"
+            
         }
     },
 
@@ -214,7 +242,7 @@ Abox.SharedLogic = {
 
     },
 
-    clearTextFields: function (formContext, fieldsToClear) {
+    clearFields: function (formContext, fieldsToClear) {
         if (typeof fieldsToClear !== "undefined" && formContext !== "undefined") {
 
             if (fieldsToClear.constructor === Array) {
@@ -223,7 +251,43 @@ Abox.SharedLogic = {
                     //var field = formContext.getAttribute(fieldName);
                     var field = formContext.getAttribute(fieldName);
                     if (field !== null) {
-                        field.setValue("");
+                        field.setValue(null);
+                    }
+                });
+            }
+
+        }
+    },
+
+    setYesNoField: function (formContext, fieldsToClear,value) {
+        if (typeof fieldsToClear !== "undefined" && formContext !== "undefined") {
+
+            if (fieldsToClear.constructor === Array) {
+                fieldsToClear.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var field = formContext.getAttribute(fieldName);
+                    if (field !== null) {
+                        field.setValue(value);
+                    }
+                });
+            }
+
+        }
+    },
+
+
+
+    clearLookupFields: function (formContext, lookupsToClear) {
+        if (typeof lookupsToClear !== "undefined" && formContext !== "undefined") {
+
+            if (lookupsToClear.constructor === Array) {
+                lookupsToClear.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var field = formContext.getAttribute(fieldName);
+                    if (field !== null) {
+                        field.setValue(null);
                     }
                 });
             }
@@ -242,6 +306,42 @@ Abox.SharedLogic = {
                 fieldControl.setDisabled(false);
             }
         });
+
+    },
+
+    DoGetRequest: async function (url, headers) {
+
+        try {
+            var myHeaders = new Headers();
+
+
+            headers.forEach(function (header) {
+                myHeaders.append(header.key, header.value);
+            });
+
+            // myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InR1dG9yMDIxMjIwMDIiLCJpYXQiOjE2MDg2NTM4ODgsImV4cCI6MTYwODc0MDI4OH0.5_MaCvTvzmMJwCXQ8AmyFcvAlUJkbL3_brKtPlQ_h7w");
+            // myHeaders.append("Content-Type", "application/json");
+
+            //var raw = json;
+
+            var requestOptions = {
+                method: 'GET',
+                headers: myHeaders
+                // body: raw,
+                // redirect: 'follow'
+            };
+
+            var response = await fetch(url, requestOptions);
+
+            console.log("respuesta fetch");
+            console.log(response);
+            return response;
+
+        } catch (error) {
+            console.error(error);
+            // Xrm.Navigation.openErrorDialog({ details: `stacktrace: ${error.stack} -- url:${url}`, message: this.Constants.GeneralErrorWebRequest});
+            return null;
+        }
 
     },
 
@@ -274,6 +374,42 @@ Abox.SharedLogic = {
 
         } catch (error) {
             console.error(error);
+            // Xrm.Navigation.openErrorDialog({ details: `stacktrace: ${error.stack} -- url:${url}`, message: this.Constants.GeneralErrorWebRequest});
+            return null;
+        }
+
+    },
+    DoPatchRequest: async function (url, json, headers) {
+
+        try {
+            var myHeaders = new Headers();
+
+
+            headers.forEach(function (header) {
+                myHeaders.append(header.key, header.value);
+            });
+
+            // myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InR1dG9yMDIxMjIwMDIiLCJpYXQiOjE2MDg2NTM4ODgsImV4cCI6MTYwODc0MDI4OH0.5_MaCvTvzmMJwCXQ8AmyFcvAlUJkbL3_brKtPlQ_h7w");
+            // myHeaders.append("Content-Type", "application/json");
+
+            var raw = json;
+
+            var requestOptions = {
+                method: 'PATCH',
+                headers: myHeaders,
+                body: raw,
+                // redirect: 'follow'
+            };
+
+            var response = await fetch(url, requestOptions);
+            console.log("respuesta fetch");
+            console.log(response);
+            return response;
+
+        } catch (error) {
+            console.error(error);
+            // Xrm.Navigation.openErrorDialog({ details: `stacktrace: ${error.stack} -- url:${url}`, message: this.Constants.GeneralErrorWebRequest});
+            return null;
         }
 
     },
@@ -297,6 +433,70 @@ Abox.SharedLogic = {
             });
 
         })
+
+    },
+
+    updateRecordUsingDynamicsWebAPI: async function (entityName, entityId, options,data, Xrm) {
+        Xrm.Utility.showProgressIndicator("");
+        var entityResponse = null;
+
+
+        return new Promise(function (resolve, reject) {
+            Xrm.WebApi.retrieveRecord(entityName, entityId, options).then(function (response) {
+
+                entityResponse = response;
+                // return entityResponse;
+                resolve(entityResponse);
+            }, function (error) {
+                Xrm.Utility.closeProgressIndicator();
+                entityResponse = error;
+                // return error;
+                reject(entityResponse);
+            });
+
+        })
+
+    },
+
+    setFieldNotification: function (value, message, control, maxLength, minLength) {
+
+        value.toString();
+
+        if (typeof maxLength === "undefined") {
+            maxLength = null;
+        }
+
+        if (typeof minLength === "undefined") {
+            minLength = null;
+        }
+
+        if ((value.length > maxLength) && (maxLength !== null)) {
+            control.setNotification("El valor debe ser de máximo " + maxLength + " caracteres y ha escrito "+ value.length+".");
+        }
+        else if ((value.length < minLength) && (minLength !== null)) {
+            control.setNotification("El valor debe ser de mínimo " + minLength + " caracteres y ha escrito "+ value.length+".");
+        } else {
+            control.clearNotification();
+        }
+
+    },
+
+    clearFieldsNotification:function(formContext,fields){
+
+        if (typeof fields !== "undefined" && formContext !== "undefined") {
+
+            if (fields.constructor === Array) {
+                fields.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var field = formContext.getControl(fieldName);
+                    if (field !== null) {
+                        field.clearNotification();
+                    }
+                });
+            }
+
+        }
 
     },
 
@@ -399,6 +599,39 @@ Abox.SharedLogic = {
 
     },
 
+    elementAlreadyInListIgnoreCase: function (idElement, list, idProperty) {
+
+        //Funcion que se llama para verificar si el elemento que intenta agregar el usuario
+        //Ya se encuentra en la lista recibe parametros: id del elemento, lista en donde buscar, nombre de la propiedad del objeto que contiene el id
+
+        var length = list.length;
+        var valueAlreadyExists = false;
+
+        try {
+            for (var i = 0; i < length; i++) {
+                if (list[i][idProperty] === null || typeof list[i][idProperty] === "undefined") {
+                    continue
+                } else {
+                    if (list[i][idProperty].toString().toLowerCase() === idElement) {
+                        valueAlreadyExists = true;
+                        break;
+                    }
+
+                }
+
+            }
+            if (valueAlreadyExists) {
+                return true;
+            } else {
+                return false;
+            }
+
+        } catch (e) {
+            return false;
+        }
+
+    },
+
     deleteItemFromList: function (idItem, list, idProperty) {
 
         idItem = idItem || null;
@@ -449,6 +682,41 @@ Abox.SharedLogic = {
                         continue
                     } else {
                         if (list[i][idProperty].toString() === elementId.toString()) {
+                            var obj = list[i];
+                            found = obj;
+                            break;
+                        }
+                    }
+
+
+                }
+                return found;
+
+            }
+
+        } catch (e) {
+            return found;
+        }
+
+
+    },
+    findElementByText: function (valueToFind, list, propertyName) {
+        //Funcion que se llama para buscar un elemento en una lista cuyo valor en cierta propiedad sea semejante al valor de entrada
+
+
+
+        valueToFind = valueToFind || null;
+        var found = null;
+
+        try {
+            if (valueToFind !== null) {
+
+                var length = list.length;
+                for (var i = 0; i < length; i++) {
+                    if (list[i][propertyName] === null || typeof list[i][propertyName] === "undefined") {
+                        continue
+                    } else {
+                        if (list[i][propertyName].toString().toLowerCase() === valueToFind.toString().toLowerCase()) {
                             var obj = list[i];
                             found = obj;
                             break;

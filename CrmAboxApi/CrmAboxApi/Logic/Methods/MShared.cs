@@ -1,5 +1,6 @@
 ﻿using AboxDynamicsBase.Classes;
 using System;
+using System.Net;
 
 namespace CrmAboxApi.Logic.Methods
 {
@@ -175,6 +176,93 @@ namespace CrmAboxApi.Logic.Methods
                 result = -1;
             }
             return result;
+        }
+
+        public int GetInvoiceStatusValue(string value)
+        {
+            int returnValue = -1;
+            try
+            {
+                if (value.ToLower() == "aprobado" || value.ToLower() == "aprovado" || value.ToLower() == "aprobada" || value.ToLower().Contains("aprobad"))
+                {
+                    returnValue = Constants.ApprovedStatusInvoiceDropdownValue;
+                }
+                else if (value.ToLower() == "rechazado" || value.ToLower() == "rechazada")
+                {
+                    returnValue = Constants.RejectedStatusInvoiceDropdownValue;
+                }
+                else if (value.ToLower() == "pendiente")
+                {
+                    returnValue = Constants.PendingInvoiceDropdownValue;
+                }else if (value.ToLower()=="anulada")
+                {
+                    returnValue = Constants.CanceledStatusInvoiceDropdownValue;
+                }
+                return returnValue;
+
+            }
+            catch (Exception ex)
+            {
+                return returnValue;
+                throw;
+            }
+
+        }
+
+        public int GetInvoicePurchaseMethodValue(string value)
+        {
+            int returnValue = -1;
+            try
+            {
+                if (value.ToLower() == "farmacia" )
+                {
+                    returnValue = Constants.PharmacyPurchaseMethodForInvoice;
+                }
+                else if (value.ToLower() == "domicilio")
+                {
+                    returnValue = Constants.AtHomePurchaseMethodForInvoice;
+                }
+                
+                return returnValue;
+
+            }
+            catch (Exception ex)
+            {
+                return returnValue;
+                throw;
+            }
+
+        }
+
+        /// <summary>
+        /// Permite asignar el valor del token guardado en Caché en null para que en el próximo Request vuelva a ser consultado mediante la autenticacion de Azure.
+        /// Esto es en un caso eventual en que el Token sea revocado o expirado de forma extraordinaria, pues el cache dura 50 minutos, y la vida del token es de 60
+        /// por lo que no debería ocurrir, pero si ocurre, se consultará el token en el próximo request.
+        /// </summary>
+        /// <param name="statusCode"></param>
+        internal void RemoveCacheIfStatusIsUnauthorized(HttpStatusCode statusCode)
+        {
+            try
+            {
+                if (statusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    System.Runtime.Caching.ObjectCache cache = System.Runtime.Caching.MemoryCache.Default;
+
+                    if (cache!=null)
+                    {
+                        if (cache.Get("AuthToken") != null)
+                        {
+                            cache.Remove("AuthToken");
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                
+            }
         }
     }
 }

@@ -129,6 +129,124 @@ namespace AboxCrmPlugins.Methods
             return wrResponse;
         }
 
+        public WebRequestResponse DoGetRequest(WebRequestData requestData, Microsoft.Xrm.Sdk.ITracingService trace)
+        {
+            try
+            {
+                #region debug log
+
+                this.LogPluginFeedback(new LogClass
+                {
+                    Exception = "",
+                    Level = "debug",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"GETing Url:{requestData.Url}",
+                    ProcessId = ""
+                }, trace);
+
+                #endregion debug log
+            }
+            catch (Exception exc)
+            {
+            }
+
+            WebRequestResponse wrResponse = new WebRequestResponse();
+            try
+            {
+                try
+                {
+                    using (WebClient client = new WebClient())
+                    {
+                        var webClient = new WebClient();
+                        if (requestData.ContentType != "")
+                            webClient.Headers[HttpRequestHeader.ContentType] = requestData.ContentType;
+
+                        if (requestData.Authorization != "")
+                            webClient.Headers[HttpRequestHeader.Authorization] = requestData.Authorization;
+
+                        // var code = "key";
+                        string serviceUrl = requestData.Url;
+                        wrResponse.Data = webClient.DownloadString(serviceUrl);
+
+                        if (wrResponse.Data != "")
+                        {
+                            wrResponse.IsSuccessful = true;
+
+                            //TODO:ELiminar para Produccion
+                            try
+                            {
+                                this.LogPluginFeedback(new LogClass
+                                {
+                                    Exception = "",
+                                    Level = "debug",
+                                    ClassName = this.GetType().ToString(),
+                                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                                    Message = $"Url:{requestData.Url} ResponseFromRequest:{wrResponse.Data}",
+                                    ProcessId = ""
+                                }, trace);
+                            }
+                            catch (Exception e)
+                            {
+                            }
+                        }
+                    }
+                }
+                catch (WebException wex)
+                {
+                    string error = "";
+                    string statusCode = "";
+                    if (wex.Response != null)
+                    {
+                        using (var errorResponse = (HttpWebResponse)wex.Response)
+                        {
+                            using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                            {
+                                error = reader.ReadToEnd();
+                            }
+                        }
+                    }
+
+                    #region error log
+
+                    this.LogPluginFeedback(new LogClass
+                    {
+                        Exception = wex.ToString(),
+                        Level = "error",
+                        ClassName = this.GetType().ToString(),
+                        MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                        Message = $"{error}",
+                        ProcessId = ""
+                    }, trace);
+
+                    #endregion error log
+
+                    wrResponse.Data = null;
+                    wrResponse.ErrorMessage = wex.ToString();
+                    wrResponse.IsSuccessful = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogPluginFeedback(new LogClass
+                {
+                    Exception = ex.ToString(),
+                    Level = "error",
+                    ClassName = this.GetType().ToString(),
+                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
+                    Message = $"Excepción realizando el POST request",
+                    ProcessId = ""
+                }, trace);
+
+                trace.Trace($"MethodName: {new System.Diagnostics.StackTrace(ex).GetFrame(0).GetMethod().Name}|--|Exception: " + ex.ToString());
+                wrResponse.Data = null;
+                wrResponse.IsSuccessful = false;
+                wrResponse.ErrorMessage = ex.ToString();
+            }
+
+            return wrResponse;
+        }
+
         public bool IsValidNumericID(string input, Microsoft.Xrm.Sdk.ITracingService trace)
         {
             try
@@ -404,7 +522,7 @@ namespace AboxCrmPlugins.Methods
                 memoryStream.Dispose();
                 wrData.InputData = jsonObject;
                 wrData.ContentType = "application/json";
-                // wrData.Authorization = "Bearer " + Constants.TokenForAboxServices;
+                wrData.Authorization = "Bearer " + Configuration.TokenForWebAPI;
                 wrData.Url = AboxServices.CrmWebAPILog;
 
                 try

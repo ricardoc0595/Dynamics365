@@ -100,6 +100,9 @@ namespace CrmAboxApi.Logic.Classes
 
                     if (!(String.IsNullOrEmpty(signupProperties.userType)))
                     {
+
+                        jObject.Add($"{ContactSchemas.UserType}@odata.bind", $"/new_usertypes({sharedMethods.GetUserTypeEntityId(signupProperties.userType)})");
+
                         if (signupProperties.userType == "02" || signupProperties.userType == "03")
                         {
                             if (signupProperties.patientid_primary != null)
@@ -118,11 +121,14 @@ namespace CrmAboxApi.Logic.Classes
                     }
                     else
                     {
-                        //Los pacientes bajo cuido, en el CRM actualmente no tienen un tipo de usuario definido
+                        //Si no viene Id de paciente es porque es un paciente bajo cuido.
                         if (isChildContact)
                         {
                             if (signupProperties.patientid != null)
                                 jObject.Add(ContactFields.IdAboxPatient, signupProperties.patientid.ToString());
+
+                            //Se asigna el valor de Paciente bajo cuido en Dynamics
+                            jObject.Add($"{ContactSchemas.UserType}@odata.bind", $"/new_usertypes({Constants.PatientUndercareIdType})");
                         }
                     }
 
@@ -165,10 +171,9 @@ namespace CrmAboxApi.Logic.Classes
                         if (!(String.IsNullOrEmpty(signupProperties.personalinfo.gender)))
                             jObject.Add(ContactFields.Gender, sharedMethods.GetGenderValue(signupProperties.personalinfo.gender));
 
-                        if (!(String.IsNullOrEmpty(signupProperties.userType)))
-                        {
-                            jObject.Add($"{ContactSchemas.UserType}@odata.bind", $"/new_usertypes({sharedMethods.GetUserTypeEntityId(signupProperties.userType)})");
-                        }
+                      
+
+                        
                     }
 
                     if (signupProperties.contactinfo != null)
@@ -495,6 +500,7 @@ namespace CrmAboxApi.Logic.Classes
                             }
                             else
                             {
+                                sharedMethods.RemoveCacheIfStatusIsUnauthorized(response.StatusCode);
                                 //Get the response content and parse it.
                                 JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
                                 //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
@@ -591,6 +597,7 @@ namespace CrmAboxApi.Logic.Classes
                             }
                             else
                             {
+                                sharedMethods.RemoveCacheIfStatusIsUnauthorized(response.StatusCode);
                                 //Get the response content and parse it.
                                 JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
                                 //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
@@ -699,6 +706,7 @@ namespace CrmAboxApi.Logic.Classes
                         }
                         else
                         {
+                            sharedMethods.RemoveCacheIfStatusIsUnauthorized(response.StatusCode);
                             //Get the response content and parse it.
                             JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
                             //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
@@ -798,6 +806,7 @@ namespace CrmAboxApi.Logic.Classes
                         }
                         else
                         {
+                            sharedMethods.RemoveCacheIfStatusIsUnauthorized(response.StatusCode);
                             //Get the response content and parse it.
                             JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
                             //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
@@ -898,6 +907,7 @@ namespace CrmAboxApi.Logic.Classes
                             }
                             else
                             {
+                                sharedMethods.RemoveCacheIfStatusIsUnauthorized(response.StatusCode);
                                 //Get the response content and parse it.
                                 JObject body = JObject.Parse(response.Content.ReadAsStringAsync().Result);
                                 //CrmWebAPIError userId = (CrmWebAPIError)body["error"];
@@ -1376,7 +1386,7 @@ namespace CrmAboxApi.Logic.Classes
                     signupPatientUnderCare = new PatientSignup
                     {
                         country = signupPropertiesFromRequest.country,
-                        userType = "",//Si se agrega un tipo de usuario default para usuarios bajo cuido, revisar la asignacion del id de paciente en metodo GetCreateContactJsonStructure
+                        userType = "",//Se envía vacío  y en el metodo 'GetCreateContactJsonStructure' se le asigna el valor de Paciente bajo cuido de Dynamics
                         patientid = signupPropertiesFromRequest.patientid,
                         medication = signupPropertiesFromRequest.medication,
                         contactinfo = new PatientSignup.Contactinfo

@@ -72,5 +72,10 @@
   <ItemGroup>
     <None Include="AboxDynamicsBase.snk" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Web Resources\SharedLogic.js">
+      <Link>Classes\SharedLogic.js</Link>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
