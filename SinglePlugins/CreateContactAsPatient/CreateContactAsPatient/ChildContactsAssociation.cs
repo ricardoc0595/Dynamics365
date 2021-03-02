@@ -191,6 +191,8 @@ namespace CreateContactAsPatient
                                             try
                                             {
                                                 childContactToAssociate[ContactFields.IdAboxPatient] = serviceResponseProperties.response.details.idPaciente;
+                                                EntityReference userTypeReference = new EntityReference("new_usertype", new Guid(Constants.PatientUndercareIdType));
+                                                childContactToAssociate[ContactFields.UserType] = userTypeReference;
                                                 service.Update(childContactToAssociate);
                                             }
                                             catch (Exception ex)
@@ -202,7 +204,7 @@ namespace CreateContactAsPatient
                                                     sharedMethods.LogPluginFeedback(new LogClass
                                                     {
                                                         Exception = ex.ToString(),
-                                                        Level = "debug",
+                                                        Level = "error",
                                                         ClassName = this.GetType().ToString(),
                                                         MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
                                                         Message = $"Error actualizando la entidad",
@@ -216,21 +218,7 @@ namespace CreateContactAsPatient
                                                 #endregion log
                                             }
 
-                                            try
-                                            {
-                                                sharedMethods.LogPluginFeedback(new LogClass
-                                                {
-                                                    Exception = "",
-                                                    Level = "debug",
-                                                    ClassName = this.GetType().ToString(),
-                                                    MethodName = System.Reflection.MethodBase.GetCurrentMethod().Name,
-                                                    Message = $"Valor de field de idaboxpatient {Convert.ToString(childContactToAssociate.GetAttributeValue<int>(ContactFields.IdAboxPatient))}, Valor devuelto por el servicio:{serviceResponseProperties.response.details.idPaciente}",
-                                                    ProcessId = ""
-                                                }, trace);
-                                            }
-                                            catch (Exception e)
-                                            {
-                                            }
+                                           
 
                                             PatientSignupRequest.ServiceResponse welcomeServiceResponseProperties = null;
                                             PatientSignupRequest.Request requestForWelcome = reqHelpers.GetWelcomeMailRequestForTutorsAndCaretakers(parentContact, service, trace);

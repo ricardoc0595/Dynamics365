@@ -3,47 +3,18 @@
 <head>
     <meta>
     <style>
-        body {
+        /* body {
             font-family: 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
             font-size: 16px;
             line-height: 1.4;
-            /* color: #fff; */
+            
 
             overflow-x: hidden
-        }
+        } */
 
-        body,
-        html {
-            position: relative;
-            margin: 0;
-            width: 100%;
-            height: 100%
-        }
+    
 
-        * {
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale
-        }
-
-        *,
-        :after,
-        :before {
-            box-sizing: border-box
-        }
-
-
-
-        body span,
-        p,
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6,
-        label {
-            font-family: SegoeUI, 'Segoe UI';
-        }
+       
 
         table {
             width: 100%;
@@ -63,9 +34,9 @@
             display: block;
         }
 
-        input[name="quantity"] {
-            margin-right: 10%;
-            width: 10%;
+        input[name="quantity"],input[name="price"]{
+            margin-right: 5%;
+            width: 11%;
             padding:5px;
             text-align:center;
         }
@@ -108,35 +79,9 @@
             background-color: #0000000f;
         }
 
-        .btn {
-            border-radius: 3px;
-            padding:8px;
-            width: 78px;
-            border: none;
-            cursor: pointer;
-            color: white;
-        }
+       
 
-        .btn:disabled {
-            background-color: #aad8ec !important;
-        }
-
-        .btn.remove {
-            background-color: #ffffff00;
-            border: solid 1px #d6d6d6;
-            color: #d6d6d6;
-        }
-
-        .btn.primary {
-            background-color: #0095d6;
-
-        }
-
-        .btn.default {
-            background-color: #ffffff;
-            color: black;
-            border: solid 1px black;
-        }
+  
 
         form .product-data {
             display: block;
@@ -146,47 +91,30 @@
         }
 
         .product-data>label {
-            width: 15%;
+            width: 11%;
             display:inline-block;
             position:relative;
         }
 
         .product-data .btn {
-            width: 31%;
+            width: 21.8%;
             padding:8px;
         }
 
-        .loadingComponent {
-            position: relative;
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
+       
 
-        .form-control {
-            display: block;
-            width: 100%;
-            background-color: #f9f9f9;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 2.5px;
-            font-size: 14px;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            margin-bottom: 24px
-        }
+    
     </style>
 
-    <!-- <link rel="stylesheet" href="base.min.css" /> -->
-    <!-- <link rel="stylesheet" href="choices.min.css" /> -->
+    <link rel="stylesheet" href="/WebResources/new_webresourcesbasecss">
+    <!-- <link rel="stylesheet" href="/base.css"> -->
     <link rel="stylesheet" href="/WebResources/new_choicescss" />
 </head>
 
 <body style="overflow-wrap: break-word;" ng-app="invoiceProductSelectionApp">
     <div style="font-family: undefined;" ng-controller="ProductSelectionController">
 
-        <div class="loadingComponent" ng-show="!loadingComplete">
+        <div class="" ng-show="!loadingComplete">
             <p>Seleccione un paciente para habilitar la selección de productos</p>
         </div>
 
@@ -215,14 +143,16 @@
                 <div class="product-data">
                     <!-- <p ng-bind="productSelected.name"></p> -->
                     <label>Cantidad:</label>
-                    <input required type="text" maxlength="2" ng-pattern="/^[0-9]+$/" name="quantity"
+                    <input required type="text" maxlength="3" ng-pattern="/^[0-9]+$/" name="quantity"
                         ng-model="productSelected.quantity">
+                        <label>Precio:</label>
+                        <input required type="text" maxlength="1000000" ng-pattern="/^[0-9]+$/" name="price"
+                            ng-model="productSelected.price">
                     <button class="btn primary" ng-click="addProduct(productSelectedData)"
-                        ng-disabled="!productSelectedData.quantity.$valid">Agregar</button>
+                        ng-disabled="!productSelectedData.quantity.$valid || !productSelectedData.price.$valid">Agregar</button>
                     <button class="btn default" ng-click="productSelected.id=null">Cancelar</button>
-                    <p class="feedback-error"
-                        ng-show="(!productSelectedData.quantity.$valid) && (productSelectedData.quantity.$touched)">Es
-                        requerido un valor numérico</p>
+                    <p class="feedback-error" ng-show="(!productSelectedData.quantity.$valid) && (productSelectedData.quantity.$touched)">Es requerido un valor numérico en la cantidad</p>
+                    <p class="feedback-error" ng-show="(!productSelectedData.price.$valid) && (productSelectedData.price.$touched)">Es requerido un valor numérico en el precio</p>
                 </div>
 
             </form>
@@ -233,11 +163,13 @@
                 <tr>
                     <th><span>Producto</span></th>
                     <th><span>Cantidad</span></th>
+                    <th><span>Precio</span></th>
                     <th><span></span></th>
                 </tr>
                 <tr ng-repeat="product in productsAdded">
                     <td><span ng-bind="product.name"></span></td>
                     <td><span ng-bind="product.quantity"></span></td>
+                    <td><span ng-bind="product.price"></span></td>
                     <td><button class="btn remove" ng-click="removeProduct(product)">Eliminar</button></td>
                 </tr>
             </table>
@@ -396,7 +328,8 @@
                                     $scope.productsAdded.push({
                                     name: name,
                                     quantity: productInInvoice.quantity,
-                                    id: productInInvoice.id
+                                    id: productInInvoice.id,
+                                    price:productInInvoice.price
                                 });
                                 }
 
@@ -460,7 +393,7 @@
             $scope.addProduct = function (form) {
 
                 try {
-                    if (!form.quantity.$valid) {
+                    if (!form.quantity.$valid && !form.price.$valid) {
                         return;
                     } else {
 
@@ -468,11 +401,13 @@
                         $scope.productsAdded.push({
                             name: $scope.productSelected.name,
                             quantity: $scope.productSelected.quantity,
-                            id: $scope.productSelected.id
+                            id: $scope.productSelected.id,
+                            price:$scope.productSelected.price
                         })
 
                         $scope.productSelected.name = null;
                         $scope.productSelected.quantity = null;
+                        $scope.productSelected.price = null;
                         $scope.productSelected.id = null;
 
                     }
@@ -530,7 +465,8 @@
             $scope.productSelected = {
                 name: null,
                 id: null,
-                quantity: null
+                quantity: null,
+                price:null
             }
 
 
@@ -544,7 +480,7 @@
 
                         $scope.productsAdded.forEach(function (product) {
 
-                            productsForService.push({ "id": product.id, "quantity": product.quantity });
+                            productsForService.push({ "id": product.id, "quantity": product.quantity,"price":product.price });
 
                         })
 

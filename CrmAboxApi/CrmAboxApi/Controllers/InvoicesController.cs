@@ -218,6 +218,7 @@ namespace CrmAboxApi.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public IHttpActionResult GetByGuid(string idToRequest)
         {
             Guid processId = Guid.NewGuid();
@@ -279,6 +280,7 @@ namespace CrmAboxApi.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public IHttpActionResult GetByAboxId(string idToRequest)
         {
             Guid processId = Guid.NewGuid();

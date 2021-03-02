@@ -183,7 +183,7 @@ namespace InvoiceManagement
                                 trace.Trace(Constants.ErrorMessageCodeReturned + serviceResponseProperties.response.code);
 
                                 //Exception serviceEx = new Exception(Constants.GeneralAboxServicesErrorMessage + serviceResponseProperties.response.message);
-                                
+
                                 //serviceEx.Data["HasFeedbackMessage"] = true;
                                 //throw serviceEx;
 
@@ -191,47 +191,65 @@ namespace InvoiceManagement
 
 
                                 //
-
-                                if (serviceResponseProperties.response.details.validationresults.Count > 0)
+                                if (serviceResponseProperties.response!=null)
                                 {
-                                    string messageRows = "";
 
-
-                                    //foreach (var message in validationStatusMessages)
-                                    //{
-                                    //    messageRows += message+"\n";
-                                    //}
-
-                                    /*El mensaje que se envia al usuario a Dynamics es poco amigable y si se envia un mensaje muy largo, la forma en que lo muestra es completamente
-                                    ilegible, por esto solo se muestra un mensaje a la vez
-                                    Para mostrar un mensaje mas amigable, hay que implementar un propio boton de Save en el Ribbon*/
-                                    string message = "";
-                                    if (serviceResponseProperties.response.details.validationresults[0].validationresults != null)
+                                    if ((serviceResponseProperties.response.details != null) && (serviceResponseProperties.response.details.validationresults != null) && (serviceResponseProperties.response.details.validationresults.Count > 0))
                                     {
-                                        if (serviceResponseProperties.response.details.validationresults[0].validationresults.validationMessages.Count > 0)
+                                        string messageRows = "";
+
+
+                                        //foreach (var message in validationStatusMessages)
+                                        //{
+                                        //    messageRows += message+"\n";
+                                        //}
+
+                                        /*El mensaje que se envia al usuario a Dynamics es poco amigable y si se envia un mensaje muy largo, la forma en que lo muestra es completamente
+                                        ilegible, por esto solo se muestra un mensaje a la vez
+                                        Para mostrar un mensaje mas amigable, hay que implementar un propio boton de Save en el Ribbon*/
+                                        string message = "";
+                                        if (serviceResponseProperties.response.details.validationresults[0].validationresults != null)
                                         {
-                                            message = serviceResponseProperties.response.details.validationresults[0].validationresults.validationMessages.ElementAtOrDefault(0).message;
+                                            if (serviceResponseProperties.response.details.validationresults[0].validationresults.validationMessages.Count > 0)
+                                            {
+                                                message = serviceResponseProperties.response.details.validationresults[0].validationresults.validationMessages.ElementAtOrDefault(0).message;
+                                            }
                                         }
-                                    }
 
-                                    if (!String.IsNullOrEmpty(serviceResponseProperties.response.details.validationresults[0].message))
+                                        if (!String.IsNullOrEmpty(serviceResponseProperties.response.details.validationresults[0].message))
+                                        {
+                                            message = serviceResponseProperties.response.details.validationresults[0].message;
+                                        }
+
+                                        if (!String.IsNullOrEmpty(message))
+                                        {
+                                            messageRows = message;
+
+                                        }
+                                        else
+                                        {
+                                            messageRows = "Ocurrió un error al registrar la factura, por favor intenta nuevamente.";
+                                        }
+                                        Exception ex = new Exception($"{messageRows}");
+                                        ex.Data["HasFeedbackMessage"] = true;
+                                        throw ex;
+                                    }else if (!String.IsNullOrEmpty(serviceResponseProperties.response.message))
                                     {
-                                        message = serviceResponseProperties.response.details.validationresults[0].message;
-                                    }
-
-                                    if (!String.IsNullOrEmpty(message))
-                                    {
-                                        messageRows = message;
-
+                                        string messageRows = serviceResponseProperties.response.message;
+                                        Exception ex = new Exception($"{messageRows}");
+                                        ex.Data["HasFeedbackMessage"] = true;
+                                        throw ex;
                                     }
                                     else
                                     {
-                                        messageRows = "Ocurrió un error al registrar la factura, por favor intenta nuevamente.";
+                                        string messageRows = "Ocurrió un error al registrar la factura, por favor intenta nuevamente.";
+                                        Exception ex = new Exception($"{messageRows}");
+                                        ex.Data["HasFeedbackMessage"] = true;
+                                        throw ex;
                                     }
-                                    Exception ex = new Exception($"{messageRows}");
-                                    ex.Data["HasFeedbackMessage"] = true;
-                                    throw ex;
+
                                 }
+
 
                                 //
 

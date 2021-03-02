@@ -70,6 +70,7 @@ AS
            [ischildcontact]           [BIT] NULL,
            [usertype]                 [VARCHAR](36) NULL,
            [idtype]                   INT NULL,
+		   [id_otrointeres]       [VARCHAR](50) NULL,
         );
 
       INSERT INTO #temp
@@ -95,7 +96,8 @@ AS
                    [hasnoemail],
                    [ischildcontact],
                    [usertype],
-                   [idtype])
+                   [idtype],
+				   [id_otrointeres])
       SELECT [id_paciente],
              [cedula],
              [nombre],
@@ -190,7 +192,15 @@ AS
                        WHEN Try_convert(uniqueidentifier, p.cedula) IS NOT NULL
                              OR p.cedula LIKE '%PME%' THEN 3
                        ELSE 2
-                     END) AS [IdType]
+                     END) AS [IdType],
+					 (Select case when p.Categoria = 'P'  AND ( (SELECT TOP 1 tipousuario
+                                   FROM   rm_pacientesxusuario
+                                   WHERE  id_paciente = p.id_paciente
+								   and status='AC') = '05' )
+								   then (select Top 1 oi.idotros_intereses from rm_otrosinteresesxusuario oiu
+											inner join otros_intereses oi
+											on oi.idotros_intereses= oiu.idotros_intereses
+											where oiu.Usuario = p.Cedula) end) as [id_otrointeres]
       FROM   pacientes p
       WHERE 
 	  --Buscar usuarios que se encuentran tanto en la tabla de cuentas como la de pacientes y que a su vez, ese mismo usuario se encuentre dentro de la tabla 

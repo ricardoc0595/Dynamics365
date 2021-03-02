@@ -78,7 +78,6 @@
     <Compile Include="Methods\ContactMethods.cs" />
     <Compile Include="Methods\RequestHelpers.cs" />
     <Compile Include="PatientSignup.cs" />
-    <Compile Include="KnowYourNumberSignUp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Classes\QuickSignupRequest.cs" />
     <Compile Include="UpdatePatient.cs" />
