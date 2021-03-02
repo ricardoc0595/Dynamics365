@@ -84,6 +84,12 @@ namespace CrmAboxApi.Logic.Classes
                         jObject.Add($"{InvoiceFields.ProductsSelectedJson}",serialized);
                     }
 
+                    if (invoiceProperties.nonAboxProducts != null)
+                    {
+                        var serialized = JsonConvert.SerializeObject(invoiceProperties.nonAboxProducts);
+                        jObject.Add($"{InvoiceFields.NonAboxProductsSelectedJson}", serialized);
+                    }
+
                     if (invoiceProperties.idFromDatabase != null)
                     {
                         jObject.Add($"{InvoiceFields.IdAboxInvoice}", invoiceProperties.idFromDatabase);
@@ -203,24 +209,30 @@ namespace CrmAboxApi.Logic.Classes
                         jObject.Add($"{InvoiceFields.ProductsSelectedJson}", serialized);
                     }
 
-                  
+                    if (invoiceProperties.nonAboxProducts != null)
+                    {
+                        var serialized = JsonConvert.SerializeObject(invoiceProperties.nonAboxProducts);
+                        jObject.Add($"{InvoiceFields.NonAboxProductsSelectedJson}", serialized);
+                    }
+
+
 
                     if (!(String.IsNullOrEmpty(invoiceProperties.country)))
                     {
                         jObject.Add($"{InvoiceSchemas.Country}@odata.bind", $"/{countryEntity.EntityPluralName}({CountryFields.IdCountry}='{invoiceProperties.country}')");
                     }
 
-                    if (String.IsNullOrEmpty(invoiceProperties.status))
+                    if (!String.IsNullOrEmpty(invoiceProperties.status))
                     {
                         int status = sharedMethods.GetInvoiceStatusValue(invoiceProperties.status);
                         if (status > -1)
                         {
-                            jObject.Add(InvoiceFields.StatusCode, AboxDynamicsBase.Classes.Constants.PendingInvoiceDropdownValue);
+                            jObject.Add(InvoiceFields.StatusCode, status);
                         }
 
                     }
 
-                    if (String.IsNullOrEmpty(invoiceProperties.statusReason))
+                    if (!String.IsNullOrEmpty(invoiceProperties.statusReason))
                     {
                         jObject.Add(InvoiceFields.StatusReason, invoiceProperties.statusReason);
                     }
@@ -240,7 +252,7 @@ namespace CrmAboxApi.Logic.Classes
                         jObject.Add(InvoiceFields.TotalAmount, invoiceProperties.totalAmount);
                     }
 
-                    if (String.IsNullOrEmpty(invoiceProperties.purchaseMethod))
+                    if (!String.IsNullOrEmpty(invoiceProperties.purchaseMethod))
                     {
                         jObject.Add(InvoiceFields.PurchaseMethod, invoiceProperties.purchaseMethod);
                     }

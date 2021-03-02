@@ -21,12 +21,20 @@ namespace CrmAboxApi.Logic.Classes.Deserializing
         public int? revisionTime1 { get; set; }
         public int? revisionTime2 { get; set; }
         public string purchaseMethod { get; set; }
-
+        public NonAboxProduct[] nonAboxProducts { get; set; }
 
         public class Product
         {
             public string id { get; set; }
             public int quantity { get; set; }
+            public int price { get; set; }
+        }
+
+        public class NonAboxProduct
+        {
+            public string name { get; set; }
+            public int quantity { get; set; }
+            public int price { get; set; }
         }
 
 

@@ -1,0 +1,554 @@
+<html>
+
+<head>
+    <meta>
+    <style>
+        /* body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
+            font-size: 16px;
+            line-height: 1.4;
+            
+
+            overflow-x: hidden
+        } */
+
+    
+
+       
+
+        table {
+            width: 100%;
+            position: relative;
+            text-align: center;
+            margin-top: 20px;
+            border: solid 1px #eaeaea;
+        }
+
+        table th span {
+            padding: 8px;
+            display: block;
+        }
+
+        table td span {
+            padding: 8px;
+            display: block;
+        }
+
+        input[name="quantity"], input[name="price"] {
+            margin-right: 5%;
+            width: 11%;
+            padding:5px;
+            text-align:center;
+        }
+
+        table tr {
+            border-right: 1px solid #eaeaea;
+            border-top: 1px solid #eaeaea
+        }
+
+        select[name='nonAboxProductsAvailable'] {
+            display: block;
+            padding: 8px;
+            width: 50%;
+        }
+
+
+        table tr:hover .btn.remove {
+            background-color: rgb(220, 53, 69);
+            color: white;
+            transition: all .5s;
+            -moz-transition: all .5s;
+            -o-transition: all .5s;
+            -ms-transition: all .5s;
+            -webkit-transition: all .5s;
+        }
+
+      
+
+
+
+        form .feedback-error {
+            color: red;
+        }
+
+        form.ng-invalid.ng-dirty input {
+            border: solid 1px rgb(220, 53, 69);
+        }
+
+        table tr:hover {
+            background-color: #0000000f;
+        }
+
+       
+
+  
+
+        form .product-data {
+            display: block;
+            position: relative;
+            width: 100%;
+            margin-top:20px;
+        }
+
+        .product-data>label {
+            width: 11%;
+            display:inline-block;
+            position:relative;
+        }
+
+        .product-data .btn {
+            width: 21.8%;
+            padding:8px;
+        }
+
+       
+
+    
+    </style>
+
+    <link rel="stylesheet" href="/WebResources/new_webresourcesbasecss">
+    <!-- <link rel="stylesheet" href="/base.css"> -->
+    <link rel="stylesheet" href="/WebResources/new_choicescss" />
+</head>
+
+<body style="overflow-wrap: break-word;" ng-app="invoiceProductSelectionApp">
+    <div style="font-family: undefined;" ng-controller="NonAboxProductSelectionController">
+
+        <div class="" ng-show="!loadingComplete">
+            <p></p>
+        </div>
+
+
+        <div ng-show="loadingComplete">
+            <!-- <p>ContactID:{{contactId}}</p> -->
+
+            
+
+
+            <!-- <label style="font-family: SegoeUI, 'Segoe UI';display: block;margin-bottom: 10px;">Seleccionar
+                productos:</label> -->
+
+            
+        <!-- Descomentar para habilitar seleccion de productos -->
+           
+        <!-- <div style="position:relative;width:100%;display:block" id="nonAboxProductsAvailableContainer">
+                <select name="nonAboxProductsAvailable" class="form-control" ng-model="productSelected.id"
+                    id="nonAboxProductsAvailable" ng-change="setProductSelected(productSelected.id)">
+                    <option value="" >Seleccione</option>
+                    <option ng-attr-value="{{product.id}}" ng-repeat="product in nonAboxProductsAvailable"
+                        ng-bind="product.name">
+                    </option>
+                </select>
+            </div> -->
+
+
+
+
+            <form name="productSelectedData" novalidate ng-if="productSelected.id!==null && productSelected.id!==''">
+                <div class="product-data">
+                    <!-- <p ng-bind="productSelected.name"></p> -->
+                    <label>Cantidad:</label>
+                    <input required type="text" maxlength="3" ng-pattern="/^[0-9]+$/" name="quantity"
+                        ng-model="productSelected.quantity">
+                    <label>Precio:</label>
+                    <input required type="text" maxlength="1000000" ng-pattern="/^[0-9]+$/" name="price" ng-model="productSelected.price">
+                    <button class="btn primary" ng-click="addProduct(productSelectedData)"
+                        ng-disabled="!productSelectedData.quantity.$valid || !productSelectedData.price.$valid">Agregar</button>
+                    <button class="btn default" ng-click="productSelected.id=null">Cancelar</button>
+                    <p class="feedback-error"
+                        ng-show="(!productSelectedData.quantity.$valid) && (productSelectedData.quantity.$touched)">Es requerido un valor numérico en la cantidad</p>
+                    <p class="feedback-error" ng-show="(!productSelectedData.price.$valid) && (productSelectedData.price.$touched)">Es
+                        requerido un valor numérico en el precio</p>
+                </div>
+
+            </form>
+
+            
+            
+            <table>
+                <tr>
+                    <th><span>Producto</span></th>
+                    <th><span>Cantidad</span></th>
+                    <th><span>Precio</span></th>
+                    <th><span></span></th>
+                </tr>
+                <tr ng-repeat="product in productsAdded">
+                    <td><span ng-bind="product.name"></span></td>
+                    <td><span ng-bind="product.quantity"></span></td>
+                    <td><span ng-bind="product.price"></span></td>
+                    <!-- <td><button class="btn remove" ng-click="removeProduct($index)">Eliminar</button></td> -->
+                </tr>
+            </table>
+        </div>
+
+
+    </div>
+
+    <script src="/WebResources/new_angularjs"></script>
+    <script src="/WebResources/new_choicesjs"></script>
+    <!-- <script src="libraries/choices.min.js"></script>
+    <script src="libraries/angular.min.js"></script> -->
+
+    <script>
+
+        // {"patientId":1017635,"pharmacyId":"112219294","billId":"fasdfadasdf","billDate":"2020-12-17","billImageUrl":"https://apidev.aboxplan.com/files/460ccbaa-0e08-9efe-330a-a0da61e8d3f0.jpg","products":[{"id":"100W085104001","quantity":8},{"id":"15830","quantity":1}]}
+
+
+
+        var invoiceProductSelectionApp = angular.module('invoiceProductSelectionApp', []);
+
+
+
+        function initializeProductSelectionLogic(_formContext, _sharedLogicObject, _Xrm, _invoiceFields, _invoiceData,_nonAboxProds) {
+
+            try {
+                _Xrm.Utility.showProgressIndicator("");
+                var controllerElement = document.querySelector('[ng-controller]');
+                var controllerScope = angular.element(controllerElement).scope();
+                controllerScope.initializeData( _invoiceData, _formContext, _sharedLogicObject, _Xrm, _invoiceFields,_nonAboxProds);
+            } catch (error) {
+                console.error(error);
+                _Xrm.Utility.closeProgressIndicator();
+                // Xrm.Navigation.openErrorDialog({ details:error.stack,message:_sharedLogic.Constants.GeneralFrontendErrorMessage}).then(
+                //     function (success) {
+                //         console.log(success);
+                //     },
+                //     function (error) {
+                //         console.log(error);
+                //     });
+                _Xrm.Navigation.openErrorDialog({ details: error.stack, message: _sharedLogic.Constants.GeneralFrontendErrorMessage });
+                return;
+            }
+        }
+
+
+        invoiceProductSelectionApp.controller('NonAboxProductSelectionController', function NonAboxProductSelectionController($scope, $http, $timeout,$compile) {
+
+
+            var formContext = null;
+            var sharedLogic = null;
+            var Xrm = null;
+            var invoiceFields = null;
+            
+            var invoiceData = null;
+            var nonAboxProds = null;
+            var choicesComponentProductsAvailable=null;
+            var temp=null;
+            $scope.loadingComplete = false;
+            $scope.nonAboxProductsAvailable = [];
+            $scope.productsAdded = [];
+            //
+
+            // $scope.nonAboxProductsAvailable = [
+               
+            //     {
+            //         name: "Producto No Abox 1",
+            //         id:"0"
+            //     },
+            //     {
+            //         name: "Producto No Abox 2",
+            //         id:"1"
+            //     },
+            //     {
+            //         name: "Producto No Abox 3",
+            //         id:"2"
+            //     },
+            //     {
+            //         name: "Producto No Abox 5",
+            //         id:"3"
+            //     },
+            //     {
+            //         name: "Producto No Abox 6",
+            //         id:"4"
+            //     },
+            //     // {
+            //     //     name: "Producto no Abox 4",
+            //     // }
+
+            // ];
+
+            //
+
+            function restartChoicesComponent(){
+                $timeout(function(){
+
+                    choicesComponentProductsAvailable.destroy();
+
+                    var d = document.getElementById("nonAboxProductsAvailable");
+                    d.remove();
+
+                    var selectRemake = "<select name='nonAboxProductsAvailable' class='form-control' ng-model='productSelected.id' id='nonAboxProductsAvailable' ng-change='setProductSelected(productSelected.id)'></select>";
+                    var optionRemake = "<option ng-attr-value='{{product.id}}' ng-repeat='product in nonAboxProductsAvailable' ng-bind='product.name'></option>";
+                    var container = document.getElementById("nonAboxProductsAvailableContainer");
+                    angular.element(container).append(selectRemake);
+                    var select = document.getElementById("nonAboxProductsAvailable");
+                    angular.element(select).append(optionRemake);
+                    $compile(document.getElementById("nonAboxProductsAvailable"))($scope);
+
+                })
+               
+            }
+           
+             
+
+            $scope.initializeData = function ( _invoiceData, _formContext, _sharedLogicObject, _Xrm, _invoiceFields,_nonAboxProds) {
+
+                try {
+
+                    formContext = _formContext;
+                    sharedLogic = _sharedLogicObject;
+                    Xrm = _Xrm;
+                    invoiceFields = _invoiceFields;
+                    nonAboxProds=_nonAboxProds;
+                    invoiceData = _invoiceData;
+
+
+                    if (typeof nonAboxProds !== "undefined" && nonAboxProds !== null) {
+
+
+                        nonAboxProds = nonAboxProds.slice(0, 50);
+
+                        var length = nonAboxProds.length;
+                        for (let i = 0; i < length; i++) {
+                            var obj = {};
+                            obj.name = nonAboxProds[i].Producto;
+                            $scope.nonAboxProductsAvailable.push(obj);
+                        }
+
+                    } else {
+
+                        $scope.nonAboxProductsAvailable = [];
+                        $scope.loadingComplete = false;
+                        $scope.$apply();
+                    }
+                   
+
+                    if (typeof invoiceData !== "undefined" && invoiceData !== null && $scope.nonAboxProductsAvailable.length>0) {
+
+                        if (typeof invoiceData.nonAboxProducts !== "undefined" && invoiceData.nonAboxProducts !== null) {
+
+                            var length = invoiceData.nonAboxProducts.length;
+
+                            for (var i = 0; i < length; i++) {
+                                var productInInvoice = invoiceData.nonAboxProducts[i];
+
+
+                                //buscar nombre del producto en la lista de productos del paciente
+                                var name = "";
+
+                                var objectFound = sharedLogic.findElementByText(productInInvoice.name, $scope.nonAboxProductsAvailable, "name");
+                                if (objectFound !== null) {
+                                    name = objectFound.name;
+                                    if (!sharedLogic.elementAlreadyInListIgnoreCase(objectFound.name, $scope.productsAdded, "name")) {
+                                        $scope.productsAdded.push({
+                                            name: name,
+                                            quantity: productInInvoice.quantity,
+                                            price: productInInvoice.price
+                                        });
+                                    }
+                                }
+
+                               
+
+                            }
+
+                        }
+
+                    }else{
+                        $scope.productsAdded=[];
+                    }
+
+
+                    $timeout(function(){
+                        
+                        $scope.loadingComplete = true; //eliminar este y dejar el de la linea de mas abajo
+
+                        // Descomentar para habilitar seleccion de producto e inicializar choicesJS
+                        //    $timeout(function () {
+                        //        if (choicesComponentProductsAvailable === null) {
+
+
+                        //         /*FIXME: EL plugin de ChoicesJS crea una clase de is-flipped que está agregándose al dropdown y no deja verse porque esta siendo tapado por el iframe de dynamics.*/
+                        //            choicesComponentProductsAvailable = new Choices(document.getElementById("nonAboxProductsAvailable"), {});
+                        //            $scope.loadingComplete = true;
+                        //        } else {
+
+
+                        //        restartChoicesComponent();
+                                   
+                                 
+
+
+                        //            $timeout(function () {
+                        //                choicesComponentProductsAvailable = new Choices(document.getElementById("nonAboxProductsAvailable"), { silent: true });
+                        //                $scope.loadingComplete = true;
+                        //            })
+
+                        //        }
+                        //    })                      
+
+                   })
+
+                    
+
+
+                 
+
+
+
+
+                       
+                    
+                    // $scope.contactProducts=contactData.products;
+                } catch (error) {
+                    console.error(error);
+                    Xrm.Navigation.openErrorDialog({ details: error.stack, message: sharedLogic.Constants.GeneralFrontendErrorMessage });
+                }
+
+            }
+
+
+            $scope.addProduct = function (form) {
+
+                try {
+                    if (!form.quantity.$valid && !form.price.$valid) {
+                        return;
+                    } else {
+
+
+                        $scope.productsAdded.push({
+                            name: $scope.productSelected.name,
+                            id:$scope.productSelected.id,
+                            quantity: $scope.productSelected.quantity,
+                            price:$scope.productSelected.price
+                        })
+
+                        $scope.productSelected.name = null;
+                        $scope.productSelected.id = null;
+                        $scope.productSelected.quantity = null;
+                        $scope.productSelected.price = null;
+                    }
+                } catch (error) {
+                    console.error(error);
+                    Xrm.Navigation.openErrorDialog({ details: error.stack, message: "Ocurrió un error al agregar el producto, por favor intente nuevamente." });
+                }
+
+
+            }
+
+            $scope.setProductSelected = function (productName) {
+
+                try {
+
+                    
+                    if (typeof productName === "undefined" || productName===null || productName==="") {
+                        return;
+                    }
+
+                    if (!sharedLogic.elementAlreadyInList(productName, $scope.productsAdded, "name")) {
+                        var selected = $scope.nonAboxProductsAvailable.find(function (p) { return p.name === productName});
+                        if (selected !== null) {
+                            $scope.productSelected.name = selected.name;
+                        }
+
+                    } else {
+                        $scope.productSelected.name = null;
+                        return;
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                    Xrm.Navigation.openErrorDialog({ details: error.stack, message: "Ocurrió un error al establecer el producto seleccionado, por favor intente nuevamente." });
+                }
+
+
+            }
+
+            $scope.removeProduct = function (index) {
+
+                try {
+
+                    if ($scope.productsAdded.length > 0) {
+                        $scope.productsAdded.splice(index,1);
+                    } else {
+                        return;
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                    Xrm.Navigation.openErrorDialog({ details: error.stack, message: "Ocurrió un error al eliminar el producto de la lista, por favor intente nuevamente." });
+                }
+
+
+            }
+
+
+
+            $scope.productSelected = {
+                name: null,
+                id: null,
+                quantity: null
+            }
+
+
+
+            $scope.$watch("productsAdded", function () {
+
+                if (formContext !== null) {
+                    var jsonField = formContext.getAttribute(invoiceFields.NonAboxProductsSelectedJson);
+                    var productsForService = [];
+                    if ($scope.productsAdded.length) {
+
+                        $scope.productsAdded.forEach(function (product) {
+
+                            productsForService.push({ "name": product.name, "quantity": product.quantity, "price":product.price });
+
+                        })
+
+                        if (jsonField !== null) {
+
+                            var value = JSON.stringify(productsForService);
+                            jsonField.setValue(value);
+                            jsonField.fireOnChange();
+                        }
+                    } else {
+                        jsonField.setValue(null);
+                        productsAdded = [];
+                    }
+                }
+
+
+            }, true)
+
+
+
+            // $timeout(function () {
+            //     const example = new Choices(document.getElementById("nonAboxProductsAvailable"));
+
+            //     // example.setChoices(
+            //     //         $scope.nonAboxProductsAvailable,
+            //     //         'id',
+            //     //         'name',
+            //     //         false,
+            //     //     );
+
+            //     // example.setChoices()
+            //     //         $scope.nonAboxProductsAvailable,
+            //     //         'id',
+            //     //         'name',
+            //     //         false,
+            //     //     );
+            // })
+
+
+        });
+
+
+
+
+
+    </script>
+
+</body>
+
+</html>

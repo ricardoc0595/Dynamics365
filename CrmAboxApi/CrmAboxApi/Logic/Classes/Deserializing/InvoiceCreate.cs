@@ -15,6 +15,7 @@ namespace CrmAboxApi.Logic.Classes.Deserializing
         public string billDate { get; set; }
         public string billImageUrl { get; set; }
         public Product[] products { get; set; }
+        public NonAboxProduct[] nonAboxProducts { get; set; }
         public string status { get; set; }
         public string statusReason { get; set; }
         public int? totalAmount { get; set; }
@@ -26,6 +27,14 @@ namespace CrmAboxApi.Logic.Classes.Deserializing
         {
             public string id { get; set; }
             public int quantity { get; set; }
+            public int price { get; set; }
+        }
+
+        public class NonAboxProduct
+        {
+            public string id { get; set; }
+            public int quantity { get; set; }
+            public int price { get; set; }
         }
 
 

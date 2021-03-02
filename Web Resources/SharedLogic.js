@@ -58,7 +58,9 @@ Abox.SharedLogic = {
             get  SubGridControls() {
                 return{
                     RelatedContacts: "RelatedContacts",
-                    InvoicesGrid:"contactinvoicesgrid"
+                    InvoicesGrid:"contactinvoicesgrid",
+                    RelatedProductsDosesGrid:"RelatedProducts",
+                    RelatedDoctorsGrid:"Doctors"
                 }
             }
         },
@@ -88,6 +90,7 @@ Abox.SharedLogic = {
             PurchaseDate: "new_purchasedate",
             EntityId: "invoiceid",
             ProductSelectionWebResource: "WebResource_invoiceproductselection",
+            NonAboxProductSelectionWebResource: "WebResource_invoicenonaboxproductselection",
             ProductsSelectedJson: "new_productsselectedjson",
             IdAboxInvoice: "new_idaboxinvoice",
             InvoiceXContactRelationship : "invoice_customer_contacts",
@@ -181,6 +184,7 @@ Abox.SharedLogic = {
             AboxImageUploadUrl: this.Configuration.Environment + "/files/upload",
             ProductsSearch: this.Configuration.Environment + "/products/search",
             ChangePasswordCrm: this.Configuration.Environment + "/security/crm/changepassword",
+            NonAboxProducts: this.Configuration.Environment + "/receipts/ocr/nonabbottproducts",
             
         }
     },
@@ -238,7 +242,7 @@ Abox.SharedLogic = {
 
     },
 
-    clearTextFields: function (formContext, fieldsToClear) {
+    clearFields: function (formContext, fieldsToClear) {
         if (typeof fieldsToClear !== "undefined" && formContext !== "undefined") {
 
             if (fieldsToClear.constructor === Array) {
@@ -247,7 +251,43 @@ Abox.SharedLogic = {
                     //var field = formContext.getAttribute(fieldName);
                     var field = formContext.getAttribute(fieldName);
                     if (field !== null) {
-                        field.setValue("");
+                        field.setValue(null);
+                    }
+                });
+            }
+
+        }
+    },
+
+    setYesNoField: function (formContext, fieldsToClear,value) {
+        if (typeof fieldsToClear !== "undefined" && formContext !== "undefined") {
+
+            if (fieldsToClear.constructor === Array) {
+                fieldsToClear.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var field = formContext.getAttribute(fieldName);
+                    if (field !== null) {
+                        field.setValue(value);
+                    }
+                });
+            }
+
+        }
+    },
+
+
+
+    clearLookupFields: function (formContext, lookupsToClear) {
+        if (typeof lookupsToClear !== "undefined" && formContext !== "undefined") {
+
+            if (lookupsToClear.constructor === Array) {
+                lookupsToClear.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var field = formContext.getAttribute(fieldName);
+                    if (field !== null) {
+                        field.setValue(null);
                     }
                 });
             }
@@ -431,12 +471,31 @@ Abox.SharedLogic = {
         }
 
         if ((value.length > maxLength) && (maxLength !== null)) {
-            control.setNotification("El valor debe ser de máximo " + maxLength + " caracteres");
+            control.setNotification("El valor debe ser de máximo " + maxLength + " caracteres y ha escrito "+ value.length+".");
         }
         else if ((value.length < minLength) && (minLength !== null)) {
-            control.setNotification("El valor debe ser de mínimo " + minLength + " caracteres");
+            control.setNotification("El valor debe ser de mínimo " + minLength + " caracteres y ha escrito "+ value.length+".");
         } else {
             control.clearNotification();
+        }
+
+    },
+
+    clearFieldsNotification:function(formContext,fields){
+
+        if (typeof fields !== "undefined" && formContext !== "undefined") {
+
+            if (fields.constructor === Array) {
+                fields.forEach(function (fieldName) {
+
+                    //var field = formContext.getAttribute(fieldName);
+                    var field = formContext.getControl(fieldName);
+                    if (field !== null) {
+                        field.clearNotification();
+                    }
+                });
+            }
+
         }
 
     },
@@ -540,6 +599,39 @@ Abox.SharedLogic = {
 
     },
 
+    elementAlreadyInListIgnoreCase: function (idElement, list, idProperty) {
+
+        //Funcion que se llama para verificar si el elemento que intenta agregar el usuario
+        //Ya se encuentra en la lista recibe parametros: id del elemento, lista en donde buscar, nombre de la propiedad del objeto que contiene el id
+
+        var length = list.length;
+        var valueAlreadyExists = false;
+
+        try {
+            for (var i = 0; i < length; i++) {
+                if (list[i][idProperty] === null || typeof list[i][idProperty] === "undefined") {
+                    continue
+                } else {
+                    if (list[i][idProperty].toString().toLowerCase() === idElement) {
+                        valueAlreadyExists = true;
+                        break;
+                    }
+
+                }
+
+            }
+            if (valueAlreadyExists) {
+                return true;
+            } else {
+                return false;
+            }
+
+        } catch (e) {
+            return false;
+        }
+
+    },
+
     deleteItemFromList: function (idItem, list, idProperty) {
 
         idItem = idItem || null;
@@ -590,6 +682,41 @@ Abox.SharedLogic = {
                         continue
                     } else {
                         if (list[i][idProperty].toString() === elementId.toString()) {
+                            var obj = list[i];
+                            found = obj;
+                            break;
+                        }
+                    }
+
+
+                }
+                return found;
+
+            }
+
+        } catch (e) {
+            return found;
+        }
+
+
+    },
+    findElementByText: function (valueToFind, list, propertyName) {
+        //Funcion que se llama para buscar un elemento en una lista cuyo valor en cierta propiedad sea semejante al valor de entrada
+
+
+
+        valueToFind = valueToFind || null;
+        var found = null;
+
+        try {
+            if (valueToFind !== null) {
+
+                var length = list.length;
+                for (var i = 0; i < length; i++) {
+                    if (list[i][propertyName] === null || typeof list[i][propertyName] === "undefined") {
+                        continue
+                    } else {
+                        if (list[i][propertyName].toString().toLowerCase() === valueToFind.toString().toLowerCase()) {
                             var obj = list[i];
                             found = obj;
                             break;
